@@ -1,5 +1,5 @@
 {
-  "Functions": [
+  "Functions": [ 
     {
         "Id" : 0,
         "Name" : "rest_single",
@@ -64,6 +64,5 @@
       "Params" : {
               "str1" : 0
     }
-  }
   ]
 }

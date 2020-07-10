@@ -8,7 +8,7 @@ from websocket import create_connection
 import socket
 from concurrent import futures
 from datetime import datetime
-#from helperfunctions import pysize
+
 import configparser
 #import QDAG_helper
 #current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
@@ -47,10 +47,7 @@ class ExtensionService(SSE.ConnectorServicer):
         log_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logger.config')
         logging.config.fileConfig(log_file)
         logging.info('Logging enabled')
-        
-        config.read('..\config\qrag.ini')
         function_name = "none"
-        logging.debug('Configuration File Read')
 
     @property
     def function_definitions(self):
