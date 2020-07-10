@@ -3,16 +3,18 @@ import argparse
 import json
 import logging
 import logging.config
-import os
-import sys
-import time
+import os, sys, inspect, time
 from websocket import create_connection
 import socket
 from concurrent import futures
 from datetime import datetime
-from pysize import get_size
+#from helperfunctions import pysize
 import configparser
-import QDAG_helper
+#import QDAG_helper
+#current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+#parent_dir = os.path.dirname(current_dir)
+#sys.path.insert(0, parent_dir)
+
 
 
 # Add Generated folder to module path.
@@ -22,14 +24,11 @@ import ServerSideExtension_pb2 as SSE
 import grpc
 from google.protobuf.json_format import MessageToDict
 from ssedata import FunctionType
-from scripteval import ScriptEval
+#from scripteval import ScriptEval
 import requests
 
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
-
 config = configparser.ConfigParser()
-config.read('.\config\qlik_gateway.ini')
-function_name = "none"
 #print(url)
 
 class ExtensionService(SSE.ConnectorServicer):
@@ -43,11 +42,15 @@ class ExtensionService(SSE.ConnectorServicer):
         :param funcdef_file: a function definition JSON file
         """
         self._function_definitions = funcdef_file
-        self.ScriptEval = ScriptEval()
+        #self.ScriptEval = ScriptEval()
         os.makedirs('logs', exist_ok=True)
-        log_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logger.config')
+        log_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logger.config')
         logging.config.fileConfig(log_file)
         logging.info('Logging enabled')
+        
+        config.read('..\config\qrag.ini')
+        function_name = "none"
+        logging.debug('Configuration File Read')
 
     @property
     def function_definitions(self):
@@ -62,15 +65,10 @@ class ExtensionService(SSE.ConnectorServicer):
         :return: Mapping of function id and implementation
         """
         return {
-            0: '_hello_world',
-            1: '_hello_world_aggr',
-            2: '_cache',
-            3: '_no_cache',
-            4: '_echo_table',
-            5: '_predictbreastcancer_v1',
-            6: '_predictbreastcancer_v2',
-            7: '_predictbreastcancer_v3',
-            8: '_predictbreastcancer_v4'
+            0: '_rest_single',
+            1: '_rest_30',
+            2: '_ws_single',
+            3: '_ws_batch'
         }
 
     @staticmethod
@@ -86,49 +84,9 @@ class ExtensionService(SSE.ConnectorServicer):
 
         return header.functionId
 
-    """
-    Implementation of added functions.
-    """
 
     @staticmethod
-    def _hello_world(request, context):
-        """
-        Mirrors the input and sends back the same data.
-        :param request: iterable sequence of bundled rows
-        :return: the same iterable sequence as received
-        """
-        for request_rows in request:
-            yield request_rows
-
-    @staticmethod
-    def _hello_world_aggr(request, context):
-        """
-        Aggregates the parameters to a single comma separated string.
-        :param request: iterable sequence of bundled rows
-        :return: string
-        """
-        params = []
-
-        # Iterate over bundled rows
-        for request_rows in request:
-            # Iterate over rows
-            for row in request_rows.rows:
-                # Retrieve string value of parameter and append to the params variable
-                # Length of param is 1 since one column is received, the [0] collects the first value in the list
-                param = [d.strData for d in row.duals][0]
-                params.append(param)
-
-        # Aggregate parameters to a single string
-        result = ', '.join(params)
-
-        # Create an iterable of dual with the result
-        duals = iter([SSE.Dual(strData=result)])
-
-        # Yield the row data as bundled rows
-        yield SSE.BundledRows(rows=[SSE.Row(duals=duals)])
-
-    @staticmethod
-    def _predictbreastcancer_v1(request, context):
+    def _rest_single(request, context):
         """
         Rest using single variable
         """
@@ -160,7 +118,7 @@ class ExtensionService(SSE.ConnectorServicer):
         logging.info('Exiting {} TimeStamp: {}' .format(function_name, datetime.now().strftime("%H:%M:%S.%f")))
 
     @staticmethod
-    def _predictbreastcancer_v3(request, context):
+    def _ws_single(request, context):
         """
         Mirrors the input and sends back the same data.
         :param request: iterable sequence of bundled rows
@@ -207,7 +165,7 @@ class ExtensionService(SSE.ConnectorServicer):
         logging.info('Exiting {} TimeStamp: {}' .format(function_name, datetime.now().strftime("%H:%M:%S.%f")))
 
     @staticmethod
-    def _predictbreastcancer_v4(request, context):
+    def _ws_batch(request, context):
         """
         Mirrors the input and sends back the same data.
         :param request: iterable sequence of bundled rows
@@ -274,7 +232,7 @@ class ExtensionService(SSE.ConnectorServicer):
 
     
     @staticmethod
-    def _predictbreastcancer_v2(request, context):
+    def _rest_30(request, context):
         """
         Aggregates the parameters to a single comma separated string.
 
@@ -361,23 +319,7 @@ class ExtensionService(SSE.ConnectorServicer):
                 # Yield the row data as bundled rows
                 yield SSE.BundledRows(rows=[SSE.Row(duals=duals)])
 
-    @staticmethod
-    def _echo_table(request, context):
-        """
-        Echo the input table.
-        :param request:
-        :param context:
-        :return:
-        """
-        for request_rows in request:
-            response_rows = []
-            for row in request_rows.rows:
-                response_rows.append(row)
-            yield SSE.BundledRows(rows=response_rows)
-
-    """
-    Implementation of rpc functions.
-    """
+  
 
     def GetCapabilities(self, request, context):
         """
@@ -432,36 +374,7 @@ class ExtensionService(SSE.ConnectorServicer):
 
         return getattr(self, self.functions[func_id])(request_iterator, context)
 
-    def EvaluateScript(self, request, context):
-        """
-        This plugin provides functionality only for script calls with no parameters and tensor script calls.
-        :param request:
-        :param context:
-        :return:
-        """
-        # Parse header for script request
-        metadata = dict(context.invocation_metadata())
-        header = SSE.ScriptRequestHeader()
-        header.ParseFromString(metadata['qlik-scriptrequestheader-bin'])
 
-        # Retrieve function type
-        func_type = self.ScriptEval.get_func_type(header)
-
-        # Verify function type
-        if (func_type == FunctionType.Aggregation) or (func_type == FunctionType.Tensor):
-            return self.ScriptEval.EvaluateScript(header, request, context, func_type)
-        else:
-            # This plugin does not support other function types than aggregation  and tensor.
-            # Make sure the error handling, including logging, works as intended in the client
-            msg = 'Function type {} is not supported in this plugin.'.format(func_type.name)
-            context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-            context.set_details(msg)
-            # Raise error on the plugin-side
-            raise grpc.RpcError(grpc.StatusCode.UNIMPLEMENTED, msg)
-
-    """
-    Implementation of the Server connecting to gRPC.
-    """
 
     def Serve(self, port, pem_dir):
         """
@@ -502,7 +415,9 @@ class ExtensionService(SSE.ConnectorServicer):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--port', nargs='?', default='50054')
+    config.read(os.path.join(os.path.dirname(__file__), 'config', 'qrag.ini'))
+    port = config.get('base', 'port')
+    parser.add_argument('--port', nargs='?', default=port)
     parser.add_argument('--pem_dir', nargs='?')
     parser.add_argument('--definition_file', nargs='?', default='functions.json')
     args = parser.parse_args()

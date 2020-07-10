@@ -1,55 +1,8 @@
 {
   "Functions": [
     {
-      "Id": 0,
-      "Name": "HelloWorld",
-      "Type": 2,
-      "ReturnType": 0,
-      "Params": {
-        "str1": 0
-      }
-    },
-    {
-      "Id": 1,
-      "Name": "HelloWorldAggr",
-      "Type": 1,
-      "ReturnType": 0,
-      "Params": {
-        "str1": 0
-      }
-    },
-    {
-      "Id": 2,
-      "Name": "Cache",
-      "Type": 2,
-      "ReturnType": 0,
-      "Params": {
-        "str1": 0
-      }
-    },
-    {
-      "Id": 3,
-      "Name": "NoCache",
-      "Type": 2,
-      "ReturnType": 0,
-      "Params": {
-        "str1": 0
-      }
-    },
-    {
-      "Id": 4,
-      "Name": "EchoTable_3",
-      "Type": 2,
-      "ReturnType": 0,
-      "Params": {
-        "col1": 0,
-        "col2": 0,
-        "col3": 0
-      }
-    },
-    {
-        "Id" : 5,
-        "Name" : "PredictBreastCancer_v1",
+        "Id" : 0,
+        "Name" : "rest_single",
         "Type" : 2,
         "ReturnType": 0,
         "Params" : {
@@ -57,8 +10,8 @@
             }
     },
     {
-      "Id" : 6,
-      "Name" : "PredictBreastCancer_v2",
+      "Id" : 1,
+      "Name" : "rest_30",
       "Type" : 1,
       "ReturnType": 0,
       "Params" : {
@@ -95,8 +48,8 @@
               }
       },
       {
-        "Id" : 7,
-        "Name" : "PredictBreastCancer_v3",
+        "Id" : 2,
+        "Name" : "ws_single",
         "Type" : 2,
         "ReturnType": 0,
         "Params" : {
@@ -104,8 +57,8 @@
             }
     },
     {
-      "Id" : 8,
-      "Name" : "PredictBreastCancer_v4",
+      "Id" : 3,
+      "Name" : "ws_batch",
       "Type" : 2,
       "ReturnType": 0,
       "Params" : {
