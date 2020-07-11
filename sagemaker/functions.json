@@ -3,6 +3,7 @@
     {
         "Id" : 0,
         "Name" : "rest_single",
+        "QRAP_type" :"rest_single",
         "Type" : 2,
         "ReturnType": 0,
         "Params" : {
@@ -12,6 +13,7 @@
     {
       "Id" : 1,
       "Name" : "rest_30",
+      "QRAP_type" :"rest_30",
       "Type" : 1,
       "ReturnType": 0,
       "Params" : {
@@ -50,6 +52,7 @@
       {
         "Id" : 2,
         "Name" : "ws_single",
+        "QRAP_type" :"ws_single",
         "Type" : 2,
         "ReturnType": 0,
         "Params" : {
@@ -59,6 +62,7 @@
     {
       "Id" : 3,
       "Name" : "ws_batch",
+      "QRAP_type" :"ws_batch",
       "Type" : 2,
       "ReturnType": 0,
       "Params" : {
