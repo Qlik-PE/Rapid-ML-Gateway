@@ -3,7 +3,6 @@
     {
         "Id" : 0,
         "Name" : "rest_single",
-        "QRAP_type" :"rest_single",
         "Type" : 2,
         "ReturnType": 0,
         "Params" : {
@@ -13,8 +12,7 @@
     {
       "Id" : 1,
       "Name" : "rest_30",
-      "QRAP_type" :"rest_30",
-      "Type" : 1,
+      "Type" : 2,
       "ReturnType": 0,
       "Params" : {
                   "col1": 0,
@@ -48,11 +46,10 @@
                   "col29": 0,
                   "col30": 0
               }
-      },
-      {
+    },
+    {
         "Id" : 2,
         "Name" : "ws_single",
-        "QRAP_type" :"ws_single",
         "Type" : 2,
         "ReturnType": 0,
         "Params" : {
@@ -62,11 +59,11 @@
     {
       "Id" : 3,
       "Name" : "ws_batch",
-      "QRAP_type" :"ws_batch",
       "Type" : 2,
       "ReturnType": 0,
       "Params" : {
               "str1" : 0
     }
+   }
   ]
 }

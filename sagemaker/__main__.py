@@ -20,12 +20,15 @@ import configparser
 # Add Generated folder to module path.
 PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.join(PARENT_DIR, 'generated'))
+sys.path.append(os.path.join(PARENT_DIR, 'helper_functions'))
 import ServerSideExtension_pb2 as SSE
 import grpc
 from google.protobuf.json_format import MessageToDict
 from ssedata import FunctionType
 #from scripteval import ScriptEval
 import requests
+import pysize
+import qlist
 
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 config = configparser.ConfigParser()
@@ -168,7 +171,7 @@ class ExtensionService(SSE.ConnectorServicer):
         :param request: iterable sequence of bundled rows
         :return: the same iterable sequence as received
         """
-        logging.info('Entering Predict Breast Cancer v4 TimeStamp: {}' .format(datetime.now().strftime("%H:%M:%S.%f")))
+        logging.info('Entering {} TimeStamp: {}' .format(function_name, datetime.now().strftime("%H:%M:%S.%f")))
     
          # Disable caching.
         md = (('qlik-cache', 'no-store'),)
@@ -198,11 +201,11 @@ class ExtensionService(SSE.ConnectorServicer):
             test_rows = temp['rows']
             request_size = len(test_rows)
             logging.info('Bundled Row Number of  Rows - {}' .format(request_size))
-            batches = list(QDAG_helper.divide_chunks(test_rows, batch_size)) 
+            batches = list(qlist.divide_chunks(test_rows, batch_size)) 
             for i in batches:
                 payload_t ={"action": "test"}
                 payload_t["data"] = i
-                print('Size of payload {}' .format(get_size(payload_t)))
+                print('Size of payload {}' .format(pysize.get_size(payload_t)))
                 logging.info('batch number {}'.format(outer_counter))
                 ws.send(json.dumps(payload_t))
                 print('message sent WS')
