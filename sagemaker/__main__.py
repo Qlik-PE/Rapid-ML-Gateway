@@ -8,7 +8,7 @@ from websocket import create_connection
 import socket
 from concurrent import futures
 from datetime import datetime
-
+import requests
 import configparser
 #import QDAG_helper
 #current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
@@ -25,14 +25,13 @@ import ServerSideExtension_pb2 as SSE
 import grpc
 from google.protobuf.json_format import MessageToDict
 from ssedata import FunctionType
-#from scripteval import ScriptEval
-import requests
+# import helper .py files
 import pysize
 import qlist
 
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 config = configparser.ConfigParser()
-#print(url)
+
 
 class ExtensionService(SSE.ConnectorServicer):
     """
@@ -92,6 +91,14 @@ class ExtensionService(SSE.ConnectorServicer):
         """
         logging.info('Entering {} TimeStamp: {}' .format(function_name, datetime.now().strftime("%H:%M:%S.%f")))
         url = config.get(function_name, 'url')
+        bCache= config.get(function_name, 'cache')
+        logging.debug("Caching is set to {}" .format(bCache))
+        if (bCache.lower() =="true"):
+            logging.info("Caching ****Enabled*** for {}" .format(function_name))
+        else:
+            logging.info("Caching ****Disabled**** for {}" .format(function_name))
+            md = (('qlik-cache', 'no-store'),)
+            context.send_initial_metadata(md)
         response_rows = []
         
         for request_rows in request:
@@ -103,13 +110,13 @@ class ExtensionService(SSE.ConnectorServicer):
                 # Join with current timedate stamp
 
                 payload = '{"data":"' + param + '"}'
-                #logging.info('Showing Payload: {}'.format(payload))
+                logging.debug('Showing Payload: {}'.format(payload))
                 resp = requests.post(url, data=payload)
-                #logging.info('Show Breast Cancer Payload Response: {}'.format(resp))
-                #logging.info('Show Breast Cancer Payload Response: {}'.format(resp.text))
+                logging.debug('Show Breast Cancer Payload Response: {}'.format(resp))
+                logging.debug('Show Breast Cancer Payload Response: {}'.format(resp.text))
                 result = resp.text
                 result = result.replace('"', '')
-                #logging.info('Show Breast Cancer Result: {}'.format(result))
+                logging.debug('Show Breast Cancer Result: {}'.format(result))
                 #Create an iterable of dual with the result
                 duals = iter([SSE.Dual(strData=result)])
                 response_rows.append(SSE.Row(duals=duals))
@@ -120,42 +127,52 @@ class ExtensionService(SSE.ConnectorServicer):
     @staticmethod
     def _ws_single(request, context):
         """
-        Mirrors the input and sends back the same data.
+         Single Row Processing for Websockets
         :param request: iterable sequence of bundled rows
         :return: the same iterable sequence as received
         """
         logging.info('Entering {} TimeStamp: {}' .format(function_name, datetime.now().strftime("%H:%M:%S.%f")))
-    
-       
-
+        #Start by Gathering Environmental Varaiable
+        
         host = socket.gethostname()
         ip_addr = socket.gethostbyname(host)
-        # param = "17.99,10.38,122.8,1001,0.1184,0.2776,0.3001,0.1471,0.2419,0.07871,1.095,0.9053,8.589,153.4,0.006399,0.04904,0.05373,0.01587,0.03003,0.006193,25.38,17.33,184.6,2019,0.1622,0.6656,0.7119,0.2654,0.4601,0.1189"
         ws_url = config.get(function_name, 'ws_url')
         token = config.get(function_name, 'token')
         user_name= config.get(function_name, 'username')
+        ws_route= config.get(function_name, 'ws_route')
+        bCache= config.get(function_name, 'cache')
+        logging.debug("Caching is set to {}" .format(bCache))
+        if (bCache.lower()=="true"):
+            logging.info("Caching ****Enabled*** for {}" .format(function_name))
+        else:
+            logging.info("Caching ****Disabled**** for {}" .format(function_name))
+            md = (('qlik-cache', 'no-store'),)
+            context.send_initial_metadata(md)
+      
+     
+           
+        #In Future we will use the Token for Liencensing and Throttling
+        #Currently we are using Comblination of host+ipaddr+username for Client Identification
         ws_url = ws_url + host +'_'+ ip_addr+'_'+ user_name+'_'
-        print(ws_url)
+        logging.debug('Websocket URL : {}' .format(ws_url))
         ws = create_connection(ws_url)
         response_rows = []
         for request_rows in request:
             # Iterate over rows
-            
+            # Default code
             for row in request_rows.rows:
                 # Retrieve string value of parameter and append to the params variable
                 # Length of param is 1 since one column is received, the [0] collects the first value in the list
                 param = [d.strData for d in row.duals][0]
-                # Join with current timedate stamp
-                payload = '{"action": "getPrediction" ,"data":"' + param + '"}'
-                #logging.info('Showing Payload: {}'.format(payload))
+                
+                payload = '{"action":"'+ ws_route +'","data":"' + param + '"}'
+                logging.debug('Showing Payload: {}'.format(payload))
                 ws.send(payload)
                 #logging.info('Show Breast Cancer Payload Response: {}'.format(resp.text))
                 resp =  json.loads(ws.recv())
                 result = resp['prediction']
                 score = resp['score']
-                #print(result)
-                #result = result.replace('"', '')
-                #logging.info('Show Breast Cancer Result: {},  Score: {}'.format(result, score))
+                logging.debug('Show Breast Cancer Result: {},  Score: {}'.format(result, score))
                 # Create an iterable of dual with the result
                 duals = iter([SSE.Dual(strData=result)])
                 response_rows.append(SSE.Row(duals=duals))
@@ -172,10 +189,6 @@ class ExtensionService(SSE.ConnectorServicer):
         :return: the same iterable sequence as received
         """
         logging.info('Entering {} TimeStamp: {}' .format(function_name, datetime.now().strftime("%H:%M:%S.%f")))
-    
-         # Disable caching.
-        md = (('qlik-cache', 'no-store'),)
-        context.send_initial_metadata(md)
 
 
         host = socket.gethostname()
@@ -185,41 +198,44 @@ class ExtensionService(SSE.ConnectorServicer):
         token = config.get(function_name, 'token')
         user_name= config.get(function_name, 'username')
         batch_size = int(config.get(function_name, 'batch_size'))
-        print(batch_size)
-        print(type(batch_size))
+        # setup Caching
+        bCache= config.get(function_name, 'cache')
+        logging.debug("Caching is set to {}" .format(bCache))
+        if (bCache.lower()=="true"):
+            logging.info("Caching ****Enabled*** for {}" .format(function_name))
+        else:
+            logging.info("Caching ****Disabled**** for {}" .format(function_name))
+            md = (('qlik-cache', 'no-store'),)
+            context.send_initial_metadata(md)
+      
         ws_url = ws_url + host +'_'+ ip_addr+'_'+ user_name+'_'
-        print(ws_url)
+        logging.debug('Full url for ws: {} '.format(ws_url))
         ws = create_connection(ws_url)
         response_rows = []
         outer_counter = 1
         inner_counter = 1
         request_counter = 1
         for request_rows in request:
-            logging.info('Printing Request Rows - Request Counter {}' .format(request_counter))
+            logging.debug('Printing Request Rows - Request Counter {}' .format(request_counter))
             request_counter+=1
             temp = MessageToDict(request_rows) 
             test_rows = temp['rows']
             request_size = len(test_rows)
-            logging.info('Bundled Row Number of  Rows - {}' .format(request_size))
+            logging.debug('Bundled Row Number of  Rows - {}' .format(request_size))
             batches = list(qlist.divide_chunks(test_rows, batch_size)) 
             for i in batches:
                 payload_t ={"action": "test"}
                 payload_t["data"] = i
-                print('Size of payload {}' .format(pysize.get_size(payload_t)))
-                logging.info('batch number {}'.format(outer_counter))
+                logging.debug('Size of payload {}' .format(pysize.get_size(payload_t)))
+                logging.debug('batch number {}'.format(outer_counter))
                 ws.send(json.dumps(payload_t))
-                print('message sent WS')
+                logging.debug('message sent WS')
                 outer_counter +=1
                 payload_t.clear()
                 for j in i:
-                #print(get_size(rows))
-                #print(rows)
-                #print(type(rows))
-                #logging.info('Inner Counter: {}' .format(inner_counter))
-                #print(ws.recv())
                     resp =  json.loads(ws.recv())
-                    #print(type(resp))
-                    #logging.info('Counter: {} Payload Size: {} Breast Cancer Payload Response: {}'.format(inner_counter, get_size(resp), resp))
+                    logging.debug('Response Type : {}' .format(type(resp)))
+                    logging.debug('Counter: {} Payload Size: {} Breast Cancer Payload Response: {}'.format(inner_counter, pysize.get_size(resp), resp))
                     inner_counter +=1
                     result = resp['prediction']
                     score = resp['score']
@@ -229,7 +245,6 @@ class ExtensionService(SSE.ConnectorServicer):
         yield SSE.BundledRows(rows=response_rows)
         ws.close()
         logging.info('Exiting {} TimeStamp: {}'  .format(function_name, datetime.now().strftime("%H:%M:%S.%f")))
-
     
     @staticmethod
     def _rest_30(request, context):
@@ -240,6 +255,14 @@ class ExtensionService(SSE.ConnectorServicer):
         
         logging.info('Entering {} TimeStamp: {}' .format(function_name, datetime.now().strftime("%H:%M:%S.%f")))
         url = config.get(function_name, 'url')
+        bCache= config.get(function_name, 'cache')
+        logging.debug("Caching is set to {}" .format(bCache))
+        if (bCache.lower()=="true"):
+            logging.info("Caching ****Enabled*** for {}" .format(function_name))
+        else:
+            logging.info("Caching ****Disabled**** for {}" .format(function_name))
+            md = (('qlik-cache', 'no-store'),)
+            context.send_initial_metadata(md)
         # Iterate over bundled rows
         response_rows = []
         for request_rows in request:
@@ -249,17 +272,15 @@ class ExtensionService(SSE.ConnectorServicer):
                 # Length of param is 1 since one column is received, the [0] collects the first value in the list
                 param = [d.strData for d in row.duals]
                 #logging.info('Showing Payload: {}'.format(param))
-                # Aggregate parameters to a single string
-                #payload =','.join(param)
+                #Aggregate parameters to a single string
+                #Join payload via =','.join(param)
                 payload = '{"data":"' + (','.join(param)) + '"}'
-                #logging.info('Showing Payload: {}'.format(payload))
-                #result = payload
-               
+                logging.debug('Showing Payload: {}'.format(payload))
                 resp = requests.post(url, data=payload)
-                #logging.info('Show Breast Cancer Payload Response: {}'.format(resp.text))
+                logging.debug('Show Breast Cancer Payload Response: {}'.format(resp.text))
                 result = resp.text
                 result = result.replace('"', '')
-                #logging.info('Show Breast Cancer Result: {}'.format(result))
+                logging.debug('Show Breast Cancer Result: {}'.format(result))
                 # Create an iterable of dual with the result
                 duals = iter([SSE.Dual(strData=result)])
                 response_rows.append(SSE.Row(duals=duals))
