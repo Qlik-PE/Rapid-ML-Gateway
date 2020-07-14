@@ -91,13 +91,13 @@ class ExtensionService(SSE.ConnectorServicer):
         Rest using single variable
         """
         logging.info('Entering {} TimeStamp: {}' .format(function_name, datetime.now().strftime("%H:%M:%S.%f")))
-        url = config.get(function_name, 'url')
-        bCache= config.get(function_name, 'cache')
+        url = config.get(q_function_name, 'url')
+        bCache= config.get(q_function_name, 'cache')
         logging.debug("Caching is set to {}" .format(bCache))
         if (bCache.lower() =="true"):
-            logging.info("Caching ****Enabled*** for {}" .format(function_name))
+            logging.info("Caching ****Enabled*** for {}" .format(q_function_name))
         else:
-            logging.info("Caching ****Disabled**** for {}" .format(function_name))
+            logging.info("Caching ****Disabled**** for {}" .format(q_function_name))
             md = (('qlik-cache', 'no-store'),)
             context.send_initial_metadata(md)
         response_rows = []
@@ -137,16 +137,16 @@ class ExtensionService(SSE.ConnectorServicer):
         
         host = socket.gethostname()
         ip_addr = socket.gethostbyname(host)
-        ws_url = config.get(function_name, 'ws_url')
-        token = config.get(function_name, 'token')
-        user_name= config.get(function_name, 'username')
-        ws_route= config.get(function_name, 'ws_route')
-        bCache= config.get(function_name, 'cache')
+        ws_url = config.get(q_function_name, 'ws_url')
+        token = config.get(q_function_name, 'token')
+        user_name= config.get(q_function_name, 'username')
+        ws_route= config.get(q_function_name, 'ws_route')
+        bCache= config.get(q_function_name, 'cache')
         logging.debug("Caching is set to {}" .format(bCache))
         if (bCache.lower()=="true"):
-            logging.info("Caching ****Enabled*** for {}" .format(function_name))
+            logging.info("Caching ****Enabled*** for {}" .format(q_function_name))
         else:
-            logging.info("Caching ****Disabled**** for {}" .format(function_name))
+            logging.info("Caching ****Disabled**** for {}" .format(q_function_name))
             md = (('qlik-cache', 'no-store'),)
             context.send_initial_metadata(md)
       
@@ -258,13 +258,13 @@ class ExtensionService(SSE.ConnectorServicer):
         """
         
         logging.info('Entering {} TimeStamp: {}' .format(function_name, datetime.now().strftime("%H:%M:%S.%f")))
-        url = config.get(function_name, 'url')
-        bCache= config.get(function_name, 'cache')
+        url = config.get(q_function_name, 'url')
+        bCache= config.get(q_function_name, 'cache')
         logging.debug("Caching is set to {}" .format(bCache))
         if (bCache.lower()=="true"):
-            logging.info("Caching ****Enabled*** for {}" .format(function_name))
+            logging.info("Caching ****Enabled*** for {}" .format(q_function_name))
         else:
-            logging.info("Caching ****Disabled**** for {}" .format(function_name))
+            logging.info("Caching ****Disabled**** for {}" .format(q_function_name))
             md = (('qlik-cache', 'no-store'),)
             context.send_initial_metadata(md)
         # Iterate over bundled rows

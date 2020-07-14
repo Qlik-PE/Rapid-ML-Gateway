@@ -2,7 +2,7 @@
   "Functions": [ 
     {
         "Id" : 0,
-        "Name" : "rest_single",
+        "Name" : "sample_single",
         "Type" : 2,
         "QRAP_Type": "rest_single",
         "ReturnType": 0,
@@ -12,7 +12,7 @@
     },
     {
       "Id" : 1,
-      "Name" : "rest_30",
+      "Name" : "sample_30",
       "Type" : 2,
       "QRAP_Type": "rest_30",
       "ReturnType": 0,
@@ -51,7 +51,7 @@
     },
     {
         "Id" : 2,
-        "Name" : "ws_single",
+        "Name" : "sample_ws_single",
         "Type" : 2,
         "QRAP_Type": "ws_single",
         "ReturnType": 0,
@@ -61,7 +61,7 @@
     },
     {
       "Id" : 3,
-      "Name" : "ws_batch",
+      "Name" : "sample_ws_batch",
       "Type" : 2,
       "QRAP_Type": "ws_batch",
       "ReturnType": 0,
