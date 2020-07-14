@@ -201,6 +201,7 @@ class ExtensionService(SSE.ConnectorServicer):
         token = config.get(q_function_name, 'token')
         user_name= config.get(q_function_name, 'username')
         batch_size = int(config.get(q_function_name, 'batch_size'))
+        logging.debug('Batch Size {}' .format(batch_size))
         ws_route= config.get(q_function_name, 'ws_route')
         #ws_route= '"' + ws_route + '"'
         logging.info('API Route : {}' .format(ws_route))
@@ -396,17 +397,17 @@ class ExtensionService(SSE.ConnectorServicer):
         # Call corresponding function
         logging.info('ExecuteFunction (functionId: {})'.format(func_id))
         current_function_def = (json.load(open(self.function_definitions))['Functions'])[func_id]
-        logging.info(current_function_def)
+        logging.debug(current_function_def)
         global q_function_name
         q_function_name = current_function_def["Name"]
-        logging.info('Logical  Method Called is: {}' .format(q_function_name))
+        logging.debug('Logical Method Called is: {}' .format(q_function_name))
         current_qrap_type = current_function_def["QRAP_Type"]
         qrag_function_name ='_' + current_qrap_type
         logging.debug('This is the type of QRAG Method Name: {}' .format(current_qrap_type))
         logging.debug('Physical Method Called is:  {}' .format(qrag_function_name))
         # Convers to Method Name to Physical Main Function
         qrag_id = qlist.find_key(self.functions, qrag_function_name)
-        logging.info('QRAG ID: {}' .format(qrag_id))
+        logging.debug('QRAG ID: {}' .format(qrag_id))
         global function_name 
         function_name = self.functions[qrag_id]
         return getattr(self, self.functions[qrag_id])(request_iterator, context)
