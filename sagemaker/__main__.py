@@ -142,6 +142,7 @@ class ExtensionService(SSE.ConnectorServicer):
         user_name= config.get(q_function_name, 'username')
         ws_route= config.get(q_function_name, 'ws_route')
         bCache= config.get(q_function_name, 'cache')
+        logging.debug('Pringint Route for WS {}' .format(ws_route))
         logging.debug("Caching is set to {}" .format(bCache))
         if (bCache.lower()=="true"):
             logging.info("Caching ****Enabled*** for {}" .format(q_function_name))
@@ -171,8 +172,9 @@ class ExtensionService(SSE.ConnectorServicer):
                 ws.send(payload)
                 #logging.info('Show Breast Cancer Payload Response: {}'.format(resp.text))
                 resp =  json.loads(ws.recv())
+                logging.debug(resp)
                 result = resp['result']
-                logging.debug('Show Breast Cancer Result: {},  Score: {}'.format(result))
+                logging.debug('Show Breast Cancer Result: {}'.format(result))
                 # Create an iterable of dual with the result
                 duals = iter([SSE.Dual(strData=result)])
                 response_rows.append(SSE.Row(duals=duals))
