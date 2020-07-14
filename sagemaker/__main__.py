@@ -92,6 +92,7 @@ class ExtensionService(SSE.ConnectorServicer):
         """
         logging.info('Entering {} TimeStamp: {}' .format(function_name, datetime.now().strftime("%H:%M:%S.%f")))
         url = config.get(q_function_name, 'url')
+        logging.debug("Rest Url is set to {}" .format(url))
         bCache= config.get(q_function_name, 'cache')
         logging.debug("Caching is set to {}" .format(bCache))
         if (bCache.lower() =="true"):
