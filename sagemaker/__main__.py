@@ -171,9 +171,8 @@ class ExtensionService(SSE.ConnectorServicer):
                 ws.send(payload)
                 #logging.info('Show Breast Cancer Payload Response: {}'.format(resp.text))
                 resp =  json.loads(ws.recv())
-                result = resp['prediction']
-                score = resp['score']
-                logging.debug('Show Breast Cancer Result: {},  Score: {}'.format(result, score))
+                result = resp['result']
+                logging.debug('Show Breast Cancer Result: {},  Score: {}'.format(result))
                 # Create an iterable of dual with the result
                 duals = iter([SSE.Dual(strData=result)])
                 response_rows.append(SSE.Row(duals=duals))
@@ -194,18 +193,21 @@ class ExtensionService(SSE.ConnectorServicer):
 
         host = socket.gethostname()
         ip_addr = socket.gethostbyname(host)
-        # param = "17.99,10.38,122.8,1001,0.1184,0.2776,0.3001,0.1471,0.2419,0.07871,1.095,0.9053,8.589,153.4,0.006399,0.04904,0.05373,0.01587,0.03003,0.006193,25.38,17.33,184.6,2019,0.1622,0.6656,0.7119,0.2654,0.4601,0.1189"
-        ws_url = config.get(function_name, 'ws_url')
-        token = config.get(function_name, 'token')
-        user_name= config.get(function_name, 'username')
-        batch_size = int(config.get(function_name, 'batch_size'))
+        logging.debug('Calling qrag.ini section "{}' .format(q_function_name))
+        ws_url = config.get(q_function_name, 'ws_url')
+        token = config.get(q_function_name, 'token')
+        user_name= config.get(q_function_name, 'username')
+        batch_size = int(config.get(q_function_name, 'batch_size'))
+        ws_route= config.get(q_function_name, 'ws_route')
+        #ws_route= '"' + ws_route + '"'
+        logging.info('API Route : {}' .format(ws_route))
         # setup Caching
-        bCache= config.get(function_name, 'cache')
+        bCache= config.get(q_function_name, 'cache')
         logging.debug("Caching is set to {}" .format(bCache))
         if (bCache.lower()=="true"):
-            logging.info("Caching ****Enabled*** for {}" .format(function_name))
+            logging.info("Caching ****Enabled*** for {}" .format(q_function_name))
         else:
-            logging.info("Caching ****Disabled**** for {}" .format(function_name))
+            logging.info("Caching ****Disabled**** for {}" .format(q_function_name))
             md = (('qlik-cache', 'no-store'),)
             context.send_initial_metadata(md)
       
@@ -224,10 +226,12 @@ class ExtensionService(SSE.ConnectorServicer):
             request_size = len(test_rows)
             logging.debug('Bundled Row Number of  Rows - {}' .format(request_size))
             batches = list(qlist.divide_chunks(test_rows, batch_size)) 
-            for i in batches:
-                payload_t ={"action": "test"}
+            for i in batches:        
+                payload_t ={"action":ws_route}
+                logging.debug('PreFix Route Seletection {}' .format(payload_t))
                 payload_t["data"] = i
                 logging.debug('Size of payload {}' .format(pysize.get_size(payload_t)))
+                logging.debug('Showing Payload: {}'.format(payload_t))
                 logging.debug('batch number {}'.format(outer_counter))
                 ws.send(json.dumps(payload_t))
                 logging.debug('message sent WS')
@@ -238,8 +242,7 @@ class ExtensionService(SSE.ConnectorServicer):
                     logging.debug('Response Type : {}' .format(type(resp)))
                     logging.debug('Counter: {} Payload Size: {} Breast Cancer Payload Response: {}'.format(inner_counter, pysize.get_size(resp), resp))
                     inner_counter +=1
-                    result = resp['prediction']
-                    score = resp['score']
+                    result = resp['result']
                     duals = iter([SSE.Dual(strData=result)])
                     #Yield the row data as bundled rows
                     response_rows.append(SSE.Row(duals=duals))
@@ -391,15 +394,19 @@ class ExtensionService(SSE.ConnectorServicer):
         logging.info('ExecuteFunction (functionId: {})'.format(func_id))
         current_function_def = (json.load(open(self.function_definitions))['Functions'])[func_id]
         logging.info(current_function_def)
+        global q_function_name
+        q_function_name = current_function_def["Name"]
+        logging.info('Logical  Method Called is: {}' .format(q_function_name))
         current_qrap_type = current_function_def["QRAP_Type"]
-        qrap_function_name ='_' + current_qrap_type
-        logging.info(' This is the type of QRAP {}' .format(current_qrap_type))
-        print(self.functions)
-        qrap_id = qlist.find_key(self.functions, qrap_function_name)
-        logging.info('This is qrap_id {}' .format(qrap_id))
+        qrag_function_name ='_' + current_qrap_type
+        logging.debug('This is the type of QRAG Method Name: {}' .format(current_qrap_type))
+        logging.debug('Physical Method Called is:  {}' .format(qrag_function_name))
+        # Convers to Method Name to Physical Main Function
+        qrag_id = qlist.find_key(self.functions, qrag_function_name)
+        logging.info('QRAG ID: {}' .format(qrag_id))
         global function_name 
-        function_name = self.functions[qrap_id]
-        return getattr(self, self.functions[qrap_id])(request_iterator, context)
+        function_name = self.functions[qrag_id]
+        return getattr(self, self.functions[qrag_id])(request_iterator, context)
 
 
 

@@ -71,7 +71,17 @@
    },
    {
     "Id" : 4,
-    "Name" : "predict_breast_cancer",
+    "Name" : "predict_cancer_result_bulk",
+    "Type" : 2,
+    "QRAP_Type": "ws_batch",
+    "ReturnType": 0,
+    "Params" : {
+            "str1" : 0
+  }
+  },
+  {
+    "Id" : 5,
+    "Name" : "predict_cancer_score_bulk",
     "Type" : 2,
     "QRAP_Type": "ws_batch",
     "ReturnType": 0,
