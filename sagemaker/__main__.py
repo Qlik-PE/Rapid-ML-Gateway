@@ -48,6 +48,7 @@ class ExtensionService(SSE.ConnectorServicer):
         os.makedirs('logs', exist_ok=True)
         log_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logger.config')
         logging.config.fileConfig(log_file)
+        logging.info(self._function_definitions)
         logging.info('Logging enabled')
         function_name = "none"
 
@@ -356,10 +357,9 @@ class ExtensionService(SSE.ConnectorServicer):
         # Create an instance of the Capabilities grpc message
         # Enable(or disable) script evaluation
         # Set values for pluginIdentifier and pluginVersion
-        capabilities = SSE.Capabilities(allowScript=True,
-                                        pluginIdentifier='Hello World - Qlik',
-                                        pluginVersion='v1.1.0')
-
+        capabilities = SSE.Capabilities(allowScript=False,
+                                        pluginIdentifier='Qlik Rapid API Gateway - Partner Engineering',
+                                        pluginVersion='v0.1.0')
         # If user defined functions supported, add the definitions to the message
         with open(self.function_definitions) as json_file:
             # Iterate over each function definition and add data to the capabilities grpc message
@@ -369,7 +369,7 @@ class ExtensionService(SSE.ConnectorServicer):
                 function.functionId = definition['Id']
                 function.functionType = definition['Type']
                 function.returnType = definition['ReturnType']
-
+            
                 # Retrieve name and type of each parameter
                 for param_name, param_type in sorted(definition['Params'].items()):
                     function.params.add(name=param_name, dataType=param_type)
@@ -386,14 +386,20 @@ class ExtensionService(SSE.ConnectorServicer):
         :param context: the context.
         :return: an iterable sequence of Row.
         """
-        # Retrieve function id
         func_id = self._get_function_id(context)
         # Call corresponding function
         logging.info('ExecuteFunction (functionId: {})'.format(func_id))
+        current_function_def = (json.load(open(self.function_definitions))['Functions'])[func_id]
+        logging.info(current_function_def)
+        current_qrap_type = current_function_def["QRAP_Type"]
+        qrap_function_name ='_' + current_qrap_type
+        logging.info(' This is the type of QRAP {}' .format(current_qrap_type))
+        print(self.functions)
+        qrap_id = qlist.find_key(self.functions, qrap_function_name)
+        logging.info('This is qrap_id {}' .format(qrap_id))
         global function_name 
-        function_name = self.functions[func_id]
-
-        return getattr(self, self.functions[func_id])(request_iterator, context)
+        function_name = self.functions[qrap_id]
+        return getattr(self, self.functions[qrap_id])(request_iterator, context)
 
 
 
