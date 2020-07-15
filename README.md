@@ -27,34 +27,42 @@ The system is built around quickly **using qrag.ini and functions.json** to send
 For Initial Release our target is support AWS Sagemaker Platform.
 Please take a look at Readme inside Sagemaker folder
 
-## Licenses
+# Licenses
 
-QRAG is published under MIT License Model which allows users to easily modify and share with your fellow Qlik Developers
+QRAG is published under MIT License Model which allows users to easily modify and share with your fellow Qlik Developers.  For anyone interested in license please take a look at MIT License [wiki](https://en.wikipedia.org/wiki/MIT_License)
 
-## Example
+# Example
 
-_Breast Cancer Predictions Using Sage Maker_
+[Breast Cancer Predictions Using Sage Maker](http://pe.qlik.com/sense/app/7693d173-d1aa-4c1a-bce0-d0077c8f378f/overview)  
+_This Qlik Application uses Data from UCI ML Repo and uses winning Model from Kaggle to Predict Breast Cancer Diagnosis based on SagmeMaker Endpoint.  Components used in integrations are AWS API Gateway, Lambda, AWS Sagemaker and Qlik_
 
 # Features
 
+_version 0.1.0_
 - Integration with API Gateway
 - Integration with AWS Lambda
 - Integration with AWS Sagemaker Endpoint
 - Support for Websocket
-- Support for REST Endpoints
+- Support for REST Endpoints  
+
+_version0.1.1_  
+- Docker Support- TBD
+- Win64 Installation Support
+  
+***(More Fatures and versions will be released)***  
 
 # Limitation
 
-- Return value of QRAG Functions must be measures or dimensions wrapped
+- Return value of QRAG Functions must be measures or dimensions wrapped in Qlik Function.
 - Parallel Execution is not supported
-- Expected Data Type is String
+- Expected Input and Output Data Type is String
 - Input Value should be joined as comma seperated string in Qlik Script and sent into function
 - Currenlty only supports REST and WebSockets
 
 # Installation
 
 QRAG currently supports Python 3.8+ and Qlik Server 13.72.5+.
-Official Docker Support is due soon.
+Official Docker and Exe Support is due soon.
 Each API Connector will need small different setting changes
 
 ## Using Docker
@@ -72,7 +80,7 @@ Each API Connector will need small different setting changes
 
 # Contribute
 
-This is Qlik Partner Engineering Sponsored open-source project! I built it to be the most useful tool possible and take frustration out of writing SSEs. I also want to have all partner tools compatible with QRAG. If you have a toolset that you want to build compatibility with please let us know we can setup a folder and you can commit yoru code.
+This is Qlik Partner Engineering Sponsored open-source project!  I ([John Park](john.park@qlik.com )) built it to be the most useful tool possible and take frustration out of writing SSEs. I also want to have all partner tools compatible with QRAG. If you have a toolset that you want to build compatibility with please let us know we can setup a folder and you can commit your code.
 
 ### 1. Spread the word!
 
@@ -82,22 +90,19 @@ Medium articles, YouTube video tutorials and other content take more time but wi
 
 ### 2. Report bugs & issues
 
-I expect there to be many quirks once the project is used by more and more people with a variety of new (& "unclean") data. If you found a bug, please [open a new issue here](https://github.com/).
+I expect there to be many quirks once the project is used by more and more people with a variety of new (& "unclean") data. If you found a bug, please [open a new issue here](https://github.com/Qlik-PE/Qlik-Rapid-API-Gateway/issues).  Please change logging level to "DEBUG" and upload log files/snippets.
 
 ### 3. Suggest and discuss usage/features
 
-To make QRAG as useful as possible we need to hear what you would like it to do, or what it could do better! [Head over to Github Feature Request](https://github.com).
+To make QRAG as useful as possible we need to hear what you would like it to do, or what it could do better! [Head over to Github Wiki to Place Feature/Request](https://github.com/Qlik-PE/Qlik-Rapid-API-Gateway/issues).
 
 ### 4. Contribute to the development
-
 I definitely welcome the help I can get on this project, simply get in touch on the issue tracker.
 
 ### 5. Bug Fixes and Pull Requests
-
 There will be a monthly Pull Requests Merge done. Please stay tuned.
 
 ### 6. About Author and Team Behind the Project
-
 At Qlik Partner Engineering we believe in transparency and open governance model for this Project.  
 Please email people on this list if there are questions and concerns about this project.
 
