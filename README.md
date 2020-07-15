@@ -31,6 +31,11 @@ Please take a look at Readme inside Sagemaker folder
 
 QRAG is published under MIT License Model which allows users to easily modify and share with your fellow Qlik Developers.  For anyone interested in license please take a look at MIT License [wiki](https://en.wikipedia.org/wiki/MIT_License)
 
+# Code of Conduct.
+
+We are large company at Qlik with diverse background and individuals.  Qlik Partner Engineering will adopt. [Contributor Covenant Code of Conduct](https://github.com/Qlik-PE/Qlik-Rapid-API-Gateway/blob/master/CODE_OF_CONDUCT.md).  Please act accordingly.
+
+
 # Example
 
 [Breast Cancer Predictions Using Sage Maker](http://pe.qlik.com/sense/app/7693d173-d1aa-4c1a-bce0-d0077c8f378f/overview)  
