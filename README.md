@@ -55,6 +55,12 @@ _This Qlik Application uses Data from UCI ML Repo and uses winning Model from Ka
 
 - Docker Support- TBD
 - Win64 Installation Support
+
+## versions 0.1.2 
+
+- Security Mechanism
+- Statisics
+
   
 ***(More Fatures and versions will be released)***  
 
@@ -89,7 +95,7 @@ Each API Connector will need small different setting changes
 
 This is Qlik Partner Engineering Sponsored open-source project!  I ([John Park](john.park@qlik.com )) built it to be the most useful tool possible and take frustration out of writing SSEs. I also want to have all partner tools compatible with QRAG. If you have a toolset that you want to build compatibility with please let us know we can setup a folder and you can commit your code.
 
-### 1. Spread the word!
+### 1. Spread the word !
 
 A STAR here on GitHub(https://github.com/Qlik-PE/Qlik-Rapid-API-Gateway), and a mention on Twitter or Instagram @qlik and blog post are the easiest contribution and can potentially help grow this project tremendously!
 
