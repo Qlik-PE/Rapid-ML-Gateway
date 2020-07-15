@@ -139,3 +139,4 @@ dmypy.json
 
 #do not upload debug
 /debug
+/*/config
