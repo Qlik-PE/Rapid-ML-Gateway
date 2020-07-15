@@ -27,6 +27,10 @@ The system is built around quickly **using qrag.ini and functions.json** to send
 For Initial Release our target is support AWS Sagemaker Platform.
 Please take a look at Readme inside Sagemaker folder
 
+## Licenses
+
+QRAG is published under MIT License Model which allows users to easily modify and share with your fellow Qlik Developers
+
 ## Example
 _Breast Cancer Predictions Using Sage Maker_
 
