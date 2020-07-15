@@ -43,14 +43,16 @@ _This Qlik Application uses Data from UCI ML Repo and uses winning Model from Ka
 
 # Features
 
-_version 0.1.0_
+## version 0.1.0
+
 - Integration with API Gateway
 - Integration with AWS Lambda
 - Integration with AWS Sagemaker Endpoint
 - Support for Websocket
 - Support for REST Endpoints  
 
-_version0.1.1_  
+## version 0.1.1
+
 - Docker Support- TBD
 - Win64 Installation Support
   
@@ -81,7 +83,7 @@ Each API Connector will need small different setting changes
 
 **_For Specific Installation and Details Please see specific installations below_**
 
-[AWS Sagemaker](./sagemaker/reademe.md)
+[AWS Sagemaker](https://github.com/Qlik-PE/Qlik-Rapid-API-Gateway/blob/master/sagemaker/README.md)
 
 # Contribute
 
@@ -102,13 +104,17 @@ I expect there to be many quirks once the project is used by more and more peopl
 To make QRAG as useful as possible we need to hear what you would like it to do, or what it could do better! [Head over to Github Wiki to Place Feature/Request](https://github.com/Qlik-PE/Qlik-Rapid-API-Gateway/issues).
 
 ### 4. Contribute to the development
-I definitely welcome the help I can get on this project, simply get in touch on the issue tracker.
+
+We definitely welcome the help I can get on this project, simply get in touch on the issue tracker.
 
 ### 5. Bug Fixes and Pull Requests
+
 There will be a monthly Pull Requests Merge done. Please stay tuned.
 
 ### 6. About Author and Team Behind the Project
+
 At Qlik Partner Engineering we believe in transparency and open governance model for this Project.  
+
 Please email people on this list if there are questions and concerns about this project.
 
 These are the stake holders responsible for this Projects.
