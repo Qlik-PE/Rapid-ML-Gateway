@@ -15,7 +15,7 @@ Integration Use Cases are Following
 
 The system is built around quickly **using qrag.ini and functions.json** to send request and **add results back into QIX engine**. It's goal is to help Qlik users integrate into API/Microservices Architecture.
 
-**Note: QRAG is in the ALPHA TESTING PHASE.** Core functionality is complete, please let Qlik Partner Engineering Team know if you run into any data, compatibility or install issues! Thank you for [reporting any BUGS in the issue tracking system here](https://github.com/qlikpe/qrag/issues), and I welcome your feedback and questions on usage/features.
+**Note: QRAG is in the ALPHA TESTING PHASE.** Core functionality is complete, please let Qlik Partner Engineering Team know if you run into any data, compatibility or install issues! Thank you for [reporting any BUGS in the issue tracking system here](https://github.com/Qlik-PE/Qlik-Rapid-API-Gateway/issues), and We welcome your feedback and questions on usage/features.
 
 **Things that may happen if there is Qlik developer/Customer demand.**
 
@@ -32,8 +32,8 @@ Please take a look at Readme inside Sagemaker folder
 QRAG is published under MIT License Model which allows users to easily modify and share with your fellow Qlik Developers
 
 ## Example
-_Breast Cancer Predictions Using Sage Maker_
 
+_Breast Cancer Predictions Using Sage Maker_
 
 # Features
 
@@ -53,7 +53,7 @@ _Breast Cancer Predictions Using Sage Maker_
 
 # Installation
 
-QRAG currently supports Python 3.8+ and Qlik Server 13.72.5+. 
+QRAG currently supports Python 3.8+ and Qlik Server 13.72.5+.
 Official Docker Support is due soon.
 Each API Connector will need small different setting changes
 
@@ -66,11 +66,9 @@ Each API Connector will need small different setting changes
 3. Define QRAG setting in QRAG.ini
 4. Restart Qlik Engine
 
-***For Specific Installation and Details Please see specific installations below***
+**_For Specific Installation and Details Please see specific installations below_**
 
 [AWS Sagemaker](./sagemaker/reademe.md)
-
-
 
 # Contribute
 
@@ -78,7 +76,7 @@ This is Qlik Partner Engineering Sponsored open-source project! I built it to be
 
 ### 1. Spread the word!
 
-A STAR here on GitHub, and a mention on Twitter or Instagram @qlik and blog post are the easiest contribution and can potentially help grow this project tremendously!
+A STAR here on GitHub(https://github.com/Qlik-PE/Qlik-Rapid-API-Gateway), and a mention on Twitter or Instagram @qlik and blog post are the easiest contribution and can potentially help grow this project tremendously!
 
 Medium articles, YouTube video tutorials and other content take more time but will help all the more!
 
@@ -96,4 +94,17 @@ I definitely welcome the help I can get on this project, simply get in touch on 
 
 ### 5. Bug Fixes and Pull Requests
 
-There will be a monthly Pull Requests Merge done.  Please stay tuned.
+There will be a monthly Pull Requests Merge done. Please stay tuned.
+
+### 6. About Author and Team Behind the Project
+
+At Qlik Partner Engineering we believe in transparency and open governance model for this Project.  
+Please email people on this list if there are questions and concerns about this project.
+
+These are the stake holders responsible for this Projects.
+
+- Main Author: [John Park](john.park@qlik.com) Qlik, Principal Solution Architect
+- Contributor: [Dave Freriks](dave.freriks@qlik.com) Qlik, Evangelist
+- Contributor: [Dalton Ruer](dalton.ruer@qlik.com) Qlik, Solution Architect
+- Project Sponsor: [Hugo Sheng](hugo.sheng@qlik.com) Qlik, Sr. Director Partner Engineering
+- Project Executive: [Itamar Ankorion](itamar.ankorion@qlik.com) Qlik, SVP Qlik Technoloy Partners and Alliances
