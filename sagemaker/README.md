@@ -16,4 +16,4 @@ Qlik Rapid API Gateway usese AWS Sagemaker Endpoint and AWS Lambda/AWS API Gatew
 
 ## Architectural Diagram
 
-## Reference 
+## References
