@@ -2,7 +2,7 @@
 <html lang="en-us">
   <head>
     <meta charset="UTF-8">
-    <title>Qlik-rapid-api-gateway by Qlik-PE</title>
+    <title>Qlik-rapid-api-gateway by Parkman328</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
@@ -13,9 +13,9 @@
     <section class="page-header">
       <h1 class="project-name">Qlik-rapid-api-gateway</h1>
       <h2 class="project-tagline">Qlik Rapid Application Gateway</h2>
-      <a href="https://github.com/Qlik-PE/Qlik-Rapid-API-Gateway" class="btn">View on GitHub</a>
-      <a href="https://github.com/Qlik-PE/Qlik-Rapid-API-Gateway/zipball/master" class="btn">Download .zip</a>
-      <a href="https://github.com/Qlik-PE/Qlik-Rapid-API-Gateway/tarball/master" class="btn">Download .tar.gz</a>
+      <a href="https://github.com/Parkman328/Qlik-Rapid-API-Gateway" class="btn">View on GitHub</a>
+      <a href="https://github.com/Parkman328/Qlik-Rapid-API-Gateway/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/Parkman328/Qlik-Rapid-API-Gateway/tarball/master" class="btn">Download .tar.gz</a>
     </section>
 
     <section class="main-content">
@@ -33,7 +33,7 @@ The intial use case was to allow Qlik to use AI/ML functions and interact with o
 <li>Integration to Python</li>
 </ul>
 <p>The system is built around quickly <strong>using qrag.ini and functions.json</strong> to send request and <strong>add results back into QIX engine</strong>. It's goal is to help Qlik users integrate into API/Microservices Architecture.</p>
-<p><strong>Note: QRAG is in the ALPHA TESTING PHASE.</strong> Core functionality is complete, please let Qlik Partner Engineering Team know if you run into any data, compatibility or install issues! Thank you for <a href="https://github.com/qlikpe/qrag/issues">reporting any BUGS in the issue tracking system here</a>, and I welcome your feedback and questions on usage/features.</p>
+<p><strong>Note: QRAG is in the ALPHA TESTING PHASE.</strong> Core functionality is complete, please let Qlik Partner Engineering Team know if you run into any data, compatibility or install issues! Thank you for <a href="https://github.com/Qlik-PE/Qlik-Rapid-API-Gateway/issues">reporting any BUGS in the issue tracking system here</a>, and We welcome your feedback and questions on usage/features.</p>
 <p><strong>Things that may happen if there is Qlik developer/Customer demand.</strong></p>
 <ul>
 <li>Office Hours</li>
@@ -43,14 +43,20 @@ The intial use case was to allow Qlik to use AI/ML functions and interact with o
 </ul>
 <p>For Initial Release our target is support AWS Sagemaker Platform.
 Please take a look at Readme inside Sagemaker folder</p>
-<h2>
-<a id="licenses" class="anchor" href="#licenses" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Licenses</h2>
-<p>QRAG is published under MIT License Model which allows users to easily modify and share with your fellow Qlik Developers</p>
-<h2>
-<a id="example" class="anchor" href="#example" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Example</h2>
-<p><em>Breast Cancer Predictions Using Sage Maker</em></p>
+<h1>
+<a id="licenses" class="anchor" href="#licenses" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Licenses</h1>
+<p>QRAG is published under MIT License Model which allows users to easily modify and share with your fellow Qlik Developers.  For anyone interested in license please take a look at MIT License <a href="https://en.wikipedia.org/wiki/MIT_License">wiki</a></p>
+<h1>
+<a id="code-of-conduct" class="anchor" href="#code-of-conduct" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Code of Conduct.</h1>
+<p>We are large company at Qlik with diverse background and individuals.  Qlik Partner Engineering will adopt. <a href="https://github.com/Qlik-PE/Qlik-Rapid-API-Gateway/blob/master/CODE_OF_CONDUCT.md">Contributor Covenant Code of Conduct</a>.  Please act accordingly.</p>
+<h1>
+<a id="example" class="anchor" href="#example" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Example</h1>
+<p><a href="http://pe.qlik.com/sense/app/7693d173-d1aa-4c1a-bce0-d0077c8f378f/overview">Breast Cancer Predictions Using Sage Maker</a><br>
+<em>This Qlik Application uses Data from UCI ML Repo and uses winning Model from Kaggle to Predict Breast Cancer Diagnosis based on SagmeMaker Endpoint.  Components used in integrations are AWS API Gateway, Lambda, AWS Sagemaker and Qlik</em></p>
 <h1>
 <a id="features" class="anchor" href="#features" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Features</h1>
+<h2>
+<a id="version-010" class="anchor" href="#version-010" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>version 0.1.0</h2>
 <ul>
 <li>Integration with API Gateway</li>
 <li>Integration with AWS Lambda</li>
@@ -58,19 +64,26 @@ Please take a look at Readme inside Sagemaker folder</p>
 <li>Support for Websocket</li>
 <li>Support for REST Endpoints</li>
 </ul>
+<h2>
+<a id="version-011" class="anchor" href="#version-011" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>version 0.1.1</h2>
+<ul>
+<li>Docker Support- TBD</li>
+<li>Win64 Installation Support</li>
+</ul>
+<p><em><strong>(More Fatures and versions will be released)</strong></em></p>
 <h1>
 <a id="limitation" class="anchor" href="#limitation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Limitation</h1>
 <ul>
-<li>Return value of QRAG Functions must be measures or dimensions wrapped</li>
+<li>Return value of QRAG Functions must be measures or dimensions wrapped in Qlik Function.</li>
 <li>Parallel Execution is not supported</li>
-<li>Expected Data Type is String</li>
+<li>Expected Input and Output Data Type is String</li>
 <li>Input Value should be joined as comma seperated string in Qlik Script and sent into function</li>
 <li>Currenlty only supports REST and WebSockets</li>
 </ul>
 <h1>
 <a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h1>
 <p>QRAG currently supports Python 3.8+ and Qlik Server 13.72.5+.
-Official Docker Support is due soon.
+Official Docker and Exe Support is due soon.
 Each API Connector will need small different setting changes</p>
 <h2>
 <a id="using-docker" class="anchor" href="#using-docker" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Using Docker</h2>
@@ -82,30 +95,42 @@ Each API Connector will need small different setting changes</p>
 <li>Define QRAG setting in QRAG.ini</li>
 <li>Restart Qlik Engine</li>
 </ol>
-<p><em><strong>For Specific Installation and Details Please see specific installations below</strong></em></p>
-<p><a href="./sagemaker/reademe.md">AWS Sagemaker</a></p>
+<p><strong><em>For Specific Installation and Details Please see specific installations below</em></strong></p>
+<p><a href="https://github.com/Qlik-PE/Qlik-Rapid-API-Gateway/blob/master/sagemaker/README.md">AWS Sagemaker</a></p>
 <h1>
 <a id="contribute" class="anchor" href="#contribute" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Contribute</h1>
-<p>This is Qlik Partner Engineering Sponsored open-source project! I built it to be the most useful tool possible and take frustration out of writing SSEs. I also want to have all partner tools compatible with QRAG. If you have a toolset that you want to build compatibility with please let us know we can setup a folder and you can commit yoru code.</p>
+<p>This is Qlik Partner Engineering Sponsored open-source project!  I (<a href="john.park@qlik.com">John Park</a>) built it to be the most useful tool possible and take frustration out of writing SSEs. I also want to have all partner tools compatible with QRAG. If you have a toolset that you want to build compatibility with please let us know we can setup a folder and you can commit your code.</p>
 <h3>
 <a id="1-spread-the-word" class="anchor" href="#1-spread-the-word" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>1. Spread the word!</h3>
-<p>A STAR here on GitHub, and a mention on Twitter or Instagram <a class="user-mention" data-hovercard-type="user" data-hovercard-url="/users/qlik/hovercard" data-octo-click="hovercard-link-click" data-octo-dimensions="link_type:self" href="https://github.com/qlik">@qlik</a> and blog post are the easiest contribution and can potentially help grow this project tremendously!</p>
+<p>A STAR here on GitHub(<a href="https://github.com/Qlik-PE/Qlik-Rapid-API-Gateway">https://github.com/Qlik-PE/Qlik-Rapid-API-Gateway</a>), and a mention on Twitter or Instagram <a class="user-mention" data-hovercard-type="user" data-hovercard-url="/users/qlik/hovercard" data-octo-click="hovercard-link-click" data-octo-dimensions="link_type:self" href="https://github.com/qlik">@qlik</a> and blog post are the easiest contribution and can potentially help grow this project tremendously!</p>
 <p>Medium articles, YouTube video tutorials and other content take more time but will help all the more!</p>
 <h3>
 <a id="2-report-bugs--issues" class="anchor" href="#2-report-bugs--issues" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>2. Report bugs &amp; issues</h3>
-<p>I expect there to be many quirks once the project is used by more and more people with a variety of new (&amp; "unclean") data. If you found a bug, please <a href="https://github.com/">open a new issue here</a>.</p>
+<p>I expect there to be many quirks once the project is used by more and more people with a variety of new (&amp; "unclean") data. If you found a bug, please <a href="https://github.com/Qlik-PE/Qlik-Rapid-API-Gateway/issues">open a new issue here</a>.  Please change logging level to "DEBUG" and upload log files/snippets.</p>
 <h3>
 <a id="3-suggest-and-discuss-usagefeatures" class="anchor" href="#3-suggest-and-discuss-usagefeatures" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>3. Suggest and discuss usage/features</h3>
-<p>To make QRAG as useful as possible we need to hear what you would like it to do, or what it could do better! <a href="https://github.com">Head over to Github Feature Request</a>.</p>
+<p>To make QRAG as useful as possible we need to hear what you would like it to do, or what it could do better! <a href="https://github.com/Qlik-PE/Qlik-Rapid-API-Gateway/issues">Head over to Github Wiki to Place Feature/Request</a>.</p>
 <h3>
 <a id="4-contribute-to-the-development" class="anchor" href="#4-contribute-to-the-development" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>4. Contribute to the development</h3>
-<p>I definitely welcome the help I can get on this project, simply get in touch on the issue tracker.</p>
+<p>We definitely welcome the help I can get on this project, simply get in touch on the issue tracker.</p>
 <h3>
 <a id="5-bug-fixes-and-pull-requests" class="anchor" href="#5-bug-fixes-and-pull-requests" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>5. Bug Fixes and Pull Requests</h3>
-<p>There will be a monthly Pull Requests Merge done.  Please stay tuned.</p>
+<p>There will be a monthly Pull Requests Merge done. Please stay tuned.</p>
+<h3>
+<a id="6-about-author-and-team-behind-the-project" class="anchor" href="#6-about-author-and-team-behind-the-project" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>6. About Author and Team Behind the Project</h3>
+<p>At Qlik Partner Engineering we believe in transparency and open governance model for this Project.</p>
+<p>Please email people on this list if there are questions and concerns about this project.</p>
+<p>These are the stake holders responsible for this Projects.</p>
+<ul>
+<li>Main Author: <a href="john.park@qlik.com">John Park</a> Qlik, Principal Solution Architect</li>
+<li>Contributor: <a href="dave.freriks@qlik.com">Dave Freriks</a> Qlik, Evangelist</li>
+<li>Contributor: <a href="dalton.ruer@qlik.com">Dalton Ruer</a> Qlik, Solution Architect</li>
+<li>Project Sponsor: <a href="hugo.sheng@qlik.com">Hugo Sheng</a> Qlik, Sr. Director Partner Engineering</li>
+<li>Project Executive: <a href="itamar.ankorion@qlik.com">Itamar Ankorion</a> Qlik, SVP Qlik Technoloy Partners and Alliances</li>
+</ul>
 
       <footer class="site-footer">
-        <span class="site-footer-owner"><a href="https://github.com/Qlik-PE/Qlik-Rapid-API-Gateway">Qlik-rapid-api-gateway</a> is maintained by <a href="https://github.com/Qlik-PE">Qlik-PE</a>.</span>
+        <span class="site-footer-owner"><a href="https://github.com/Parkman328/Qlik-Rapid-API-Gateway">Qlik-rapid-api-gateway</a> is maintained by <a href="https://github.com/Parkman328">Parkman328</a>.</span>
 
         <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
       </footer>
