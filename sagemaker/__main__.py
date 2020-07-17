@@ -114,11 +114,10 @@ class ExtensionService(SSE.ConnectorServicer):
                 payload = '{"data":"' + param + '"}'
                 logging.debug('Showing Payload: {}'.format(payload))
                 resp = requests.post(url, data=payload)
-                logging.debug('Show Breast Cancer Payload Response: {}'.format(resp))
-                logging.debug('Show Breast Cancer Payload Response: {}'.format(resp.text))
+                logging.debug('Show Payload Response as Text: {}'.format(resp.text))
                 result = resp.text
                 result = result.replace('"', '')
-                logging.debug('Show Breast Cancer Result: {}'.format(result))
+                logging.debug('Show  Result: {}'.format(result))
                 #Create an iterable of dual with the result
                 duals = iter([SSE.Dual(strData=result)])
                 response_rows.append(SSE.Row(duals=duals))
@@ -171,11 +170,11 @@ class ExtensionService(SSE.ConnectorServicer):
                 payload = '{"action":"'+ ws_route +'","data":"' + param + '"}'
                 logging.debug('Showing Payload: {}'.format(payload))
                 ws.send(payload)
-                #logging.info('Show Breast Cancer Payload Response: {}'.format(resp.text))
+                #logging.info('Show  Payload Response: {}'.format(resp.text))
                 resp =  json.loads(ws.recv())
                 logging.debug(resp)
                 result = resp['result']
-                logging.debug('Show Breast Cancer Result: {}'.format(result))
+                logging.debug('Show  Result: {}'.format(result))
                 # Create an iterable of dual with the result
                 duals = iter([SSE.Dual(strData=result)])
                 response_rows.append(SSE.Row(duals=duals))
@@ -244,7 +243,7 @@ class ExtensionService(SSE.ConnectorServicer):
                 for j in i:
                     resp =  json.loads(ws.recv())
                     logging.debug('Response Type : {}' .format(type(resp)))
-                    logging.debug('Counter: {} Payload Size: {} Breast Cancer Payload Response: {}'.format(inner_counter, pysize.get_size(resp), resp))
+                    logging.debug('Counter: {} Payload Size: {}  Payload Response: {}'.format(inner_counter, pysize.get_size(resp), resp))
                     inner_counter +=1
                     result = resp['result']
                     duals = iter([SSE.Dual(strData=result)])
@@ -285,16 +284,16 @@ class ExtensionService(SSE.ConnectorServicer):
                 payload = '{"data":"' + (','.join(param)) + '"}'
                 logging.debug('Showing Payload: {}'.format(payload))
                 resp = requests.post(url, data=payload)
-                logging.debug('Show Breast Cancer Payload Response: {}'.format(resp.text))
+                logging.debug('Show  Payload Response: {}'.format(resp.text))
                 result = resp.text
                 result = result.replace('"', '')
-                logging.debug('Show Breast Cancer Result: {}'.format(result))
+                logging.debug('Show  Result: {}'.format(result))
                 # Create an iterable of dual with the result
                 duals = iter([SSE.Dual(strData=result)])
                 response_rows.append(SSE.Row(duals=duals))
         # Yield the row data as bundled rows
         yield SSE.BundledRows(rows=response_rows)
-        logging.info('Exiting Predict Breast Cancer v2 TimeStamp: {}' .format(datetime.now().strftime("%H:%M:%S.%f")))
+        logging.info('Exiting Predict  v2 TimeStamp: {}' .format(datetime.now().strftime("%H:%M:%S.%f")))
    
     @staticmethod
     def _cache(request, context):
