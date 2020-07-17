@@ -117,6 +117,7 @@ class ExtensionService(SSE.ConnectorServicer):
                 logging.debug('Show Payload Response as Text: {}'.format(resp.text))
                 result = resp.text
                 result = result.replace('"', '')
+                result = result.strip()
                 logging.debug('Show  Result: {}'.format(result))
                 #Create an iterable of dual with the result
                 duals = iter([SSE.Dual(strData=result)])
@@ -287,6 +288,7 @@ class ExtensionService(SSE.ConnectorServicer):
                 logging.debug('Show  Payload Response: {}'.format(resp.text))
                 result = resp.text
                 result = result.replace('"', '')
+                result = result.strip()
                 logging.debug('Show  Result: {}'.format(result))
                 # Create an iterable of dual with the result
                 duals = iter([SSE.Dual(strData=result)])

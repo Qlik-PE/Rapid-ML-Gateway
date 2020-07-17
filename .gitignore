@@ -141,3 +141,4 @@ dmypy.json
 /debug
 /sagemaker/config/
 .DS_Store
+functions.json
