@@ -140,3 +140,4 @@ dmypy.json
 #do not upload debug
 /debug
 /sagemaker/config/
+.DS_Store
