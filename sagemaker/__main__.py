@@ -106,10 +106,10 @@ class ExtensionService(SSE.ConnectorServicer):
         for request_rows in request:
             logging.debug('Printing Request Rows - Request Counter {}' .format(request_counter))
             request_counter = request_counter +1
-            temp = MessageToDict(request_rows) 
-            test_rows = temp['rows']
-            request_size = len(test_rows)
-            logging.debug('Bundled Row Number of  Rows - {}' .format(request_size))
+            #temp = MessageToDict(request_rows) 
+            #test_rows = temp['rows']
+            #request_size = len(test_rows)
+            #logging.debug('Bundled Row Number of  Rows - {}' .format(request_size))
             for row in request_rows.rows:
                 # Retrieve string value of parameter and append to the params variable
                 # Length of param is 1 since one column is received, the [0] collects the first value in the list
@@ -172,9 +172,10 @@ class ExtensionService(SSE.ConnectorServicer):
                 # Retrieve string value of parameter and append to the params variable
                 # Length of param is 1 since one column is received, the [0] collects the first value in the list
                 param = [d.strData for d in row.duals][0]
-                if not param:
+                result = ''
+                if (len(param) ==0):
                     logging.debug('Parameters are Empty')
-                    resut = 'Error'
+                    result = 'Error'
                 else:
                     payload = '{"action":"'+ ws_route +'","data":"' + param + '"}'
                     logging.debug('Showing Payload: {}'.format(payload))
@@ -253,7 +254,7 @@ class ExtensionService(SSE.ConnectorServicer):
                 outer_counter +=1
                 payload_t.clear()
                 for j in i:
-                    logging.debug("Priniting i {}" .format(i))
+                    #logging.debug("Priniting i {}" .format(i))
                     resp =  json.loads(ws.recv())
                     #logging.debug('Response Type : {}' .format(type(resp)))
                     logging.debug('Counter: {} Payload Size: {}  Payload Response: {}'.format(inner_counter, pysize.get_size(resp), resp))
@@ -261,8 +262,8 @@ class ExtensionService(SSE.ConnectorServicer):
                     result = resp['result']
                     logging.debug('Log Resulst: {}' .format(result))
                     duals = iter([SSE.Dual(strData=result)])
-                    logging.debug(duals)
-                    logging.debug('Printing Duals {}' .format(duals))
+                    #logging.debug(duals)
+                    #logging.debug('Printing Duals {}' .format(duals))
                     #Yield the row data as bundled rows
                     response_rows.append(SSE.Row(duals=duals))
                     logging.debug('Exiting Inner Loop: Printing j {}' .format(j))
