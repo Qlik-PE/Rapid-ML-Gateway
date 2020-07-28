@@ -366,7 +366,46 @@ class ExtensionService(SSE.ConnectorServicer):
                 # Yield the row data as bundled rows
                 yield SSE.BundledRows(rows=[SSE.Row(duals=duals)])
 
-  
+    def _get_call_info(self, context):
+        """
+        Retreive useful information for the function call.
+        :param context: context
+        :return: string containing header info
+        """
+
+        # Get metadata for the call from the context
+        metadata = dict(context.invocation_metadata())
+        
+        # Get the function ID
+        func_header = SSE.FunctionRequestHeader()
+        func_header.ParseFromString(metadata['qlik-functionrequestheader-bin'])
+        func_id = func_header.functionId
+
+        # Get the common request header
+        common_header = SSE.CommonRequestHeader()
+        common_header.ParseFromString(metadata['qlik-commonrequestheader-bin'])
+
+        # Get capabilities
+        if not hasattr(self, 'capabilities'):
+            self.capabilities = self.GetCapabilities(None, context, log=False)
+
+        # Get the name of the capability called in the function
+        capability = [function.name for function in self.capabilities.functions if function.functionId == func_id][0]
+                
+        # Get the user ID using a regular expression
+        match = re.match(r"UserDirectory=(?P<UserDirectory>\w*)\W+UserId=(?P<UserId>\w*)", common_header.userId, re.IGNORECASE)
+        if match:
+            userId = match.group('UserDirectory') + '/' + match.group('UserId')
+        else:
+            userId = common_header.userId
+        
+        # Get the app ID
+        appId = common_header.appId
+        # Get the call's origin
+        peer = context.peer()
+
+        return "{0} - Capability '{1}' called by user {2} from app {3}".format(peer, capability, userId, appId)
+    
 
     def GetCapabilities(self, request, context):
         """
@@ -413,12 +452,13 @@ class ExtensionService(SSE.ConnectorServicer):
         """
         func_id = self._get_function_id(context)
         # Call corresponding function
-        logging.info('ExecuteFunction (functionId: {})'.format(func_id))
+        logging.info('ExecuteFunction (functionId: {}, {})' .format(func_id, self.functions[func_id]))
         current_function_def = (json.load(open(self.function_definitions))['Functions'])[func_id]
         logging.debug(current_function_def)
         global q_function_name
         q_function_name = current_function_def["Name"]
         logging.debug('Logical Method Called is: {}' .format(q_function_name))
+        logging.info(self._get_call_info(context))
         current_qrap_type = current_function_def["QRAP_Type"]
         qrag_function_name ='_' + current_qrap_type
         logging.debug('This is the type of QRAG Method Name: {}' .format(current_qrap_type))
@@ -429,8 +469,6 @@ class ExtensionService(SSE.ConnectorServicer):
         global function_name 
         function_name = self.functions[qrag_id]
         return getattr(self, self.functions[qrag_id])(request_iterator, context)
-
-
 
     def Serve(self, port, pem_dir):
         """
