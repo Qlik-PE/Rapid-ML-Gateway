@@ -6,6 +6,7 @@ import logging.config
 import os, sys, inspect, time
 from websocket import create_connection
 import socket
+import re
 from concurrent import futures
 from datetime import datetime
 import requests
@@ -187,7 +188,7 @@ class ExtensionService(SSE.ConnectorServicer):
                     logging.debug('Show  Result: {}'.format(result))
                 # Create an iterable of dual with the result
                 duals = iter([SSE.Dual(strData=result)])
-            response_rows.append(SSE.Row(duals=duals))
+                response_rows.append(SSE.Row(duals=duals))
                 # Yield the row data as bundled rows
         yield SSE.BundledRows(rows=response_rows)
         ws.close()
@@ -387,7 +388,7 @@ class ExtensionService(SSE.ConnectorServicer):
 
         # Get capabilities
         if not hasattr(self, 'capabilities'):
-            self.capabilities = self.GetCapabilities(None, context, log=False)
+            self.capabilities = self.GetCapabilities(None, context)
 
         # Get the name of the capability called in the function
         capability = [function.name for function in self.capabilities.functions if function.functionId == func_id][0]
@@ -406,7 +407,6 @@ class ExtensionService(SSE.ConnectorServicer):
 
         return "{0} - Capability '{1}' called by user {2} from app {3}".format(peer, capability, userId, appId)
     
-
     def GetCapabilities(self, request, context):
         """
         Get capabilities.
@@ -451,14 +451,16 @@ class ExtensionService(SSE.ConnectorServicer):
         :return: an iterable sequence of Row.
         """
         func_id = self._get_function_id(context)
+        logging.info(self._get_call_info(context))
         # Call corresponding function
-        logging.info('ExecuteFunction (functionId: {}, {})' .format(func_id, self.functions[func_id]))
+        logging.info('ExecuteFunctions (functionId: {})' .format(func_id))
+        #self.functions[func_id]))
         current_function_def = (json.load(open(self.function_definitions))['Functions'])[func_id]
         logging.debug(current_function_def)
         global q_function_name
         q_function_name = current_function_def["Name"]
         logging.debug('Logical Method Called is: {}' .format(q_function_name))
-        logging.info(self._get_call_info(context))
+        
         current_qrap_type = current_function_def["QRAP_Type"]
         qrag_function_name ='_' + current_qrap_type
         logging.debug('This is the type of QRAG Method Name: {}' .format(current_qrap_type))
