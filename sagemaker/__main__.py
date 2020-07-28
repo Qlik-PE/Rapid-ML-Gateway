@@ -102,9 +102,14 @@ class ExtensionService(SSE.ConnectorServicer):
             md = (('qlik-cache', 'no-store'),)
             context.send_initial_metadata(md)
         response_rows = []
-        
+        request_counter = 1
         for request_rows in request:
-            # Iterate over rows
+            logging.debug('Printing Request Rows - Request Counter {}' .format(request_counter))
+            request_counter = request_counter +1
+            #temp = MessageToDict(request_rows) 
+            #test_rows = temp['rows']
+            #request_size = len(test_rows)
+            #logging.debug('Bundled Row Number of  Rows - {}' .format(request_size))
             for row in request_rows.rows:
                 # Retrieve string value of parameter and append to the params variable
                 # Length of param is 1 since one column is received, the [0] collects the first value in the list
@@ -117,6 +122,7 @@ class ExtensionService(SSE.ConnectorServicer):
                 logging.debug('Show Payload Response as Text: {}'.format(resp.text))
                 result = resp.text
                 result = result.replace('"', '')
+                result = result.strip()
                 logging.debug('Show  Result: {}'.format(result))
                 #Create an iterable of dual with the result
                 duals = iter([SSE.Dual(strData=result)])
@@ -166,18 +172,22 @@ class ExtensionService(SSE.ConnectorServicer):
                 # Retrieve string value of parameter and append to the params variable
                 # Length of param is 1 since one column is received, the [0] collects the first value in the list
                 param = [d.strData for d in row.duals][0]
-                
-                payload = '{"action":"'+ ws_route +'","data":"' + param + '"}'
-                logging.debug('Showing Payload: {}'.format(payload))
-                ws.send(payload)
-                #logging.info('Show  Payload Response: {}'.format(resp.text))
-                resp =  json.loads(ws.recv())
-                logging.debug(resp)
-                result = resp['result']
-                logging.debug('Show  Result: {}'.format(result))
+                result = ''
+                if (len(param) ==0):
+                    logging.debug('Parameters are Empty')
+                    result = 'Error'
+                else:
+                    payload = '{"action":"'+ ws_route +'","data":"' + param + '"}'
+                    logging.debug('Showing Payload: {}'.format(payload))
+                    ws.send(payload)
+                    #logging.info('Show  Payload Response: {}'.format(resp.text))
+                    resp =  json.loads(ws.recv())
+                    logging.debug(resp)
+                    result = resp['result']
+                    logging.debug('Show  Result: {}'.format(result))
                 # Create an iterable of dual with the result
                 duals = iter([SSE.Dual(strData=result)])
-                response_rows.append(SSE.Row(duals=duals))
+            response_rows.append(SSE.Row(duals=duals))
                 # Yield the row data as bundled rows
         yield SSE.BundledRows(rows=response_rows)
         ws.close()
@@ -225,13 +235,16 @@ class ExtensionService(SSE.ConnectorServicer):
             logging.debug('Printing Request Rows - Request Counter {}' .format(request_counter))
             request_counter+=1
             temp = MessageToDict(request_rows) 
+            logging.debug('Temp Message to Dict {}' .format(temp))
             test_rows = temp['rows']
+            logging.debug('Test Rows: {}' .format(test_rows))
             request_size = len(test_rows)
             logging.debug('Bundled Row Number of  Rows - {}' .format(request_size))
             batches = list(qlist.divide_chunks(test_rows, batch_size)) 
             for i in batches:        
                 payload_t ={"action":ws_route}
                 logging.debug('PreFix Route Seletection {}' .format(payload_t))
+                logging.debug(len(batches))
                 payload_t["data"] = i
                 logging.debug('Size of payload {}' .format(pysize.get_size(payload_t)))
                 logging.debug('Showing Payload: {}'.format(payload_t))
@@ -241,15 +254,20 @@ class ExtensionService(SSE.ConnectorServicer):
                 outer_counter +=1
                 payload_t.clear()
                 for j in i:
+                    #logging.debug("Priniting i {}" .format(i))
                     resp =  json.loads(ws.recv())
-                    logging.debug('Response Type : {}' .format(type(resp)))
+                    #logging.debug('Response Type : {}' .format(type(resp)))
                     logging.debug('Counter: {} Payload Size: {}  Payload Response: {}'.format(inner_counter, pysize.get_size(resp), resp))
                     inner_counter +=1
                     result = resp['result']
+                    logging.debug('Log Resulst: {}' .format(result))
                     duals = iter([SSE.Dual(strData=result)])
+                    #logging.debug(duals)
+                    #logging.debug('Printing Duals {}' .format(duals))
                     #Yield the row data as bundled rows
                     response_rows.append(SSE.Row(duals=duals))
-        yield SSE.BundledRows(rows=response_rows)
+                    logging.debug('Exiting Inner Loop: Printing j {}' .format(j))
+                yield SSE.BundledRows(rows=response_rows)
         ws.close()
         logging.info('Exiting {} TimeStamp: {}'  .format(function_name, datetime.now().strftime("%H:%M:%S.%f")))
     
@@ -287,6 +305,7 @@ class ExtensionService(SSE.ConnectorServicer):
                 logging.debug('Show  Payload Response: {}'.format(resp.text))
                 result = resp.text
                 result = result.replace('"', '')
+                result = result.strip()
                 logging.debug('Show  Result: {}'.format(result))
                 # Create an iterable of dual with the result
                 duals = iter([SSE.Dual(strData=result)])
