@@ -29,6 +29,7 @@ from ssedata import FunctionType
 # import helper .py files
 import pysize
 import qlist
+import precog
 
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 config = configparser.ConfigParser()
@@ -70,7 +71,10 @@ class ExtensionService(SSE.ConnectorServicer):
             1: '_rest_30',
             2: '_ws_single',
             3: '_ws_batch',
-            4: '_echo_table'
+            4:  '_get_table_data',
+            5:  '_get_table_token'
+            #,
+            #4: '_echo_table'
         }
 
     @staticmethod
@@ -85,6 +89,55 @@ class ExtensionService(SSE.ConnectorServicer):
         header.ParseFromString(metadata['qlik-functionrequestheader-bin'])
 
         return header.functionId
+
+    @staticmethod
+    def _get_table_data(request, context):
+        """
+        Echo the input table.
+        :param request:
+        :param context:
+        :return:
+        """
+        logging.info('Entering {} TimeStamp: {}' .format(function_name, datetime.now().strftime("%H:%M:%S.%f")))
+        url = config.get(q_function_name, 'url')
+        logging.debug("Rest Url is set to {}" .format(url))
+        bCache= config.get(q_function_name, 'cache')
+        logging.debug("Caching is set to {}" .format(bCache))
+        if (bCache.lower() =="true"):
+            logging.info("Caching ****Enabled*** for {}" .format(q_function_name))
+        else:
+            logging.info("Caching ****Disabled**** for {}" .format(q_function_name))
+            md = (('qlik-cache', 'no-store'),)
+            context.send_initial_metadata(md)
+
+        #'Get The Table Name'
+        for request_rows in request:
+            response_rows = []
+        temp = MessageToDict(request_rows) 
+        table_name = temp["rows"][0]["duals"][0]["strData"]
+        logging.debug("Table Name : {}" .format(table_name))
+        #'Get The JSON Key And Values for Table'
+        table_id  = precog.get_table_id(table_name, url)
+        print(table_id[0])
+        logging.debug('Input Table Name: {} Table ID: {}' .format(table_name, table_id[0]))
+        create_token_tuple = precog.create_token(url,table_id[0])
+        print(create_token_tuple)
+        print(precog.get_count_of_all_tokens(url))
+        new_token = create_token_tuple[0]
+        new_secret = create_token_tuple[1]
+        response = create_token_tuple[2]
+        result = precog.get_result_csv(url, new_secret)
+        print(result[0])
+        output_str = result[1]
+        parsed_csv = precog.convert_csv(result[1])
+        print(parsed_csv)
+        resp_clean = precog.cleanup_token(new_token, table_id[0], url)
+        print(resp_clean)
+        print(precog.get_count_of_all_tokens(url))
+        
+
+        yield SSE.BundledRows(rows=response_rows)
+       
 
 
     @staticmethod
@@ -535,6 +588,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     # need to locate the file when script is called from outside it's location dir.
     def_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), args.definition_file)
+    print(def_file)
     logging.info('*** Server Configurations Port: {}, Pem_Dir: {}, def_file {} TimeStamp: {} ***'.format(args.port, args.pem_dir, def_file,datetime.now().isoformat()))
     calc = ExtensionService(def_file)
     calc.Serve(args.port, args.pem_dir)
