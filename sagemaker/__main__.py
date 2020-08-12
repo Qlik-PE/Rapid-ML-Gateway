@@ -69,7 +69,8 @@ class ExtensionService(SSE.ConnectorServicer):
             0: '_rest_single',
             1: '_rest_30',
             2: '_ws_single',
-            3: '_ws_batch'
+            3: '_ws_batch',
+            4: '_echo_table'
         }
 
     @staticmethod
@@ -406,7 +407,22 @@ class ExtensionService(SSE.ConnectorServicer):
         peer = context.peer()
 
         return "{0} - Capability '{1}' called by user {2} from app {3}".format(peer, capability, userId, appId)
+   
     
+    @staticmethod
+    def _echo_table(request, context):
+        """
+        Echo the input table.
+        :param request:
+        :param context:
+        :return:
+        """
+        for request_rows in request:
+            response_rows = []
+            for row in request_rows.rows:
+                response_rows.append(row)
+            yield SSE.BundledRows(rows=response_rows)
+
     def GetCapabilities(self, request, context):
         """
         Get capabilities.
@@ -421,7 +437,7 @@ class ExtensionService(SSE.ConnectorServicer):
         # Create an instance of the Capabilities grpc message
         # Enable(or disable) script evaluation
         # Set values for pluginIdentifier and pluginVersion
-        capabilities = SSE.Capabilities(allowScript=False,
+        capabilities = SSE.Capabilities(allowScript=True,
                                         pluginIdentifier='Qlik Rapid API Gateway - Partner Engineering',
                                         pluginVersion='v0.1.0')
         # If user defined functions supported, add the definitions to the message
