@@ -135,11 +135,11 @@ dmypy.json
 /mlflow
 /config
 /datarobot
-/precog
+#/precog
 
 #do not upload debug
 /debug
-/sagemaker/config/
+
 .DS_Store
-functions.json
+
 logger.config
