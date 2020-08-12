@@ -145,5 +145,3 @@ dmypy.json
 /debug
 
 .DS_Store
-
-logger.config
