@@ -527,7 +527,10 @@ class ExtensionService(SSE.ConnectorServicer):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    config.read(os.path.join(os.path.dirname(__file__), 'config', 'qrag.ini'))
+    conf_file = os.path.join(os.path.dirname(__file__), 'config', 'qrag.ini')
+    print(conf_file)
+    logging.info('Location of qrag.ini {}' .format(conf_file))
+    config.read(conf_file)
     port = config.get('base', 'port')
     parser.add_argument('--port', nargs='?', default=port)
     parser.add_argument('--pem_dir', nargs='?')
