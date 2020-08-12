@@ -71,8 +71,7 @@ class ExtensionService(SSE.ConnectorServicer):
             1: '_rest_30',
             2: '_ws_single',
             3: '_ws_batch',
-            4:  '_get_table_data',
-            5:  '_get_table_token'
+            4:  '_get_table_data'
             #,
             #4: '_echo_table'
         }
@@ -119,6 +118,8 @@ class ExtensionService(SSE.ConnectorServicer):
         #'Get The JSON Key And Values for Table'
         table_id  = precog.get_table_id(table_name, url)
         print(table_id[0])
+        print(table_id[1])
+        #try catch to catch bad url and kick out if resp is not 2000
         logging.debug('Input Table Name: {} Table ID: {}' .format(table_name, table_id[0]))
         create_token_tuple = precog.create_token(url,table_id[0])
         print(create_token_tuple)
@@ -129,6 +130,7 @@ class ExtensionService(SSE.ConnectorServicer):
         result = precog.get_result_csv(url, new_secret)
         print(result[0])
         output_str = result[1]
+        print(output_str)
         parsed_csv = precog.convert_csv(result[1])
         print(parsed_csv)
         resp_clean = precog.cleanup_token(new_token, table_id[0], url)
