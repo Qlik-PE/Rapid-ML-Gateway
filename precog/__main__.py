@@ -6,10 +6,7 @@ import logging.config
 import os, sys, inspect, time
 from websocket import create_connection
 import socket
-<<<<<<< HEAD
-=======
 import re
->>>>>>> 8ed66f0ec33a8d2aab94e1225842667298c2ae32
 from concurrent import futures
 from datetime import datetime
 import requests
@@ -32,10 +29,7 @@ from ssedata import FunctionType
 # import helper .py files
 import pysize
 import qlist
-<<<<<<< HEAD
-=======
 import precog
->>>>>>> 8ed66f0ec33a8d2aab94e1225842667298c2ae32
 
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 config = configparser.ConfigParser()
@@ -76,14 +70,10 @@ class ExtensionService(SSE.ConnectorServicer):
             0: '_rest_single',
             1: '_rest_30',
             2: '_ws_single',
-<<<<<<< HEAD
-            3: '_ws_batch'
-=======
             3: '_ws_batch',
             4:  '_get_table_data'
             #,
             #4: '_echo_table'
->>>>>>> 8ed66f0ec33a8d2aab94e1225842667298c2ae32
         }
 
     @staticmethod
@@ -99,8 +89,6 @@ class ExtensionService(SSE.ConnectorServicer):
 
         return header.functionId
 
-<<<<<<< HEAD
-=======
     @staticmethod
     def _get_table_data(request, context):
         """
@@ -153,7 +141,6 @@ class ExtensionService(SSE.ConnectorServicer):
         yield SSE.BundledRows(rows=response_rows)
        
 
->>>>>>> 8ed66f0ec33a8d2aab94e1225842667298c2ae32
 
     @staticmethod
     def _rest_single(request, context):
@@ -257,11 +244,7 @@ class ExtensionService(SSE.ConnectorServicer):
                     logging.debug('Show  Result: {}'.format(result))
                 # Create an iterable of dual with the result
                 duals = iter([SSE.Dual(strData=result)])
-<<<<<<< HEAD
-            response_rows.append(SSE.Row(duals=duals))
-=======
                 response_rows.append(SSE.Row(duals=duals))
->>>>>>> 8ed66f0ec33a8d2aab94e1225842667298c2ae32
                 # Yield the row data as bundled rows
         yield SSE.BundledRows(rows=response_rows)
         ws.close()
@@ -461,11 +444,7 @@ class ExtensionService(SSE.ConnectorServicer):
 
         # Get capabilities
         if not hasattr(self, 'capabilities'):
-<<<<<<< HEAD
-            self.capabilities = self.GetCapabilities(None, context, log=False)
-=======
             self.capabilities = self.GetCapabilities(None, context)
->>>>>>> 8ed66f0ec33a8d2aab94e1225842667298c2ae32
 
         # Get the name of the capability called in the function
         capability = [function.name for function in self.capabilities.functions if function.functionId == func_id][0]
@@ -483,9 +462,6 @@ class ExtensionService(SSE.ConnectorServicer):
         peer = context.peer()
 
         return "{0} - Capability '{1}' called by user {2} from app {3}".format(peer, capability, userId, appId)
-<<<<<<< HEAD
-    
-=======
    
     
     @staticmethod
@@ -501,7 +477,6 @@ class ExtensionService(SSE.ConnectorServicer):
             for row in request_rows.rows:
                 response_rows.append(row)
             yield SSE.BundledRows(rows=response_rows)
->>>>>>> 8ed66f0ec33a8d2aab94e1225842667298c2ae32
 
     def GetCapabilities(self, request, context):
         """
@@ -517,11 +492,7 @@ class ExtensionService(SSE.ConnectorServicer):
         # Create an instance of the Capabilities grpc message
         # Enable(or disable) script evaluation
         # Set values for pluginIdentifier and pluginVersion
-<<<<<<< HEAD
-        capabilities = SSE.Capabilities(allowScript=False,
-=======
         capabilities = SSE.Capabilities(allowScript=True,
->>>>>>> 8ed66f0ec33a8d2aab94e1225842667298c2ae32
                                         pluginIdentifier='Qlik Rapid API Gateway - Partner Engineering',
                                         pluginVersion='v0.1.0')
         # If user defined functions supported, add the definitions to the message
@@ -551,25 +522,16 @@ class ExtensionService(SSE.ConnectorServicer):
         :return: an iterable sequence of Row.
         """
         func_id = self._get_function_id(context)
-<<<<<<< HEAD
-        # Call corresponding function
-        logging.info('ExecuteFunction (functionId: {}, {})' .format(func_id, self.functions[func_id]))
-=======
         logging.info(self._get_call_info(context))
         # Call corresponding function
         logging.info('ExecuteFunctions (functionId: {})' .format(func_id))
         #self.functions[func_id]))
->>>>>>> 8ed66f0ec33a8d2aab94e1225842667298c2ae32
         current_function_def = (json.load(open(self.function_definitions))['Functions'])[func_id]
         logging.debug(current_function_def)
         global q_function_name
         q_function_name = current_function_def["Name"]
         logging.debug('Logical Method Called is: {}' .format(q_function_name))
-<<<<<<< HEAD
-        logging.info(self._get_call_info(context))
-=======
         
->>>>>>> 8ed66f0ec33a8d2aab94e1225842667298c2ae32
         current_qrap_type = current_function_def["QRAP_Type"]
         qrag_function_name ='_' + current_qrap_type
         logging.debug('This is the type of QRAG Method Name: {}' .format(current_qrap_type))
@@ -628,10 +590,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     # need to locate the file when script is called from outside it's location dir.
     def_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), args.definition_file)
-<<<<<<< HEAD
-=======
     print(def_file)
->>>>>>> 8ed66f0ec33a8d2aab94e1225842667298c2ae32
     logging.info('*** Server Configurations Port: {}, Pem_Dir: {}, def_file {} TimeStamp: {} ***'.format(args.port, args.pem_dir, def_file,datetime.now().isoformat()))
     calc = ExtensionService(def_file)
     calc.Serve(args.port, args.pem_dir)
