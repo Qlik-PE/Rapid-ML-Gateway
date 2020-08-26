@@ -9,6 +9,13 @@ sys.path.append(os.path.join(PARENT_DIR, 'helper_functions'))
 import requests
 import qlist
 
+def get_tables(url):
+    tables_url = url + 'tables/'
+    logging.debug(tables_url)
+    resp = requests.get(tables_url)
+    tables_dict = resp.json()
+    return tables_dict, resp
+
 def get_table_id(value, url):
     tables_url = url + 'tables/'
     logging.debug(tables_url)
@@ -21,9 +28,11 @@ def get_table_information(table_id, url):
         table_url = url +'table/' + table_id
         resp = requests.get(table_url)
         table_dict = resp.json()
-        print(type(table_dict)) 
+        #print(type(table_dict)) 
+        columns = table_dict['columns']
+        #print(type(columns))
         #The Keys of Dictionary  (['name', 'description', 'query', 'meta', 'columns'])
-        return table_dict, resp
+        return table_dict, columns, resp
 
 def get_access_tokens(table_id, url):
         token_url = url +'table/' + table_id + '/access-tokens'
@@ -80,4 +89,6 @@ def convert_csv(input_str):
     lines = input_str.splitlines()
     reader = csv.reader(lines)
     parsed_csv = list(reader)
-    return parsed_csv
+    header = parsed_csv[0]
+    parsed_csv.pop(0)
+    return parsed_csv, header

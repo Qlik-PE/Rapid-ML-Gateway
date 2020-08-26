@@ -1,5 +1,5 @@
 
-import os, logging
+import os, json, logging
 import logging.config
 
 import ServerSideExtension_pb2 as SSE
@@ -187,17 +187,20 @@ class ScriptEval:
         print(conf_file)
         logging.info('Location of qrag.ini {}' .format(conf_file))
         config.read(conf_file)
-        url = config.get('base', 'port')
+        url = config.get('base', 'url')
         logging.debug('Precog URL {}' .format(url))
-        fname = 'self.'+script
-        print(fname)
-        if fname == 'TableInfo':
-            result = self.getTableInfo()
-        elif fname = 'TableMetaData'
-            result = self.getTableInfo()
-        result = fname()
+        print(script)
+        if (script.find('TableInfo') !=-1):
+            result = self.getTableInfo(url)
+        elif (script.find('TableMetaData') !=-1):
+            result = self.getTableMetaData(url)
+        elif (script.find('getTableData') !=-1):
+            script_li = script.split('\'')
+            print(script_li)
+            result = self.getTableData(url, script_li[0])
+        else:
+            result = []
         #logging.debug('Result: {}'.format(result))
-
         bundledRows = SSE.BundledRows()
         if isinstance(result, str) or not hasattr(result, '__iter__'):
             # A single value is returned
@@ -205,17 +208,53 @@ class ScriptEval:
         else:
             for row in result:
                 # note that each element of the result should represent a row
+                #logging.debug(type(row))
+                #logging.debug(ret_type)
                 bundledRows.rows.add(duals=self.get_duals(row, ret_type))
 
         return bundledRows
    
     
     @staticmethod
-    def getTableInfo ():
-       logging.info("In getTableInfo")
+    def getTableInfo (url):
+       logging.info("In getTableInfo using url {}" .format(url))
+       table_list = precog.get_tables(url)
+       x = list(table_list[0].keys())
+       results =[]
+       for i in x:
+            y = precog.get_table_information(i, url)[1]
+            temp_li =[]
+            for j in y:
+                col_str = json.dumps(j)
+                temp_li.append(col_str)
+            column_str = ''.join(temp_li)
+            result= [i, table_list[0][i]['name'], column_str]
+            results.append(result)
+            #print(result)
+       return results
     @staticmethod
-    def getTableMetaData():
+    def getTableMetaData(url):
        logging.info("In getTableMetaData")
+       result = []
+       return result
     @staticmethod
-    def getTableData():
-       logging.info("In getTableData")
+    def getTableData(url, table_name):
+       logging.info("In getTableDatausing url {} and tablename {}" .format(url, table_name))
+       result = []
+       table_id  = precog.get_table_id(table_name, url)
+       logging.debug('Table ID {}' .format(table_id[0]))
+       token = precog.get_access_tokens(table_id[0],url)
+       print(token[0].values())
+       token_count = len(token[0]["accessTokens"])
+       create_token_tuple = precog.create_token(url,table_id[0])
+       print(create_token_tuple)
+       print(precog.get_count_of_all_tokens(url))
+       new_token = create_token_tuple[0]
+       new_secret = create_token_tuple[1]
+       response = create_token_tuple[2]
+       result = precog.get_result_csv(url, new_secret)
+       #print(result[0])
+       output_str = result[1]
+       parsed_csv = precog.convert_csv(result[1])
+       #print(type(parsed_csv))
+       return parsed_csv[0]
