@@ -27,14 +27,14 @@ class ScriptEval:
         logging.debug('In EvaluateScritp: ScriptEval')
         # Retrieve function type
         func_type = self.get_func_type(header)
-        logging.debug('Function Type {}' .format(func_type))
+        #logging.debug('Function Type {}' .format(func_type))
         # Retrieve data types from header
         arg_types = self.get_arg_types(header)
-        logging.debug('Arg Type {}' .format(arg_types))
+        #logging.debug('Arg Type {}' .format(arg_types))
         ret_type = self.get_return_type(header)
-        logging.debug('Return Type {}' .format(ret_type))
+        #logging.debug('Return Type {}' .format(ret_type))
 
-        logging.info('EvaluateScript: {} ({} {}) {}'
+        #logging.info('EvaluateScript: {} ({} {}) {}'
                      .format(header.script, arg_types, ret_type, func_type))
 
         # Check if parameters are provided
@@ -254,9 +254,9 @@ class ScriptEval:
         else:
             for row in result:
                 # note that each element of the result should represent a row
-                logging.debug(row)
-                logging.debug(type(row))
-                logging.debug(ret_type)
+                #logging.debug(row)
+                #logging.debug(type(row))
+                #logging.debug(ret_type)
                 bundledRows.rows.add(duals=self.get_duals(row, ret_type))
 
         return bundledRows
@@ -285,7 +285,7 @@ class ScriptEval:
        logging.info("In getTableDatausing url {} and tablename {}" .format(url, table_name))
        result = []
        table_id  = precog.get_table_id(table_name, url)
-       logging.debug('Table ID {}' .format(table_id[0]))
+       #logging.debug('Table ID {}' .format(table_id[0]))
        token = precog.get_access_tokens(table_id[0],url)
        ###print(token[0].values())
        token_count = len(token[0]["accessTokens"])
