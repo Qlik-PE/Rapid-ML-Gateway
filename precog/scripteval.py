@@ -215,7 +215,17 @@ class ScriptEval:
             table.fields.add(name="Name", dataType=0)
             table.fields.add(name="Column Desc", dataType=0)
         elif (script.find('TableMetaData') !=-1):
-            result = self.getTableMetaData(url)
+            script_li = script.split(':')
+            table.name = script_li[0]+"-Metadata"
+            result =[]
+            column_data = precog.get_column_info(script_li[0], url)
+            table.fields.add(name="column", dataType=0)
+            table.fields.add(name="type", dataType=0)
+            for i in column_data:
+                part = [i["column"], i["type"]]
+               #print (part)
+                result.append(part)
+            #print(result)
         elif (script.find('getTableData') !=-1):
             script_li = script.split(':')
             ###print(script_li)
@@ -268,11 +278,7 @@ class ScriptEval:
             results.append(result)
             ###print(result)
        return results
-    @staticmethod
-    def getTableMetaData(url):
-       logging.info("In getTableMetaData")
-       result = []
-       return result
+
     @staticmethod
     def getTableData(url, table_name):
        logging.info("In getTableDatausing url {} and tablename {}" .format(url, table_name))
