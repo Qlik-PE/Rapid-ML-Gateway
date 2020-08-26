@@ -237,8 +237,8 @@ class ScriptEval:
                     FieldType=0
                 else:
                     FieldType=0
-                logging.debug("Viewing Metadata from PreCog: {}" .format(i))
-                logging.debug('Adding Fields name :{}, dataType:{}' .format(FieldName, FieldType))
+                #logging.debug("Viewing Metadata from PreCog: {}" .format(i))
+                #logging.debug('Adding Fields name :{}, dataType:{}' .format(FieldName, FieldType))
                 table.fields.add(name=FieldName, dataType=FieldType)
             result = self.getTableData(url, script_li[0])
         else:
