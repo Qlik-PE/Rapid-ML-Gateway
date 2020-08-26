@@ -21,6 +21,8 @@ def get_table_information(table_id, url):
         table_url = url +'table/' + table_id
         resp = requests.get(table_url)
         table_dict = resp.json()
+        print(type(table_dict)) 
+        #The Keys of Dictionary  (['name', 'description', 'query', 'meta', 'columns'])
         return table_dict, resp
 
 def get_access_tokens(table_id, url):

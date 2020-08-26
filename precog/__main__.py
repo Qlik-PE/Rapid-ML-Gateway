@@ -11,10 +11,6 @@ from concurrent import futures
 from datetime import datetime
 import requests
 import configparser
-#import QDAG_helper
-#current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-#parent_dir = os.path.dirname(current_dir)
-#sys.path.insert(0, parent_dir)
 
 
 
@@ -25,12 +21,12 @@ sys.path.append(os.path.join(PARENT_DIR, 'helper_functions'))
 import ServerSideExtension_pb2 as SSE
 import grpc
 from google.protobuf.json_format import MessageToDict
-from ssedata import FunctionType
+from ssedata import ArgType, FunctionType, ReturnType
 # import helper .py files
 import pysize
 import qlist
 import precog
-
+from scripteval import ScriptEval
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 config = configparser.ConfigParser()
 
@@ -46,7 +42,7 @@ class ExtensionService(SSE.ConnectorServicer):
         :param funcdef_file: a function definition JSON file
         """
         self._function_definitions = funcdef_file
-        #self.ScriptEval = ScriptEval()
+        self.ScriptEval = ScriptEval()
         os.makedirs('logs', exist_ok=True)
         log_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logger.config')
         logging.config.fileConfig(log_file)
@@ -136,12 +132,10 @@ class ExtensionService(SSE.ConnectorServicer):
         resp_clean = precog.cleanup_token(new_token, table_id[0], url)
         print(resp_clean)
         print(precog.get_count_of_all_tokens(url))
-        
+        bundledRows = SSE.BundledRows()
 
-        yield SSE.BundledRows(rows=response_rows)
+        yield SSE.BundledRows(rows=resp_clean)
        
-
-
     @staticmethod
     def _rest_single(request, context):
         """
@@ -463,7 +457,24 @@ class ExtensionService(SSE.ConnectorServicer):
 
         return "{0} - Capability '{1}' called by user {2} from app {3}".format(peer, capability, userId, appId)
    
-    
+    def EvaluateScript(self, request, context):
+        """
+        This plugin supports full script functionality, that is, all function types and all data types.
+        :param request:
+        :param context:
+        :return:
+        """
+        logging.debug('In EvaluateScript: Main')
+        # Parse header for script request
+        metadata = dict(context.invocation_metadata())
+        logging.debug('Metadata {}',metadata)
+        header = SSE.ScriptRequestHeader()
+        header.ParseFromString(metadata['qlik-scriptrequestheader-bin'])
+        logging.debug('Header is : {}'.format(header))
+        logging.debug('Request is : {}' .format(request))
+        logging.debug("Context is: {}" .format(context))
+        return self.ScriptEval.EvaluateScript(header, request, context)
+
     @staticmethod
     def _echo_table(request, context):
         """
