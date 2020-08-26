@@ -7,6 +7,6 @@ grpcio
 glom
 configparser
 protobuf
-grpcio
+
 
 ###### Requirements with Version Specifiers ######`
