@@ -1,0 +1,12 @@
+###### Requirements without Version Specifiers ######`
+websocket
+websocket-client
+requests
+google-api-python-client
+grpcio
+glom
+configparser
+protobuf
+grpcio
+
+###### Requirements with Version Specifiers ######`
