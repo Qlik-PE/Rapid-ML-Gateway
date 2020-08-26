@@ -38,7 +38,7 @@ class ScriptEval:
                      .format(header.script, arg_types, ret_type, func_type))
 
         # Check if parameters are provided
-        print(header.params)
+        #print(header.params)
         if header.params:
             all_rows = []
 
@@ -47,13 +47,13 @@ class ScriptEval:
                 # Iterate over rows
                 for row in request_rows.rows:
                     # Retrieve parameters
-                    print('row {} jrp' .format(row))
+                    #print('row {} jrp' .format(row))
                     params = self.get_arguments(context, arg_types, row.duals, header)
                     all_rows.append(params)
 
             # First element in the parameter list should contain the data of the first parameter.
             all_rows = [list(param) for param in zip(*all_rows)]
-            print(all_rows)
+            #print(all_rows)
             if arg_types == ArgType.Mixed:
                 param_datatypes = [param.dataType for param in header.params]
                 for i, datatype in enumerate(param_datatypes):
@@ -69,7 +69,7 @@ class ScriptEval:
         else:
             # No parameters provided
             logging.debug('No Parameteres Provided')
-            print(ret_type)
+            #print(ret_type)
             yield self.evaluate(context, header.script, ret_type)
 
     @staticmethod
@@ -182,7 +182,7 @@ class ScriptEval:
         :param context: the request context
         :return: nothing
         """
-        print(table)
+        #print(table)
         logging.debug('tableDescription sent to Qlik: {}'.format(table))
         # send table description
         table_header = (('qlik-tabledescription-bin', table.SerializeToString()),)
@@ -197,12 +197,12 @@ class ScriptEval:
         :return: a RowData of string dual
         """
         table = SSE.TableDescription()
-        print('JRP: {}' .format(table))
+        #print('JRP: {}' .format(table))
         # Evaluate script
-        print(script)
-        print(params)
+        #print(script)
+        #print(params)
         conf_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config', 'qrag.ini')
-        print(conf_file)
+        ##print(conf_file)
         logging.info('Location of qrag.ini {}' .format(conf_file))
         config.read(conf_file)
         url = config.get('base', 'url')
@@ -218,7 +218,7 @@ class ScriptEval:
             result = self.getTableMetaData(url)
         elif (script.find('getTableData') !=-1):
             script_li = script.split(':')
-            #print(script_li)
+            ###print(script_li)
             table.name = script_li[0]
             column_data = precog.get_column_info(script_li[0], url)
             for i in column_data:
@@ -234,8 +234,8 @@ class ScriptEval:
         else:
             result = []
         logging.debug('Result: {}'.format(result))
-        #print(table)
-        #print(type(table))
+        ###print(table)
+        ###print(type(table))
         self.send_table_description(table, context)
         bundledRows = SSE.BundledRows()
         if isinstance(result, str) or not hasattr(result, '__iter__'):
@@ -266,7 +266,7 @@ class ScriptEval:
             column_str = ''.join(temp_li)
             result= [i, table_list[0][i]['name'], column_str]
             results.append(result)
-            #print(result)
+            ###print(result)
        return results
     @staticmethod
     def getTableMetaData(url):
@@ -280,19 +280,19 @@ class ScriptEval:
        table_id  = precog.get_table_id(table_name, url)
        logging.debug('Table ID {}' .format(table_id[0]))
        token = precog.get_access_tokens(table_id[0],url)
-       #print(token[0].values())
+       ###print(token[0].values())
        token_count = len(token[0]["accessTokens"])
        create_token_tuple = precog.create_token(url,table_id[0])
-       #print(create_token_tuple)
-       #print(precog.get_count_of_all_tokens(url))
+       ##print(create_token_tuple)
+       ##print(precog.get_count_of_all_tokens(url))
        new_token = create_token_tuple[0]
        new_secret = create_token_tuple[1]
        response = create_token_tuple[2]
        result = precog.get_result_csv(url, new_secret)
-       #print(result[0])
+       ##print(result[0])
        output_str = result[1]
        parsed_csv = precog.convert_csv(result[1])
-       #print(type(parsed_csv))
+       ##print(type(parsed_csv))
        resp_clean = precog.cleanup_token(new_token, table_id[0], url)
        logging.debug('Token Cleaned Resp: {}' .format(resp_clean))
        return parsed_csv[0]
