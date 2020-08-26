@@ -33,19 +33,18 @@ def get_table_information(table_id, url):
         #print(type(columns))
         #The Keys of Dictionary  (['name', 'description', 'query', 'meta', 'columns'])
         return table_dict, columns, resp
+def get_column_info(value, url):
+    table_id = get_table_id(value, url)[0]
+    column_data = get_table_information(table_id, url)[1]
+    return column_data
 
 def get_access_tokens(table_id, url):
         token_url = url +'table/' + table_id + '/access-tokens'
-        print(token_url)
+        #print(token_url)
         resp = requests.get(token_url)
         token_dict = resp.json()
         return token_dict, resp
-def create_token(table_id, url):
-        create_token_url = url +'table/' + table_id + '/access-token?expiresInSec=6000'
-        logging.debug("Create Token URL {}" .format(create_token_url))
-        resp = requests.post(create_token_url)
-        new_token_dict = resp.json()
-        return new_token_dict, resp
+
 
 def cleanup_token(token, table_id, url):
     token_url =url+ 'table/' + table_id + '/access-token/' + token
@@ -74,7 +73,7 @@ def create_token(url, table_id):
 
 def get_result_csv(url, secret):
     create_token_url = url+'result/'+secret+".csv"
-    print(create_token_url)
+    #print(create_token_url)
     resp = requests.get(create_token_url)
     resp.encoding = "utf-8-sig"
     return resp, resp.text

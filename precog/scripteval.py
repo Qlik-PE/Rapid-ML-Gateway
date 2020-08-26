@@ -64,13 +64,13 @@ class ScriptEval:
                         all_rows[i] = [list(datatype) for datatype in zip(*all_rows[i])]
 
             logging.debug('Received data from Qlik (args): {}'.format(all_rows))
-            yield self.evaluate(header.script, ret_type, params=all_rows)
+            yield self.evaluate(context, header.script, ret_type, params=all_rows)
 
         else:
             # No parameters provided
             logging.debug('No Parameteres Provided')
             print(ret_type)
-            yield self.evaluate(header.script, ret_type)
+            yield self.evaluate(context, header.script, ret_type)
 
     @staticmethod
     def get_func_type(header):
@@ -171,8 +171,24 @@ class ScriptEval:
             duals = [SSE.Dual(numData=col) for col in result]
         return iter(duals)
 
+    @staticmethod
+    def send_table_description(table, context):
+        """
+        # TableDescription is only handled in Qlik if sent from a 'Load ... Extension ...' script.
+        # If tableDescription is set when evaluating an expression the header will be ignored
+        # when received by Qlik.
+        :param qResult: the result from evaluating the script
+        :param table: the table description specified in the script
+        :param context: the request context
+        :return: nothing
+        """
+        print(table)
+        logging.debug('tableDescription sent to Qlik: {}'.format(table))
+        # send table description
+        table_header = (('qlik-tabledescription-bin', table.SerializeToString()),)
+        context.send_initial_metadata(table_header)
 
-    def evaluate(self, script, ret_type, params=[]):
+    def evaluate(self, context, script, ret_type, params=[]):
         """
         Evaluates a script with given parameters and construct the result to a Row of duals.
         :param script:  script to evaluate
@@ -180,6 +196,8 @@ class ScriptEval:
         :param params: params to evaluate. Default: []
         :return: a RowData of string dual
         """
+        table = SSE.TableDescription()
+        print('JRP: {}' .format(table))
         # Evaluate script
         print(script)
         print(params)
@@ -189,18 +207,36 @@ class ScriptEval:
         config.read(conf_file)
         url = config.get('base', 'url')
         logging.debug('Precog URL {}' .format(url))
-        print(script)
+        
         if (script.find('TableInfo') !=-1):
             result = self.getTableInfo(url)
+            table.name = 'PreCog-Catalog'
+            table.fields.add(name="Table_Id", dataType=0)
+            table.fields.add(name="Name", dataType=0)
+            table.fields.add(name="Column Desc", dataType=0)
         elif (script.find('TableMetaData') !=-1):
             result = self.getTableMetaData(url)
         elif (script.find('getTableData') !=-1):
-            script_li = script.split('\'')
-            print(script_li)
+            script_li = script.split(':')
+            #print(script_li)
+            table.name = script_li[0]
+            column_data = precog.get_column_info(script_li[0], url)
+            for i in column_data:
+                FieldName = i["column"]
+                if(i["type"]=="number"):
+                    FieldType=1
+                else:
+                    FieldType=0
+                logging.debug("Viewing Metadata from PreCog: {}" .format(i))
+                logging.debug('Adding Fields name :{}, dataType:{}' .format(FieldName, FieldType))
+                table.fields.add(name=FieldName, dataType=FieldType)
             result = self.getTableData(url, script_li[0])
         else:
             result = []
-        #logging.debug('Result: {}'.format(result))
+        logging.debug('Result: {}'.format(result))
+        #print(table)
+        #print(type(table))
+        self.send_table_description(table, context)
         bundledRows = SSE.BundledRows()
         if isinstance(result, str) or not hasattr(result, '__iter__'):
             # A single value is returned
@@ -244,11 +280,11 @@ class ScriptEval:
        table_id  = precog.get_table_id(table_name, url)
        logging.debug('Table ID {}' .format(table_id[0]))
        token = precog.get_access_tokens(table_id[0],url)
-       print(token[0].values())
+       #print(token[0].values())
        token_count = len(token[0]["accessTokens"])
        create_token_tuple = precog.create_token(url,table_id[0])
-       print(create_token_tuple)
-       print(precog.get_count_of_all_tokens(url))
+       #print(create_token_tuple)
+       #print(precog.get_count_of_all_tokens(url))
        new_token = create_token_tuple[0]
        new_secret = create_token_tuple[1]
        response = create_token_tuple[2]
@@ -257,4 +293,6 @@ class ScriptEval:
        output_str = result[1]
        parsed_csv = precog.convert_csv(result[1])
        #print(type(parsed_csv))
+       resp_clean = precog.cleanup_token(new_token, table_id[0], url)
+       logging.debug('Token Cleaned Resp: {}' .format(resp_clean))
        return parsed_csv[0]
