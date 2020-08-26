@@ -1,12 +1,37 @@
+#Tested on Centos7 using SCL and Python38 
+#using  pip install -r requirements.txt  --user
 ###### Requirements without Version Specifiers ######`
-websocket
-websocket-client
-requests
-google-api-python-client
-grpcio
-glom
-configparser
-protobuf
 
 
 ###### Requirements with Version Specifiers ######`
+attrs==20.1.0
+boltons==20.2.1
+cachetools==4.1.1
+certifi==2020.6.20
+chardet==3.0.4
+configparser==5.0.0
+face==20.1.1
+gevent==20.6.2
+glom==20.8.0
+google-api-core==1.22.1
+google-api-python-client==1.10.1
+google-auth==1.20.1
+google-auth-httplib2==0.0.4
+googleapis-common-protos==1.52.0
+greenlet==0.4.16
+grpcio==1.31.0
+httplib2==0.18.1
+idna==2.10
+protobuf==3.13.0
+pyasn1==0.4.8
+pyasn1-modules==0.2.8
+pytz==2020.1
+requests==2.24.0
+rsa==4.6
+six==1.15.0
+uritemplate==3.0.1
+urllib3==1.25.10
+websocket==0.2.1
+websocket-client==0.57.0
+zope.event==4.4
+zope.interface==5.1.0
