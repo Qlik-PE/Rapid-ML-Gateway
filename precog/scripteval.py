@@ -243,7 +243,7 @@ class ScriptEval:
             result = self.getTableData(url, script_li[0])
         else:
             result = []
-        logging.debug('Result: {}'.format(result))
+        #logging.debug('Result: {}'.format(result))
         ###print(table)
         ###print(type(table))
         self.send_table_description(table, context)
