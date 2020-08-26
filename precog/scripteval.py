@@ -34,7 +34,7 @@ class ScriptEval:
         ret_type = self.get_return_type(header)
         #logging.debug('Return Type {}' .format(ret_type))
 
-        #logging.info('EvaluateScript: {} ({} {}) {}'
+        logging.info('EvaluateScript: {} ({} {}) {}'
                      .format(header.script, arg_types, ret_type, func_type))
 
         # Check if parameters are provided
