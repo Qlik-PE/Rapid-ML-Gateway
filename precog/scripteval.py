@@ -234,7 +234,7 @@ class ScriptEval:
             for i in column_data:
                 FieldName = i["column"]
                 if(i["type"]=="number"):
-                    FieldType=1
+                    FieldType=0
                 else:
                     FieldType=0
                 logging.debug("Viewing Metadata from PreCog: {}" .format(i))
@@ -254,8 +254,9 @@ class ScriptEval:
         else:
             for row in result:
                 # note that each element of the result should represent a row
-                #logging.debug(type(row))
-                #logging.debug(ret_type)
+                logging.debug(row)
+                logging.debug(type(row))
+                logging.debug(ret_type)
                 bundledRows.rows.add(duals=self.get_duals(row, ret_type))
 
         return bundledRows
