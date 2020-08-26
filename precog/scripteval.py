@@ -1,14 +1,14 @@
 
-import logging
+import os, json, logging
 import logging.config
 
 import ServerSideExtension_pb2 as SSE
 import grpc
-import numpy
-import pandas
+import precog
+import configparser
 from ssedata import ArgType, FunctionType, ReturnType
 
-
+config = configparser.ConfigParser()
 class ScriptEval:
     """
     Class for SSE plugin ScriptEval functionality.
@@ -18,52 +18,59 @@ class ScriptEval:
         """
         Evaluates script provided in the header, given the
         arguments provided in the sequence of RowData objects, the request.
+
         :param header:
         :param request: an iterable sequence of RowData.
         :param context: the context sent from client
         :return: an iterable sequence of RowData.
         """
+        logging.debug('In EvaluateScritp: ScriptEval')
         # Retrieve function type
         func_type = self.get_func_type(header)
-
+        logging.debug('Function Type {}' .format(func_type))
         # Retrieve data types from header
         arg_types = self.get_arg_types(header)
+        logging.debug('Arg Type {}' .format(arg_types))
         ret_type = self.get_return_type(header)
+        logging.debug('Return Type {}' .format(ret_type))
 
         logging.info('EvaluateScript: {} ({} {}) {}'
                      .format(header.script, arg_types, ret_type, func_type))
 
-        # Create a panda data frame, for retrieved parameters
-        q = pandas.DataFrame()
-
         # Check if parameters are provided
+        #print(header.params)
         if header.params:
+            all_rows = []
+
             # Iterate over bundled rows
             for request_rows in request:
                 # Iterate over rows
                 for row in request_rows.rows:
-                    # Retrieve parameters and append to data frame
-                    params, dual_exist = self.get_arguments(context, arg_types, row.duals, header)
-                    q = q.append(params, ignore_index=True)
+                    # Retrieve parameters
+                    #print('row {} jrp' .format(row))
+                    params = self.get_arguments(context, arg_types, row.duals, header)
+                    all_rows.append(params)
 
-            # Rename columns based on arg names in header
-            arg_names = [param.name for param in header.params]
-            if dual_exist:
-                # find what column(s) are dual
-                param_types = [param.dataType for param in header.params]
-                col_index = [i for i, arg_type in enumerate(param_types) if arg_type == SSE.DUAL]
-                # add _num and _str columns representing the dual column
-                # for an easier access in the script
-                for col in col_index:
-                    arg_names.insert(col + 1, arg_names[col] + '_str')
-                    arg_names.insert(col + 2, arg_names[col] + '_num')
-            q.rename(columns=lambda i: arg_names[i], inplace=True)
+            # First element in the parameter list should contain the data of the first parameter.
+            all_rows = [list(param) for param in zip(*all_rows)]
+            #print(all_rows)
+            if arg_types == ArgType.Mixed:
+                param_datatypes = [param.dataType for param in header.params]
+                for i, datatype in enumerate(param_datatypes):
+                    if datatype == SSE.DUAL:
+                        # For easier access to the numerical and string representation of duals, in the script, we
+                        # split them to two list. For example, if the first parameter is dual, it will contain two lists
+                        # the first one being the numerical representation and the second one the string.
+                        all_rows[i] = [list(datatype) for datatype in zip(*all_rows[i])]
 
-            yield self.evaluate(context, header.script, ret_type, q)
+            logging.debug('Received data from Qlik (args): {}'.format(all_rows))
+            yield self.evaluate(context, header.script, ret_type, params=all_rows)
 
         else:
             # No parameters provided
-            yield self.evaluate(context, header.script, ret_type, q)
+            logging.debug('No Parameteres Provided')
+            #print(ret_type)
+            yield self.evaluate(context, header.script, ret_type)
 
     @staticmethod
     def get_func_type(header):
@@ -81,25 +88,17 @@ class ScriptEval:
             return FunctionType.Tensor
 
     @staticmethod
-    def raise_grpc_error(context, status_code, msg):
-        # Make sure the error handling, including logging, works as intended in the client
-        context.set_code(status_code)
-        context.set_details(msg)
-        # Raise error on the plugin-side
-        raise grpc.RpcError(status_code, msg)
-
-    def get_arguments(self, context, arg_types, duals, header):
+    def get_arguments(context, arg_types, duals, header):
         """
         Gets the array of arguments based on
         the duals, and the type (string, numeric)
         specified in the header.
         :param context: the context sent from client
-        :param arg_types: the argument data type
-        :param duals: an iterable sequence of duals.
         :param header: the script header.
-        :return: a panda Series containing (potentially mixed data type) arguments.
+        :param duals: an iterable sequence of duals.
+        :return: an array of (potentially mixed data type) arguments.
         """
-        dual_type = False
+
         if arg_types == ArgType.String:
             # All parameters are of string type
             script_args = [d.strData for d in duals]
@@ -116,18 +115,15 @@ class ScriptEval:
                     script_args.append(dual.numData)
                 elif param.dataType == SSE.DUAL:
                     script_args.append((dual.numData, dual.strData))
-                    # We add additional columns with string and numeric representation
-                    # for easier access in script
-                    script_args.append(dual.strData)
-                    script_args.append(dual.numData)
-                    dual_type = True
         else:
             # Undefined argument types
+            # Make sure the error handling, including logging, works as intended in the client
             msg = 'Undefined argument type: '.format(arg_types)
-            self.raise_grpc_error(context, grpc.StatusCode.INVALID_ARGUMENT, msg)
-
-        # dtype=object is needed if the data is not homogeneous, e.g. data type dual
-        return pandas.Series(script_args, dtype=object), dual_type
+            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+            context.set_details(msg)
+            # Raise error on the plugin-side
+            raise grpc.RpcError(grpc.StatusCode.INVALID_ARGUMENT, msg)
+        return script_args
 
     @staticmethod
     def get_arg_types(header):
@@ -166,25 +162,13 @@ class ScriptEval:
 
     @staticmethod
     def get_duals(result, ret_type):
-        """
-        Transforms one row in qResult to an iterable of duals.
-        :param result: one row of qResult
-        :param ret_type: a list containing a data type for each column in qResult
-        :return: one row of data as an iterable of duals
-        """
-        # result must be iterable
-        result = [result] if isinstance(result, (str, tuple)) or not hasattr(result, '__iter__') else result
+        if isinstance(result, str) or not hasattr(result, '__iter__'):
+            result = [result]
         # Transform the result to an iterable of Dual data
-        duals = []
-        for i, col in enumerate(result):
-            data_type = ret_type[i]
-            if data_type == ReturnType.String:
-                duals.append(SSE.Dual(strData=col))
-            elif data_type == ReturnType.Numeric:
-                duals.append(SSE.Dual(numData=col))
-            elif data_type == ReturnType.Dual:
-                # col is a tuple with a numeric and string representation
-                duals.append(SSE.Dual(numData=col[0], strData=col[1]))
+        if ret_type == ReturnType.String:
+            duals = [SSE.Dual(strData=col) for col in result]
+        elif ret_type == ReturnType.Numeric:
+            duals = [SSE.Dual(numData=col) for col in result]
         return iter(duals)
 
     @staticmethod
@@ -198,57 +182,124 @@ class ScriptEval:
         :param context: the request context
         :return: nothing
         """
+        #print(table)
         logging.debug('tableDescription sent to Qlik: {}'.format(table))
         # send table description
         table_header = (('qlik-tabledescription-bin', table.SerializeToString()),)
         context.send_initial_metadata(table_header)
 
-    def evaluate(self, context, script, ret_type, q):
+    def evaluate(self, context, script, ret_type, params=[]):
         """
         Evaluates a script with given parameters and construct the result to a Row of duals.
-        :param context:
         :param script:  script to evaluate
         :param ret_type: return data type
-        :param q: data frame of received parameters, empty if no parameter was sent
+        :param params: params to evaluate. Default: []
         :return: a RowData of string dual
         """
         table = SSE.TableDescription()
-        logging.debug('Received data frame (q): {}'.format(q))
-        locals_added = {}  # The variables set while executing the script will be saved to this dict
-        # Evaluate script, the result must be saved to the qResult object
-        exec(script, {'q': q, 'numpy': numpy, 'pandas': pandas, 'table': table}, locals_added)
-
-        if 'qResult' in locals_added:
-            qResult = locals_added['qResult']
-            logging.debug('Result (qResult): {}'.format(qResult))
-
-            if 'tableDescription' in locals_added and locals_added['tableDescription'] is True:
-                self.send_table_description(table, context)
-                # If a tableDescription is sent, the return type should be updated accordingly
-                ret_type = [ReturnType(field.dataType) for field in table.fields]
-            else:
-                # All returned columns have the same data type as the return type of the function
-                if isinstance(qResult, str) or not hasattr(qResult, '__iter__'):
-                    columns = 1
+        #print('JRP: {}' .format(table))
+        # Evaluate script
+        #print(script)
+        #print(params)
+        conf_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config', 'qrag.ini')
+        ##print(conf_file)
+        logging.info('Location of qrag.ini {}' .format(conf_file))
+        config.read(conf_file)
+        url = config.get('base', 'url')
+        logging.debug('Precog URL {}' .format(url))
+        
+        if (script.find('TableInfo') !=-1):
+            result = self.getTableInfo(url)
+            table.name = 'PreCog-Catalog'
+            table.fields.add(name="Table_Id", dataType=0)
+            table.fields.add(name="Name", dataType=0)
+            table.fields.add(name="Column Desc", dataType=0)
+        elif (script.find('TableMetaData') !=-1):
+            script_li = script.split(':')
+            table.name = script_li[0]+"-Metadata"
+            result =[]
+            column_data = precog.get_column_info(script_li[0], url)
+            table.fields.add(name="column", dataType=0)
+            table.fields.add(name="type", dataType=0)
+            for i in column_data:
+                part = [i["column"], i["type"]]
+               #print (part)
+                result.append(part)
+            #print(result)
+        elif (script.find('getTableData') !=-1):
+            script_li = script.split(':')
+            ###print(script_li)
+            table.name = script_li[0]
+            column_data = precog.get_column_info(script_li[0], url)
+            for i in column_data:
+                FieldName = i["column"]
+                if(i["type"]=="number"):
+                    FieldType=0
                 else:
-                    if type(qResult) in [list, tuple]:
-                        # Transformed to an array for simplifying getting the shape of the result, which can be of
-                        # different types
-                        qResult = numpy.array(qResult)
-                    columns = 1 if len(qResult.shape) == 1 else qResult.shape[1]
-                ret_type = [ret_type] * columns
-
-            # Transform the result to bundled rows
-            bundledRows = SSE.BundledRows()
-            if isinstance(qResult, str) or not hasattr(qResult, '__iter__'):
-                # A single value is returned
-                bundledRows.rows.add(duals=self.get_duals(qResult, ret_type))
-            else:
-                for row in qResult:
-                    bundledRows.rows.add(duals=self.get_duals(row, ret_type))
-
-            return bundledRows
+                    FieldType=0
+                logging.debug("Viewing Metadata from PreCog: {}" .format(i))
+                logging.debug('Adding Fields name :{}, dataType:{}' .format(FieldName, FieldType))
+                table.fields.add(name=FieldName, dataType=FieldType)
+            result = self.getTableData(url, script_li[0])
         else:
-            # No result was saved to qResult object
-            msg = 'No result was saved to qResult, check your script.'
-            self.raise_grpc_error(context, grpc.StatusCode.INVALID_ARGUMENT, msg)
+            result = []
+        logging.debug('Result: {}'.format(result))
+        ###print(table)
+        ###print(type(table))
+        self.send_table_description(table, context)
+        bundledRows = SSE.BundledRows()
+        if isinstance(result, str) or not hasattr(result, '__iter__'):
+            # A single value is returned
+            bundledRows.rows.add(duals=self.get_duals(result, ret_type))
+        else:
+            for row in result:
+                # note that each element of the result should represent a row
+                logging.debug(row)
+                logging.debug(type(row))
+                logging.debug(ret_type)
+                bundledRows.rows.add(duals=self.get_duals(row, ret_type))
+
+        return bundledRows
+   
+    
+    @staticmethod
+    def getTableInfo (url):
+       logging.info("In getTableInfo using url {}" .format(url))
+       table_list = precog.get_tables(url)
+       x = list(table_list[0].keys())
+       results =[]
+       for i in x:
+            y = precog.get_table_information(i, url)[1]
+            temp_li =[]
+            for j in y:
+                col_str = json.dumps(j)
+                temp_li.append(col_str)
+            column_str = ''.join(temp_li)
+            result= [i, table_list[0][i]['name'], column_str]
+            results.append(result)
+            ###print(result)
+       return results
+
+    @staticmethod
+    def getTableData(url, table_name):
+       logging.info("In getTableDatausing url {} and tablename {}" .format(url, table_name))
+       result = []
+       table_id  = precog.get_table_id(table_name, url)
+       logging.debug('Table ID {}' .format(table_id[0]))
+       token = precog.get_access_tokens(table_id[0],url)
+       ###print(token[0].values())
+       token_count = len(token[0]["accessTokens"])
+       create_token_tuple = precog.create_token(url,table_id[0])
+       ##print(create_token_tuple)
+       ##print(precog.get_count_of_all_tokens(url))
+       new_token = create_token_tuple[0]
+       new_secret = create_token_tuple[1]
+       response = create_token_tuple[2]
+       result = precog.get_result_csv(url, new_secret)
+       ##print(result[0])
+       output_str = result[1]
+       parsed_csv = precog.convert_csv(result[1])
+       ##print(type(parsed_csv))
+       resp_clean = precog.cleanup_token(new_token, table_id[0], url)
+       logging.debug('Token Cleaned Resp: {}' .format(resp_clean))
+       return parsed_csv[0]

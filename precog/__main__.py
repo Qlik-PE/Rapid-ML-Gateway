@@ -11,10 +11,6 @@ from concurrent import futures
 from datetime import datetime
 import requests
 import configparser
-#import QDAG_helper
-#current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-#parent_dir = os.path.dirname(current_dir)
-#sys.path.insert(0, parent_dir)
 
 
 
@@ -25,12 +21,12 @@ sys.path.append(os.path.join(PARENT_DIR, 'helper_functions'))
 import ServerSideExtension_pb2 as SSE
 import grpc
 from google.protobuf.json_format import MessageToDict
-from ssedata import FunctionType
+from ssedata import ArgType, FunctionType, ReturnType
 # import helper .py files
 import pysize
 import qlist
 import precog
-
+from scripteval import ScriptEval
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 config = configparser.ConfigParser()
 
@@ -46,7 +42,7 @@ class ExtensionService(SSE.ConnectorServicer):
         :param funcdef_file: a function definition JSON file
         """
         self._function_definitions = funcdef_file
-        #self.ScriptEval = ScriptEval()
+        self.ScriptEval = ScriptEval()
         os.makedirs('logs', exist_ok=True)
         log_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logger.config')
         logging.config.fileConfig(log_file)
@@ -71,8 +67,7 @@ class ExtensionService(SSE.ConnectorServicer):
             1: '_rest_30',
             2: '_ws_single',
             3: '_ws_batch',
-            4:  '_get_table_data',
-            5:  '_get_table_token'
+            4:  '_get_table_data'
             #,
             #4: '_echo_table'
         }
@@ -119,6 +114,8 @@ class ExtensionService(SSE.ConnectorServicer):
         #'Get The JSON Key And Values for Table'
         table_id  = precog.get_table_id(table_name, url)
         print(table_id[0])
+        print(table_id[1])
+        #try catch to catch bad url and kick out if resp is not 2000
         logging.debug('Input Table Name: {} Table ID: {}' .format(table_name, table_id[0]))
         create_token_tuple = precog.create_token(url,table_id[0])
         print(create_token_tuple)
@@ -129,17 +126,16 @@ class ExtensionService(SSE.ConnectorServicer):
         result = precog.get_result_csv(url, new_secret)
         print(result[0])
         output_str = result[1]
+        print(output_str)
         parsed_csv = precog.convert_csv(result[1])
         print(parsed_csv)
         resp_clean = precog.cleanup_token(new_token, table_id[0], url)
         print(resp_clean)
         print(precog.get_count_of_all_tokens(url))
-        
+        bundledRows = SSE.BundledRows()
 
-        yield SSE.BundledRows(rows=response_rows)
+        yield SSE.BundledRows(rows=resp_clean)
        
-
-
     @staticmethod
     def _rest_single(request, context):
         """
@@ -461,7 +457,24 @@ class ExtensionService(SSE.ConnectorServicer):
 
         return "{0} - Capability '{1}' called by user {2} from app {3}".format(peer, capability, userId, appId)
    
-    
+    def EvaluateScript(self, request, context):
+        """
+        This plugin supports full script functionality, that is, all function types and all data types.
+        :param request:
+        :param context:
+        :return:
+        """
+        logging.debug('In EvaluateScript: Main')
+        # Parse header for script request
+        metadata = dict(context.invocation_metadata())
+        logging.debug('Metadata {}',metadata)
+        header = SSE.ScriptRequestHeader()
+        header.ParseFromString(metadata['qlik-scriptrequestheader-bin'])
+        logging.debug('Header is : {}'.format(header))
+        logging.debug('Request is : {}' .format(request))
+        logging.debug("Context is: {}" .format(context))
+        return self.ScriptEval.EvaluateScript(header, request, context)
+
     @staticmethod
     def _echo_table(request, context):
         """
@@ -588,7 +601,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     # need to locate the file when script is called from outside it's location dir.
     def_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), args.definition_file)
-    print(def_file)
+    #print(def_file)
     logging.info('*** Server Configurations Port: {}, Pem_Dir: {}, def_file {} TimeStamp: {} ***'.format(args.port, args.pem_dir, def_file,datetime.now().isoformat()))
     calc = ExtensionService(def_file)
     calc.Serve(args.port, args.pem_dir)
