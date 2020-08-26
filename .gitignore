@@ -135,11 +135,7 @@ dmypy.json
 /mlflow
 /config
 /datarobot
-<<<<<<< HEAD
 #/precog
-=======
-#
->>>>>>> 8ed66f0ec33a8d2aab94e1225842667298c2ae32
 
 #do not upload debug
 /debug
