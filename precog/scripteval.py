@@ -215,7 +215,8 @@ class ScriptEval:
             table.fields.add(name="Name", dataType=0)
             table.fields.add(name="Column Desc", dataType=0)
         elif (script.find('TableMetaData') !=-1):
-            vTable= script[:-10]
+            vTable= script[:-14]
+            loggin.info('TableMetadata vTable {}' .format(vTable))
             table.name = vTable+"-Metadata"
             result =[]
             column_data = precog.get_column_info(vTable, url)
@@ -228,6 +229,7 @@ class ScriptEval:
             #print(result)
         elif (script.find('getTableData') !=-1):
             vTable = script[:-13] 
+            loggin.info('getTableData vTable {}' .format(vTable))
             table.name = script[:-13]
             column_data = precog.get_column_info(vTable, url)
             for i in column_data:
