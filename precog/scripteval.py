@@ -223,14 +223,14 @@ class ScriptEval:
             table.fields.add(name="type", dataType=0)
             for i in column_data:
                 part = [i["column"], i["type"]]
-               #print (part)
+                #print (part)
                 result.append(part)
             #print(result)
         elif (script.find('getTableData') !=-1):
-            script_li = script.split(':')
+            #script_li = script.split(':')
             ###print(script_li)
-            table.name = script_li[0]
-            column_data = precog.get_column_info(script_li[0], url)
+            table.name = script[:-13]
+            column_data = precog.get_column_info(script:[:-13]], url)
             for i in column_data:
                 FieldName = i["column"]
                 if(i["type"]=="number"):
