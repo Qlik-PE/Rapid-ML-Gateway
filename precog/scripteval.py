@@ -230,7 +230,7 @@ class ScriptEval:
             #script_li = script.split(':')
             ###print(script_li)
             table.name = script[:-13]
-            column_data = precog.get_column_info(script[:-13]], url)
+            column_data = precog.get_column_info(script[:-13], url)
             for i in column_data:
                 FieldName = i["column"]
                 if(i["type"]=="number"):
