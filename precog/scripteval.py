@@ -1,10 +1,10 @@
 
 import os, json, logging
 import logging.config
-
+import sys
 import ServerSideExtension_pb2 as SSE
 import grpc
-import precog
+import precog, qlist, pysize
 import configparser
 from ssedata import ArgType, FunctionType, ReturnType
 
@@ -64,14 +64,34 @@ class ScriptEval:
                         all_rows[i] = [list(datatype) for datatype in zip(*all_rows[i])]
 
             logging.debug('Received data from Qlik (args): {}'.format(all_rows))
-            yield self.evaluate(context, header.script, ret_type, params=all_rows)
+            return_val = self.evaluate(context, header.script, ret_type, params=all_rows)
 
         else:
             # No parameters provided
             logging.debug('No Parameteres Provided')
             #print(ret_type)
-            yield self.evaluate(context, header.script, ret_type)
-
+            result = self.evaluate(context, header.script, ret_type)
+        print(type(result))
+        print(sys.getsizeof(result))
+        bundledRows = SSE.BundledRows()
+        if isinstance(result, str) or not hasattr(result, '__iter__'):
+            # A single value is returned
+            bundledRows.rows.add(duals=self.get_duals(result, ret_type))
+        else:
+            logging.debug('Size of Result {} {}'.format(len(result), pysize.get_size(result)))
+            #if(len(result) > )
+            #result = result[:7000]
+            batches = list(qlist.divide_chunks(result, 100)) 
+            for i in batches:
+                print("loop")
+                for row in i:
+                    # note that each element of the result should represent a row
+                    #logging.debug(row)
+                    #logging.debug(type(row))
+                    #logging.debug(ret_type)
+                    bundledRows.rows.add(duals=self.get_duals(row, ret_type))
+                logging.debug('Size of BundledRow {}'.format(sys.getsizeof(bundledRows)))
+            yield bundledRows
     @staticmethod
     def get_func_type(header):
         """
@@ -248,19 +268,7 @@ class ScriptEval:
         ###print(table)
         ###print(type(table))
         self.send_table_description(table, context)
-        bundledRows = SSE.BundledRows()
-        if isinstance(result, str) or not hasattr(result, '__iter__'):
-            # A single value is returned
-            bundledRows.rows.add(duals=self.get_duals(result, ret_type))
-        else:
-            for row in result:
-                # note that each element of the result should represent a row
-                #logging.debug(row)
-                #logging.debug(type(row))
-                #logging.debug(ret_type)
-                bundledRows.rows.add(duals=self.get_duals(row, ret_type))
-
-        return bundledRows
+        return result
    
     
     @staticmethod
@@ -299,9 +307,11 @@ class ScriptEval:
        result = precog.get_result_csv(url, new_secret)
        ##print(result[0])
        output_str = result[1]
-       logging.debug("JRP Size of Result {}" .format(len(result[1])))
-       parsed_csv = precog.convert_csv(result[1])
-       ##print(type(parsed_csv))
+       logging.debug("JRP Size of outpu_str {}" .format(len(output_str)))
+       parsed_csv = precog.convert_csv(output_str)
+       logging.debug("JRP Size of parsed_csv {}" .format(len(parsed_csv[0])))
+       print(type(parsed_csv))
+       #print(parsed_csv[:10])
        resp_clean = precog.cleanup_token(new_token, table_id[0], url)
        logging.debug('Token Cleaned Resp: {}' .format(resp_clean))
        return parsed_csv[0]
