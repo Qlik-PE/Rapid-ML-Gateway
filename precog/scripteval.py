@@ -215,10 +215,10 @@ class ScriptEval:
             table.fields.add(name="Name", dataType=0)
             table.fields.add(name="Column Desc", dataType=0)
         elif (script.find('TableMetaData') !=-1):
-            #script_li = script.split(':')
-            table.name = script[:-10]+"-Metadata"
+            vTable= script[:-10]
+            table.name = vTable+"-Metadata"
             result =[]
-            column_data = precog.get_column_info(script[:-10], url)
+            column_data = precog.get_column_info(vTable, url)
             table.fields.add(name="column", dataType=0)
             table.fields.add(name="type", dataType=0)
             for i in column_data:
@@ -227,10 +227,9 @@ class ScriptEval:
                 result.append(part)
             #print(result)
         elif (script.find('getTableData') !=-1):
-            #script_li = script.split(':')
-            ###print(script_li)
+            vTable = script[:-13] 
             table.name = script[:-13]
-            column_data = precog.get_column_info(script[:-13], url)
+            column_data = precog.get_column_info(vTable, url)
             for i in column_data:
                 FieldName = i["column"]
                 if(i["type"]=="number"):
@@ -240,7 +239,7 @@ class ScriptEval:
                 #logging.debug("Viewing Metadata from PreCog: {}" .format(i))
                 #logging.debug('Adding Fields name :{}, dataType:{}' .format(FieldName, FieldType))
                 table.fields.add(name=FieldName, dataType=FieldType)
-            result = self.getTableData(url, script[:-13])
+            result = self.getTableData(url, vTable)
         else:
             result = []
         #logging.debug('Result: {}'.format(result))
