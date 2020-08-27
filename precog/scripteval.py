@@ -299,6 +299,7 @@ class ScriptEval:
        result = precog.get_result_csv(url, new_secret)
        ##print(result[0])
        output_str = result[1]
+       logging.debug("JRP Size of Result {}" .format(len(result[1])))
        parsed_csv = precog.convert_csv(result[1])
        ##print(type(parsed_csv))
        resp_clean = precog.cleanup_token(new_token, table_id[0], url)
