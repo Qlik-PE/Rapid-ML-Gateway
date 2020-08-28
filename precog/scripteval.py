@@ -33,7 +33,13 @@ class ScriptEval:
         #logging.debug('Arg Type {}' .format(arg_types))
         ret_type = self.get_return_type(header)
         #logging.debug('Return Type {}' .format(ret_type))
-
+        conf_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config', 'qrag.ini')
+        ##print(conf_file)
+        logging.info('Location of qrag.ini {}' .format(conf_file))
+        config.read(conf_file)
+        batch_size = int(config.get('base', 'batch_size'))
+        logging.info('Size of Batch Size {}' .format(batch_size))
+        #print(type(batch_size))
         logging.info('EvaluateScript: {} ({} {}) {}'
                      .format(header.script, arg_types, ret_type, func_type))
 
@@ -81,7 +87,7 @@ class ScriptEval:
             logging.debug('Size of Result {} {}'.format(len(result), pysize.get_size(result)))
             #if(len(result) > )
             #result = result[:10000]
-            batches = list(qlist.divide_chunks(result, 1000)) 
+            batches = list(qlist.divide_chunks(result, batch_size)) 
             for i in batches:
                 #print("loop")
                 bundledRows = SSE.BundledRows()
