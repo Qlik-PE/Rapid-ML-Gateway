@@ -73,25 +73,28 @@ class ScriptEval:
             result = self.evaluate(context, header.script, ret_type)
         print(type(result))
         print(sys.getsizeof(result))
-        bundledRows = SSE.BundledRows()
+        #bundledRows = SSE.BundledRows()
         if isinstance(result, str) or not hasattr(result, '__iter__'):
             # A single value is returned
             bundledRows.rows.add(duals=self.get_duals(result, ret_type))
         else:
             logging.debug('Size of Result {} {}'.format(len(result), pysize.get_size(result)))
             #if(len(result) > )
-            #result = result[:7000]
-            batches = list(qlist.divide_chunks(result, 100)) 
+            #result = result[:10000]
+            batches = list(qlist.divide_chunks(result, 1000)) 
             for i in batches:
-                print("loop")
+                #print("loop")
+                bundledRows = SSE.BundledRows()
                 for row in i:
                     # note that each element of the result should represent a row
                     #logging.debug(row)
                     #logging.debug(type(row))
                     #logging.debug(ret_type)
+        
+                    #Yield the row data as bundled rows
                     bundledRows.rows.add(duals=self.get_duals(row, ret_type))
-                logging.debug('Size of BundledRow {}'.format(sys.getsizeof(bundledRows)))
-            yield bundledRows
+                #logging.debug('Size of BundledRow {}'.format(sys.getsizeof(bundledRows)))
+                yield bundledRows
     @staticmethod
     def get_func_type(header):
         """
@@ -307,10 +310,10 @@ class ScriptEval:
        result = precog.get_result_csv(url, new_secret)
        ##print(result[0])
        output_str = result[1]
-       logging.debug("JRP Size of outpu_str {}" .format(len(output_str)))
+       logging.debug("JRP Size of output_str {}" .format(len(output_str)))
        parsed_csv = precog.convert_csv(output_str)
        logging.debug("JRP Size of parsed_csv {}" .format(len(parsed_csv[0])))
-       print(type(parsed_csv))
+       #print(type(parsed_csv))
        #print(parsed_csv[:10])
        resp_clean = precog.cleanup_token(new_token, table_id[0], url)
        logging.debug('Token Cleaned Resp: {}' .format(resp_clean))
