@@ -1,28 +1,21 @@
-![QRAG Logo](../images/QRAG.png)
+![QRAG Logo](../images/Pdrecog.png)
 
-<<<<<<< HEAD
-# Integrating Qlik with Precog 
+# Integrating Qlik with Precog
 
-Qlik Rapid API Gateway usese AWS PreCog Endpoint 
-
-## Integration Use Cases are Following
-
-=======
-# Integrating Qlik with Sagemaker
-
-Qlik Rapid API Gateway usese AWS Sagemaker Endpoint and AWS Lambda/AWS API Gateway for Integration.
+Qlik Rapid API Gateway usese Rest APIs with Precog to pull tables into Qlik
 
 ## Integration Use Cases are Following
 
-- Scoring Data Prepped by Qlik Sense with Sagemaker
-- Training Sagemaker Model with Data Residing Inside Qlik Sense
-- AUC Curve / MAE Creation
+- Pull Data from Sources Such as MongoDB, AWS S3 and API
 
->>>>>>> 8ed66f0ec33a8d2aab94e1225842667298c2ae32
+
 ## Installation and Setup
 
 ## Testing
 
+Please work with Batch_Size Parameter if you see this error.
+This means your GRPC Package has exceeded size 4194300
+The following error occurred:Connector reply error: grpc::StatusCode::RESOURCE_EXHAUSTED: 'Received message larger than max (5763619 vs. 4194304)'The error occurred here:Load * Extension Precog.ScriptEvalStr('MongoDB-Movies:getTableData')
 ## Architectural Diagram
 
 ## References
