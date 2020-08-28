@@ -1,10 +1,10 @@
 
 import os, json, logging
 import logging.config
-
+import sys
 import ServerSideExtension_pb2 as SSE
 import grpc
-import precog
+import precog, qlist, pysize
 import configparser
 from ssedata import ArgType, FunctionType, ReturnType
 
@@ -27,13 +27,19 @@ class ScriptEval:
         logging.debug('In EvaluateScritp: ScriptEval')
         # Retrieve function type
         func_type = self.get_func_type(header)
-        logging.debug('Function Type {}' .format(func_type))
+        #logging.debug('Function Type {}' .format(func_type))
         # Retrieve data types from header
         arg_types = self.get_arg_types(header)
-        logging.debug('Arg Type {}' .format(arg_types))
+        #logging.debug('Arg Type {}' .format(arg_types))
         ret_type = self.get_return_type(header)
-        logging.debug('Return Type {}' .format(ret_type))
-
+        #logging.debug('Return Type {}' .format(ret_type))
+        conf_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config', 'qrag.ini')
+        ##print(conf_file)
+        logging.info('Location of qrag.ini {}' .format(conf_file))
+        config.read(conf_file)
+        batch_size = int(config.get('base', 'batch_size'))
+        logging.info('Size of Batch Size {}' .format(batch_size))
+        #print(type(batch_size))
         logging.info('EvaluateScript: {} ({} {}) {}'
                      .format(header.script, arg_types, ret_type, func_type))
 
@@ -64,14 +70,37 @@ class ScriptEval:
                         all_rows[i] = [list(datatype) for datatype in zip(*all_rows[i])]
 
             logging.debug('Received data from Qlik (args): {}'.format(all_rows))
-            yield self.evaluate(context, header.script, ret_type, params=all_rows)
+            return_val = self.evaluate(context, header.script, ret_type, params=all_rows)
 
         else:
             # No parameters provided
             logging.debug('No Parameteres Provided')
             #print(ret_type)
-            yield self.evaluate(context, header.script, ret_type)
-
+            result = self.evaluate(context, header.script, ret_type)
+        print(type(result))
+        print(sys.getsizeof(result))
+        #bundledRows = SSE.BundledRows()
+        if isinstance(result, str) or not hasattr(result, '__iter__'):
+            # A single value is returned
+            bundledRows.rows.add(duals=self.get_duals(result, ret_type))
+        else:
+            logging.debug('Size of Result {} {}'.format(len(result), pysize.get_size(result)))
+            #if(len(result) > )
+            #result = result[:10000]
+            batches = list(qlist.divide_chunks(result, batch_size)) 
+            for i in batches:
+                #print("loop")
+                bundledRows = SSE.BundledRows()
+                for row in i:
+                    # note that each element of the result should represent a row
+                    #logging.debug(row)
+                    #logging.debug(type(row))
+                    #logging.debug(ret_type)
+        
+                    #Yield the row data as bundled rows
+                    bundledRows.rows.add(duals=self.get_duals(row, ret_type))
+                #logging.debug('Size of BundledRow {}'.format(sys.getsizeof(bundledRows)))
+                yield bundledRows
     @staticmethod
     def get_func_type(header):
         """
@@ -215,51 +244,40 @@ class ScriptEval:
             table.fields.add(name="Name", dataType=0)
             table.fields.add(name="Column Desc", dataType=0)
         elif (script.find('TableMetaData') !=-1):
-            script_li = script.split(':')
-            table.name = script_li[0]+"-Metadata"
+            vTable= script[:-14]
+            logging.info('TableMetadata vTable {}' .format(vTable))
+            table.name = vTable+"-Metadata"
             result =[]
-            column_data = precog.get_column_info(script_li[0], url)
+            column_data = precog.get_column_info(vTable, url)
             table.fields.add(name="column", dataType=0)
             table.fields.add(name="type", dataType=0)
             for i in column_data:
                 part = [i["column"], i["type"]]
-               #print (part)
+                #print (part)
                 result.append(part)
             #print(result)
         elif (script.find('getTableData') !=-1):
-            script_li = script.split(':')
-            ###print(script_li)
-            table.name = script_li[0]
-            column_data = precog.get_column_info(script_li[0], url)
+            vTable = script[:-13] 
+            logging.info('getTableData vTable {}' .format(vTable))
+            table.name = script[:-13]
+            column_data = precog.get_column_info(vTable, url)
             for i in column_data:
                 FieldName = i["column"]
                 if(i["type"]=="number"):
                     FieldType=0
                 else:
                     FieldType=0
-                logging.debug("Viewing Metadata from PreCog: {}" .format(i))
-                logging.debug('Adding Fields name :{}, dataType:{}' .format(FieldName, FieldType))
+                #logging.debug("Viewing Metadata from PreCog: {}" .format(i))
+                #logging.debug('Adding Fields name :{}, dataType:{}' .format(FieldName, FieldType))
                 table.fields.add(name=FieldName, dataType=FieldType)
-            result = self.getTableData(url, script_li[0])
+            result = self.getTableData(url, vTable)
         else:
             result = []
-        logging.debug('Result: {}'.format(result))
+        #logging.debug('Result: {}'.format(result))
         ###print(table)
         ###print(type(table))
         self.send_table_description(table, context)
-        bundledRows = SSE.BundledRows()
-        if isinstance(result, str) or not hasattr(result, '__iter__'):
-            # A single value is returned
-            bundledRows.rows.add(duals=self.get_duals(result, ret_type))
-        else:
-            for row in result:
-                # note that each element of the result should represent a row
-                logging.debug(row)
-                logging.debug(type(row))
-                logging.debug(ret_type)
-                bundledRows.rows.add(duals=self.get_duals(row, ret_type))
-
-        return bundledRows
+        return result
    
     
     @staticmethod
@@ -285,7 +303,7 @@ class ScriptEval:
        logging.info("In getTableDatausing url {} and tablename {}" .format(url, table_name))
        result = []
        table_id  = precog.get_table_id(table_name, url)
-       logging.debug('Table ID {}' .format(table_id[0]))
+       #logging.debug('Table ID {}' .format(table_id[0]))
        token = precog.get_access_tokens(table_id[0],url)
        ###print(token[0].values())
        token_count = len(token[0]["accessTokens"])
@@ -298,8 +316,11 @@ class ScriptEval:
        result = precog.get_result_csv(url, new_secret)
        ##print(result[0])
        output_str = result[1]
-       parsed_csv = precog.convert_csv(result[1])
-       ##print(type(parsed_csv))
+       logging.debug("JRP Size of output_str {}" .format(len(output_str)))
+       parsed_csv = precog.convert_csv(output_str)
+       logging.debug("JRP Size of parsed_csv {}" .format(len(parsed_csv[0])))
+       #print(type(parsed_csv))
+       #print(parsed_csv[:10])
        resp_clean = precog.cleanup_token(new_token, table_id[0], url)
        logging.debug('Token Cleaned Resp: {}' .format(resp_clean))
        return parsed_csv[0]
