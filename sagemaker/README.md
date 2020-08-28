@@ -84,11 +84,11 @@ qrag.ini file location is current module/config/directory. i.e. ./sagemaker/conf
 Below is sample definition of function.json file located in sagemaker directiory/module.  
 Please note that __Name__ field and headers correspond.
 
-![functions.json](../images/sagemaker-qrag.jpeg) 3. Restarting Services
+![functions.json](../images/sagemaker-qrag.jpeg) 
 
 QRAG will determinte the functions variable input such as url, username, token and cache(For Websocket we also need route defined)
 
-3. Restarting Services
+3.Restarting Services
 After functions.json and qrag.ini is set please restart Qlik Engine Services
 
 ## Testing
