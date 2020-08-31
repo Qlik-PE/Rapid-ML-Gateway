@@ -136,7 +136,7 @@ dmypy.json
 /config
 /datarobot
 #/precog
-
+settings.json
 #do not upload debug
 /debug
 
