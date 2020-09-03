@@ -140,6 +140,6 @@ dmypy.json
 settings.json
 #do not upload debug
 /debug
-
 .DS_Store
 qrag.ini
+
