@@ -141,5 +141,5 @@ settings.json
 #do not upload debug
 /debug
 .DS_Store
-*/config/*
+qrag.ini
 
