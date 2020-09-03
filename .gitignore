@@ -135,9 +135,11 @@ dmypy.json
 /mlflow
 /config
 /datarobot
+/cognitive_services
 #/precog
-
+settings.json
 #do not upload debug
 /debug
 
 .DS_Store
+*/config/*

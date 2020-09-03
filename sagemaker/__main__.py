@@ -215,7 +215,6 @@ class ExtensionService(SSE.ConnectorServicer):
         batch_size = int(config.get(q_function_name, 'batch_size'))
         logging.debug('Batch Size {}' .format(batch_size))
         ws_route= config.get(q_function_name, 'ws_route')
-        #ws_route= '"' + ws_route + '"'
         logging.info('API Route : {}' .format(ws_route))
         # setup Caching
         bCache= config.get(q_function_name, 'cache')
