@@ -78,6 +78,12 @@ QRAG currently supports Python 3.8+ and Qlik Server 13.72.5+.
 Official Docker and Exe Support is due soon.
 Each API Connector will need small different setting changes
 
+# Modules
+
+- Sagemaker
+- Precog
+- Azure Cognitive Services
+
 ## Using Docker
 
 # Basic Usage
