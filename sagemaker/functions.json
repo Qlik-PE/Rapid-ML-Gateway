@@ -208,6 +208,37 @@
                 "col30": 0
             }
   
+        },
+        {
+            "Id": 12,
+            "Name": "telco_customer_churn",
+            "Type": 2,
+            "QRAP_Type": "rest_single",
+            "ReturnType": 0,
+            "Params": {
+                "str1": 0
+            }
+        },
+        {
+            "Id": 13,
+            "Name": "bank_direct_marketing",
+            "Type": 2,
+            "QRAP_Type": "rest_single",
+            "ReturnType": 0,
+            "Params": {
+                "str1": 0
+            }
+        },
+        {
+            "Id": 14,
+            "Name": "bank_direct_marketing_bulk",
+            "Type": 2,
+            "QRAP_Type": "ws_batch",
+            "ReturnType": 0,
+            "Params": {
+                "str1": 0
+            }
         }
+    
     ]
 }

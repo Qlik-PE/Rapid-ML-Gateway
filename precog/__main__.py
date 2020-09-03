@@ -11,10 +11,6 @@ from concurrent import futures
 from datetime import datetime
 import requests
 import configparser
-#import QDAG_helper
-#current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-#parent_dir = os.path.dirname(current_dir)
-#sys.path.insert(0, parent_dir)
 
 
 
@@ -25,11 +21,12 @@ sys.path.append(os.path.join(PARENT_DIR, 'helper_functions'))
 import ServerSideExtension_pb2 as SSE
 import grpc
 from google.protobuf.json_format import MessageToDict
-from ssedata import FunctionType
+from ssedata import ArgType, FunctionType, ReturnType
 # import helper .py files
 import pysize
 import qlist
-
+import precog
+from scripteval import ScriptEval
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 config = configparser.ConfigParser()
 
@@ -45,10 +42,9 @@ class ExtensionService(SSE.ConnectorServicer):
         :param funcdef_file: a function definition JSON file
         """
         self._function_definitions = funcdef_file
-        #self.ScriptEval = ScriptEval()
+        self.ScriptEval = ScriptEval()
         os.makedirs('logs', exist_ok=True)
         log_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logger.config')
-        print(log_file)
         logging.config.fileConfig(log_file)
         logging.info(self._function_definitions)
         logging.info('Logging enabled')
@@ -71,7 +67,9 @@ class ExtensionService(SSE.ConnectorServicer):
             1: '_rest_30',
             2: '_ws_single',
             3: '_ws_batch',
-            4: '_echo_table'
+            4:  '_get_table_data'
+            #,
+            #4: '_echo_table'
         }
 
     @staticmethod
@@ -87,7 +85,57 @@ class ExtensionService(SSE.ConnectorServicer):
 
         return header.functionId
 
+    @staticmethod
+    def _get_table_data(request, context):
+        """
+        Echo the input table.
+        :param request:
+        :param context:
+        :return:
+        """
+        logging.info('Entering {} TimeStamp: {}' .format(function_name, datetime.now().strftime("%H:%M:%S.%f")))
+        url = config.get(q_function_name, 'url')
+        logging.debug("Rest Url is set to {}" .format(url))
+        bCache= config.get(q_function_name, 'cache')
+        logging.debug("Caching is set to {}" .format(bCache))
+        if (bCache.lower() =="true"):
+            logging.info("Caching ****Enabled*** for {}" .format(q_function_name))
+        else:
+            logging.info("Caching ****Disabled**** for {}" .format(q_function_name))
+            md = (('qlik-cache', 'no-store'),)
+            context.send_initial_metadata(md)
 
+        #'Get The Table Name'
+        for request_rows in request:
+            response_rows = []
+        temp = MessageToDict(request_rows) 
+        table_name = temp["rows"][0]["duals"][0]["strData"]
+        logging.debug("Table Name : {}" .format(table_name))
+        #'Get The JSON Key And Values for Table'
+        table_id  = precog.get_table_id(table_name, url)
+        print(table_id[0])
+        print(table_id[1])
+        #try catch to catch bad url and kick out if resp is not 2000
+        logging.debug('Input Table Name: {} Table ID: {}' .format(table_name, table_id[0]))
+        create_token_tuple = precog.create_token(url,table_id[0])
+        print(create_token_tuple)
+        print(precog.get_count_of_all_tokens(url))
+        new_token = create_token_tuple[0]
+        new_secret = create_token_tuple[1]
+        response = create_token_tuple[2]
+        result = precog.get_result_csv(url, new_secret)
+        print(result[0])
+        output_str = result[1]
+        print(output_str)
+        parsed_csv = precog.convert_csv(result[1])
+        print(parsed_csv)
+        resp_clean = precog.cleanup_token(new_token, table_id[0], url)
+        print(resp_clean)
+        print(precog.get_count_of_all_tokens(url))
+        bundledRows = SSE.BundledRows()
+
+        yield SSE.BundledRows(rows=resp_clean)
+       
     @staticmethod
     def _rest_single(request, context):
         """
@@ -215,6 +263,7 @@ class ExtensionService(SSE.ConnectorServicer):
         batch_size = int(config.get(q_function_name, 'batch_size'))
         logging.debug('Batch Size {}' .format(batch_size))
         ws_route= config.get(q_function_name, 'ws_route')
+        #ws_route= '"' + ws_route + '"'
         logging.info('API Route : {}' .format(ws_route))
         # setup Caching
         bCache= config.get(q_function_name, 'cache')
@@ -408,7 +457,24 @@ class ExtensionService(SSE.ConnectorServicer):
 
         return "{0} - Capability '{1}' called by user {2} from app {3}".format(peer, capability, userId, appId)
    
-    
+    def EvaluateScript(self, request, context):
+        """
+        This plugin supports full script functionality, that is, all function types and all data types.
+        :param request:
+        :param context:
+        :return:
+        """
+        logging.debug('In EvaluateScript: Main')
+        # Parse header for script request
+        metadata = dict(context.invocation_metadata())
+        logging.debug('Metadata {}',metadata)
+        header = SSE.ScriptRequestHeader()
+        header.ParseFromString(metadata['qlik-scriptrequestheader-bin'])
+        logging.debug('Header is : {}'.format(header))
+        logging.debug('Request is : {}' .format(request))
+        logging.debug("Context is: {}" .format(context))
+        return self.ScriptEval.EvaluateScript(header, request, context)
+
     @staticmethod
     def _echo_table(request, context):
         """
@@ -527,10 +593,7 @@ class ExtensionService(SSE.ConnectorServicer):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    conf_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config', 'qrag.ini')
-    print(conf_file)
-    logging.info('Location of qrag.ini {}' .format(conf_file))
-    config.read(conf_file)
+    config.read(os.path.join(os.path.dirname(__file__), 'config', 'qrag.ini'))
     port = config.get('base', 'port')
     parser.add_argument('--port', nargs='?', default=port)
     parser.add_argument('--pem_dir', nargs='?')
@@ -538,7 +601,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     # need to locate the file when script is called from outside it's location dir.
     def_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), args.definition_file)
-    print(def_file)
+    #print(def_file)
     logging.info('*** Server Configurations Port: {}, Pem_Dir: {}, def_file {} TimeStamp: {} ***'.format(args.port, args.pem_dir, def_file,datetime.now().isoformat()))
     calc = ExtensionService(def_file)
     calc.Serve(args.port, args.pem_dir)

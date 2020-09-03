@@ -1,0 +1,464 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+    "KeyName": {
+      "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance",
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "ConstraintDescription": "must be the name of an existing EC2 KeyPair."
+    },
+    "Owner": {
+      "Description": "Please Put the Owner Name",
+      "Type": "String",
+      "Default": "John Doe",
+      "ConstraintDescription": "Name of the Owner."
+    },
+    "QlikSubscriptionsType": {
+      "Description": "AWS Marketplace Qlik Subscription Type - Must Susbscribe to AWS Marketplace Qlik Subscription ",
+      "Type": "String",
+      "Default": "BYOL",
+      "AllowedValues": ["BYOL", "HOURLY"],
+      "ConstraintDescription": "must be BYOL or HOURLY."
+    },
+    "QlikServerInstanceType": {
+      "Description": "Qlik Server EC2 instance type",
+      "Type": "String",
+      "Default": "t3.2xlarge",
+      "AllowedValues": ["t3.2xlarge", "r4.large", "r5.xlarge", "r5n.xlarge"],
+      "ConstraintDescription": "must be a valid EC2 instance type."
+    },
+    "QRAGServerInstanceType": {
+      "Description": "Qlik Server EC2 instance type",
+      "Type": "String",
+      "Default": "t3.2xlarge",
+      "AllowedValues": ["t3.2xlarge", "r5.xlarge", "r5n.xlarge"],
+      "ConstraintDescription": "must be a valid EC2 instance type."
+    },
+    "QlikAPIGatewayURL": {
+      "Description": "Qlik Server EC2 instance type",
+      "Type": "String",
+      "Default": "http://abcdefg.com",
+      "AllowedPattern": "https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,4}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)",
+      "ConstraintDescription": "must be a correct url."
+    },
+    "SSHLocation": {
+      "Description": "The IP address range that can be used to SSH to the EC2 instances",
+      "Type": "String",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "Default": "0.0.0.0/0",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+    },
+    "RDPLocation": {
+      "Description": "The IP address range that can be used to RDP to the Qlik Server instances",
+      "Type": "String",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "Default": "0.0.0.0/0",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+    }
+  },
+  "Mappings": {
+    "RegionAndInstanceTypeToAMIID": {
+      "us-east-1": {
+        "BYOL": "ami-039168fa01078417d",
+        "HOURLY": "ami-0b0d07d469adfd455"
+      },
+      "us-east-2": {
+        "BYOL": "ami-0d9cd2cc2e71a3912",
+        "HOURLY": "ami-04fa79f15c0273675"
+      },
+      "us-west-1": {
+        "BYOL": "ami-05f62a0a5092cadcd",
+        "HOURLY": "ami-0df73850a2d14fee3"
+      },
+      "us-west-2": {
+        "BYOL": "ami-0f5564f54b07bbebb",
+        "HOURLY": "ami-06178aa6f830e09d4"
+      },
+      "ca-central-1": {
+        "BYOL": "ami-0ea98eff384b86ab3",
+        "HOURLY": "ami-0e3d313a6065bce91"
+      },
+      "eu-central-1": {
+        "BYOL": "ami-036eded948ba26d08",
+        "HOURLY": "ami-02a7ffec5b8f3d799"
+      },
+      "eu-west-1": {
+        "BYOL": "ami-0ac6e40ad8cd86e48",
+        "HOURLY": "ami-09d03737ab363b695"
+      },
+      "eu-west-2": {
+        "BYOL": "ami-047f829dbe8630a72",
+        "HOURLY": "ami-01c3e7ff29bcd897b"
+      },
+      "eu-west-3": {
+        "BYOL": "ami-0ee04182ded94c5ce",
+        "HOURLY": "ami-048248276d559b5c8"
+      },
+      "eu-north-1": {
+        "BYOL": "ami-0ef0d63baa1b3735c",
+        "HOURLY": "ami-08b216aeeef1368d6"
+      },
+      "ap-southeast-1": {
+        "BYOL": "ami-03fd8ea65b526929f",
+        "HOURLY": "ami-07405e086be3d9e90"
+      },
+      "ap-southeast-2": {
+        "BYOL": "ami-0d50caa53e81a784f",
+        "HOURLY": "ami-02dccdb6ce75ab0fc"
+      },
+      "ap-northeast-2": {
+        "BYOL": "ami-0c7b7e44375c4c699",
+        "HOURLY": "ami-0751ae3c4e328e348"
+      },
+      "ap-northeast-1": {
+        "BYOL": "ami-0a0396b4fbb5c82ff",
+        "HOURLY": "ami-0346f8237de072cc8"
+      },
+      "ap-south-1": {
+        "BYOL": "ami-09239c6795ab09923",
+        "HOURLY": "ami-073816e0faa0d8899"
+      },
+      "sa-east-1": {
+        "BYOL": "ami-08cfd55f65f5d546d",
+        "HOURLY": "ami-09bba45c076d76baf"
+      }
+    },
+    "RegionAndInstanceTypeToLinuxAMIID": {
+      "us-east-1": { "HVM64": "ami-0e70db31f7e942241" },
+      "us-east-2": { "HVM64": "ami-04152c3a27c49a944" },
+      "us-west-1": { "HVM64": "ami-07cc3067eac51cfd1" },
+      "us-west-2": { "HVM64": "ami-06114735d23400102" },
+      "ca-central-1": { "HVM64": "ami-078044add7f3bc223" },
+      "eu-central-1": { "HVM64": "ami-0269bf9bdc123ec5a" },
+      "eu-west-1": { "HVM64": "ami-069302b967476d106" },
+      "eu-west-2": { "HVM64": "ami-034b59dc8207c4271" },
+      "eu-west-3": { "HVM64": "ami-0cfed801f3165b72c" },
+      "eu-north-1": { "HVM64": "ami-ff179f81" },
+      "ap-southeast-1": { "HVM64": "ami-00993e75f0b291251" },
+      "ap-southeast-2": { "HVM64": "ami-0d6a5acd125a412df" },
+      "ap-northeast-2": { "HVM64": "ami-0fef8d8fdf013e90d" },
+      "ap-northeast-1": { "HVM64": "ami-01609ad3d131f7472" },
+      "ap-south-1": { "HVM64": "ami-024813a5925fd29a5" },
+      "sa-east-1": { "HVM64": "ami-0ff314a070d8cf060" }
+    }
+  },
+  "Resources": {
+    "QlikSenseSingleNode": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "ImageId": {
+          "Fn::FindInMap": [
+            "RegionAndInstanceTypeToAMIID",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Ref": "QlikSubscriptionsType"
+            }
+          ]
+        },
+        "InstanceType": {
+          "Ref": "QlikServerInstanceType"
+        },
+        "KeyName": {
+          "Ref": "KeyName"
+        },
+        "EbsOptimized": true,
+        "SecurityGroupIds": [
+          {
+            "Fn::GetAtt": ["QlikSenseSecurityGroup", "GroupId"]
+          }
+        ],
+        "SubnetId": {
+          "Ref": "PublicSubnet"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [{ "Ref": "AWS::StackName" }, "-QlikSenseSingleNode"]
+              ]
+            }
+          },
+          { "Key": "StackName", "Value": { "Ref": "AWS::StackName" } },
+          { "Key": "Owner", "Value": { "Ref": "Owner" } }
+        ]
+      },
+      "DependsOn": ["QlikSenseSecurityGroup"]
+    },
+    "QRAGServer": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "ImageId": {
+          "Fn::FindInMap": [
+            "RegionAndInstanceTypeToLinxAMIID",
+            {
+              "Ref": "AWS::Region"
+            },
+            "HVM64"
+          ]
+        },
+        "InstanceType": {
+          "Ref": "QRAGServerInstanceType"
+        },
+        "KeyName": {
+          "Ref": "KeyName"
+        },
+        "EbsOptimized": true,
+        "SecurityGroupIds": [
+          {
+            "Fn::GetAtt": ["QlikSenseSecurityGroup", "GroupId"]
+          }
+        ],
+        "SubnetId": {
+          "Ref": "PublicSubnet"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": ["", [{ "Ref": "AWS::StackName" }, "-QRAGServer"]]
+            }
+          },
+          { "Key": "StackName", "Value": { "Ref": "AWS::StackName" } },
+          { "Key": "Owner", "Value": { "Ref": "Owner" } }
+        ]
+      },
+      "DependsOn": ["QlikSenseSecurityGroup"]
+    },
+    "QlikSenseSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupName": "QlikSenseSecurityGroup",
+        "GroupDescription": "Default Security Rules for Qlik Sense",
+        "VpcId": { "Ref": "VPC" },
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 4244,
+            "ToPort": 4244,
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 3389,
+            "ToPort": 3389,
+            "CidrIp": { "Ref": "RDPLocation" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 443,
+            "ToPort": 443,
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 22,
+            "ToPort": 22,
+            "CidrIp": { "Ref": "SSHLocation" }
+          }
+        ]
+      }
+    },
+    "QlikSenseElasticIP": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "Domain": "vpc"
+      },
+      "DependsOn": ["QlikSenseSingleNode"]
+    },
+    "AssociateEIP": {
+      "Type": "AWS::EC2::EIPAssociation",
+      "Properties": {
+        "AllocationId": {
+          "Fn::GetAtt": ["QlikSenseElasticIP", "AllocationId"]
+        },
+        "InstanceId": { "Ref": "QlikSenseSingleNode" }
+      }
+    },
+    "VPC": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": "10.0.0.0/24",
+        "EnableDnsSupport": "true",
+        "EnableDnsHostnames": "true",
+        "Tags": [
+          { "Key": "Application", "Value": { "Ref": "AWS::StackId" } },
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "-VPC"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "InternetGateway": {
+      "Type": "AWS::EC2::InternetGateway",
+      "Properties": {
+        "Tags": [
+          { "Key": "Application", "Value": { "Ref": "AWS::StackId" } },
+          { "Key": "Network", "Value": "Public" },
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "-IG"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "AttachGateway": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "VpcId": { "Ref": "VPC" },
+        "InternetGatewayId": { "Ref": "InternetGateway" }
+      }
+    },
+    "PublicSubnet": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": { "Ref": "VPC" },
+        "CidrBlock": "10.0.0.0/24",
+        "Tags": [
+          { "Key": "Application", "Value": { "Ref": "AWS::StackId" } },
+          { "Key": "Network", "Value": "Public" },
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "-PublicSubnet"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "PublicRouteTable": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": { "Ref": "VPC" },
+        "Tags": [
+          { "Key": "Application", "Value": { "Ref": "AWS::StackId" } },
+          { "Key": "Network", "Value": "Public" },
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "-PublicRouteTable"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "PublicRoute": {
+      "Type": "AWS::EC2::Route",
+      "DependsOn": "AttachGateway",
+      "Properties": {
+        "RouteTableId": { "Ref": "PublicRouteTable" },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": { "Ref": "InternetGateway" }
+      }
+    },
+    "PublicSubnetRouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": { "Ref": "PublicSubnet" },
+        "RouteTableId": { "Ref": "PublicRouteTable" }
+      }
+    }
+  },
+  "Outputs": {
+    "InstanceName": {
+      "Description": "InstanceId of the newly created EC2 instance",
+      "Value": {
+        "Fn::Join": ["", [{ "Ref": "AWS::StackName" }, "-QlikSenseSingleNode"]]
+      }
+    },
+    "InstanceId": {
+      "Description": "InstanceId of the newly created EC2 instance",
+      "Value": {
+        "Ref": "QlikSenseSingleNode"
+      }
+    },
+    "AavailabilityZone": {
+      "Description": "Availability Zone of the newly created EC2 instance",
+      "Value": {
+        "Fn::GetAtt": ["QlikSenseSingleNode", "AvailabilityZone"]
+      }
+    },
+    "PublicDNS": {
+      "Description": "Public DNSName of the newly created EC2 instance",
+      "Value": {
+        "Fn::GetAtt": ["QlikSenseSingleNode", "PublicDnsName"]
+      }
+    },
+    "PublicIP": {
+      "Description": "Public IP address of the newly created EC2 instance",
+      "Value": {
+        "Fn::GetAtt": ["QlikSenseSingleNode", "PublicIp"]
+      }
+    },
+    "VPCName": {
+      "Description": "Name of the newly created VPC",
+      "Value": {
+        "Fn::Join": ["", [{ "Ref": "AWS::StackName" }, "-QlikSenseSingleNode"]]
+      }
+    },
+    "VPC": {
+      "Description": "Id of the newly created VPC ",
+      "Value": {
+        "Ref": "VPC"
+      }
+    },
+    "SecurityGroupName": {
+      "Description": "Name of the newly created Security Group",
+      "Value": {
+        "Fn::Join": [
+          "",
+          [{ "Ref": "AWS::StackName" }, "-QlikSenseSecurityGroup"]
+        ]
+      }
+    },
+    "SecurityGroup": {
+      "Description": "Id of the newly created EC2 Security Group",
+      "Value": {
+        "Ref": "QlikSenseSecurityGroup"
+      }
+    }
+  }
+}
