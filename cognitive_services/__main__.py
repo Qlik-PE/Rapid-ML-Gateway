@@ -6,7 +6,7 @@ import logging.config
 import os, sys, inspect, time
 from websocket import create_connection
 import socket
-import re
+import re, uuid
 from concurrent import futures
 from datetime import datetime
 import requests, uuid
@@ -20,10 +20,11 @@ sys.path.append(os.path.join(PARENT_DIR, 'generated'))
 sys.path.append(os.path.join(PARENT_DIR, 'helper_functions'))
 import ServerSideExtension_pb2 as SSE
 import grpc
+import qlist
 from google.protobuf.json_format import MessageToDict
 from ssedata import ArgType, FunctionType, ReturnType
 # import helper .py files
-from scripteval import ScriptEval
+#from scripteval import ScriptEval
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 config = configparser.ConfigParser()
 
@@ -39,7 +40,7 @@ class ExtensionService(SSE.ConnectorServicer):
         :param funcdef_file: a function definition JSON file
         """
         self._function_definitions = funcdef_file
-        self.ScriptEval = ScriptEval()
+        #self.ScriptEval = ScriptEval()
         os.makedirs('logs', exist_ok=True)
         log_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logger.config')
         logging.config.fileConfig(log_file)
@@ -60,7 +61,7 @@ class ExtensionService(SSE.ConnectorServicer):
         :return: Mapping of function id and implementation
         """
         return {
-            0: 'translate',
+            0: '_rest_single',
         }
 
     @staticmethod
@@ -85,9 +86,17 @@ class ExtensionService(SSE.ConnectorServicer):
         """
         logging.info('Entering {} TimeStamp: {}' .format(function_name, datetime.now().strftime("%H:%M:%S.%f")))
         url = config.get(q_function_name, 'url')
+        azure_cognitive_service_key = config.get('base', 'azure_cognitive_service_key')
+        azure_cognitive_region = config.get('base',  'azure_cognitive_region')
         logging.debug("Rest Url is set to {}" .format(url))
         bCache= config.get(q_function_name, 'cache')
         logging.debug("Caching is set to {}" .format(bCache))
+        headers = {
+         'Ocp-Apim-Subscription-Key': azure_cognitive_service_key,
+         'Ocp-Apim-Subscription-Region': azure_cognitive_region,
+         'Content-type': 'application/json',
+         'X-ClientTraceId': str(uuid.uuid4())   
+        }
         if (bCache.lower() =="true"):
             logging.info("Caching ****Enabled*** for {}" .format(q_function_name))
         else:
@@ -96,21 +105,45 @@ class ExtensionService(SSE.ConnectorServicer):
             context.send_initial_metadata(md)
         response_rows = []
         request_counter = 1
+        if(q_function_name=='translate'):
+                    path = '/translate?api-version=3.0'
+                    constructed_url = url + path 
         for request_rows in request:
             logging.debug('Printing Request Rows - Request Counter {}' .format(request_counter))
             request_counter = request_counter +1
             for row in request_rows.rows:
-                param = [d.strData for d in row.duals][0]
-                payload = '{"data":"' + param + '"}'
-                logging.debug('Showing Payload: {}'.format(payload))
-                #resp = requests.post(url, data=payload)
-                #logging.debug('Show Payload Response as Text: {}'.format(resp.text))
+                param = [d.strData for d in row.duals]
+                print(param)
+                language  = '&to=' + param[1]
+                logging.debug('Showing Language to Translate to : {}'.format(language))
+                finished_url = constructed_url+language
+                logging.debug('Showing finished url to : {}'.format(finished_url))
+                body = [{'text' : param[0]}]
+                logging.debug('Showing message body: {}'.format(body))
+                print(headers)
+                request = requests.post(finished_url, headers=headers, json=body)
+                resp= request.json()
+                logging.debug('Show Payload Response as Text: {}'.format(resp))
+                print((resp))
+                
+                result =''
+                if(param[2] =='score'):
+                    result = str(resp[0]['detectedLanguage']['score'])
+                    logging.debug('Score: {}'.format(result))
+                    print(result)
+                    print(type(result))
+                    duals = iter([SSE.Dual(strData=result)])
+                if(param[2] =='text'):   
+                    result = resp[0]['translations'][0]['text']
+                    print(type(result))
+                    logging.debug('Translation: {}'.format(result))
+                    duals = iter([SSE.Dual(strData=result)])
+                #''resp[]
                 #result = resp.text
                 #result = result.replace('"', '')
                 #result = result.strip()
                 #logging.debug('Show  Result: {}'.format(result))
                 #Create an iterable of dual with the result
-                duals = iter([SSE.Dual(strData=result)])
                 response_rows.append(SSE.Row(duals=duals))
                 # Yield the row data as bundled rows
         yield SSE.BundledRows(rows=response_rows)

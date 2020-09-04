@@ -8,9 +8,10 @@
             "ReturnType": 0,
             "Params": {
                 "str1": 0,
-                "str2": 0
+                "str2": 0,
+                "str3": 0
             }
-        },
+        }
     
     ]
 }
