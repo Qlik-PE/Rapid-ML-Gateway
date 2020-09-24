@@ -11,10 +11,6 @@ from concurrent import futures
 from datetime import datetime
 import requests
 import configparser
-#import QDAG_helper
-#current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-#parent_dir = os.path.dirname(current_dir)
-#sys.path.insert(0, parent_dir)
 
 
 
@@ -109,27 +105,25 @@ class ExtensionService(SSE.ConnectorServicer):
         for request_rows in request:
             logging.debug('Printing Request Rows - Request Counter {}' .format(request_counter))
             request_counter = request_counter +1
-            #temp = MessageToDict(request_rows) 
-            #test_rows = temp['rows']
-            #request_size = len(test_rows)
-            #logging.debug('Bundled Row Number of  Rows - {}' .format(request_size))
             for row in request_rows.rows:
                 # Retrieve string value of parameter and append to the params variable
                 # Length of param is 1 since one column is received, the [0] collects the first value in the list
                 param = [d.strData for d in row.duals][0]
                 # Join with current timedate stamp
-
-                payload = '{"data":"' + param + '"}'
-                logging.debug('Showing Payload: {}'.format(payload))
-                resp = requests.post(url, data=payload)
-                logging.debug('Show Payload Response as Text: {}'.format(resp.text))
-                result = resp.text
-                result = result.replace('"', '')
-                result = result.strip()
-                logging.debug('Show  Result: {}'.format(result))
+                if (len(param) == 0):
+                    
+                else:
+                    payload = '{"data":"' + param + '"}'
+                    logging.debug('Showing Payload: {}'.format(payload))
+                    resp = requests.post(url, data=payload)
+                    logging.debug('Show Payload Response as Text: {}'.format(resp.text))
+                    result = resp.text
+                    result = result.replace('"', '')
+                    result = result.strip()
+                    logging.debug('Show  Result: {}'.format(result))
                 #Create an iterable of dual with the result
-                duals = iter([SSE.Dual(strData=result)])
-                response_rows.append(SSE.Row(duals=duals))
+                    duals = iter([SSE.Dual(strData=result)])
+                    response_rows.append(SSE.Row(duals=duals))
                 # Yield the row data as bundled rows
         yield SSE.BundledRows(rows=response_rows)
         logging.info('Exiting {} TimeStamp: {}' .format(function_name, datetime.now().strftime("%H:%M:%S.%f")))
@@ -159,9 +153,6 @@ class ExtensionService(SSE.ConnectorServicer):
             logging.info("Caching ****Disabled**** for {}" .format(q_function_name))
             md = (('qlik-cache', 'no-store'),)
             context.send_initial_metadata(md)
-      
-     
-           
         #In Future we will use the Token for Liencensing and Throttling
         #Currently we are using Comblination of host+ipaddr+username for Client Identification
         ws_url = ws_url + host +'_'+ ip_addr+'_'+ user_name+'_'
@@ -189,8 +180,8 @@ class ExtensionService(SSE.ConnectorServicer):
                     result = resp['result']
                     logging.debug('Show  Result: {}'.format(result))
                 # Create an iterable of dual with the result
-                duals = iter([SSE.Dual(strData=result)])
-                response_rows.append(SSE.Row(duals=duals))
+                    duals = iter([SSE.Dual(strData=result)])
+                    response_rows.append(SSE.Row(duals=duals))
                 # Yield the row data as bundled rows
         yield SSE.BundledRows(rows=response_rows)
         ws.close()
@@ -225,7 +216,6 @@ class ExtensionService(SSE.ConnectorServicer):
             logging.info("Caching ****Disabled**** for {}" .format(q_function_name))
             md = (('qlik-cache', 'no-store'),)
             context.send_initial_metadata(md)
-      
         ws_url = ws_url + host +'_'+ ip_addr+'_'+ user_name+'_'
         logging.debug('Full url for ws: {} '.format(ws_url))
         ws = create_connection(ws_url)
@@ -298,20 +288,24 @@ class ExtensionService(SSE.ConnectorServicer):
                 # Retrieve string value of parameter and append to the params variable
                 # Length of param is 1 since one column is received, the [0] collects the first value in the list
                 param = [d.strData for d in row.duals]
+                if (len(param) == 0):
+                    logging.debug('Parameters are Empty')
+                    result = 'Error'
                 #logging.info('Showing Payload: {}'.format(param))
                 #Aggregate parameters to a single string
                 #Join payload via =','.join(param)
-                payload = '{"data":"' + (','.join(param)) + '"}'
-                logging.debug('Showing Payload: {}'.format(payload))
-                resp = requests.post(url, data=payload)
-                logging.debug('Show  Payload Response: {}'.format(resp.text))
-                result = resp.text
-                result = result.replace('"', '')
-                result = result.strip()
-                logging.debug('Show  Result: {}'.format(result))
+                else
+                    payload = '{"data":"' + (','.join(param)) + '"}'
+                    logging.debug('Showing Payload: {}'.format(payload))
+                    resp = requests.post(url, data=payload)
+                    logging.debug('Show  Payload Response: {}'.format(resp.text))
+                    result = resp.text
+                    result = result.replace('"', '')
+                    result = result.strip()
+                    logging.debug('Show  Result: {}'.format(result))
                 # Create an iterable of dual with the result
-                duals = iter([SSE.Dual(strData=result)])
-                response_rows.append(SSE.Row(duals=duals))
+                    duals = iter([SSE.Dual(strData=result)])
+                    response_rows.append(SSE.Row(duals=duals))
         # Yield the row data as bundled rows
         yield SSE.BundledRows(rows=response_rows)
         logging.info('Exiting Predict  v2 TimeStamp: {}' .format(datetime.now().strftime("%H:%M:%S.%f")))
