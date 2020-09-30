@@ -1,6 +1,6 @@
 ![QRAG Logo](./images/QRAG.png)
 
-Qlik Rapid Api Gateway(QRAG) is an open source Python implementation of Qlik SSE that simplifies data exchange between Qlik Application and API.
+Qlik Rapid Api Gateway(QRAG) is an open source Python implementation of Qlik SSE that simplifies bi-directional data exchange between Qlik Application and API based data sources.
 The intial use case was to allow Qlik to use AI/ML functions and interact with other executions engines. The system utilizes GRPC messaging from Qlik and currently in the inital release support REST, Websocket APIs.
 
 Integration Use Cases are Following
@@ -77,6 +77,12 @@ _This Qlik Application uses Data from UCI ML Repo and uses winning Model from Ka
 QRAG currently supports Python 3.8+ and Qlik Server 13.72.5+.
 Official Docker and Exe Support is due soon.
 Each API Connector will need small different setting changes
+
+# Modules
+
+- Sagemaker
+- Precog
+- Azure Cognitive Services
 
 ## Using Docker
 

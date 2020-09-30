@@ -23,7 +23,7 @@ _Future Releases are scheduled where Qlik Scripts can send Data to Sagemaker for
 Follwing are Currently Implemented Capbility
 
 1. Single Row Data Scoring in Real Time with Sagemaker.
-2. Multi Row Data Scroing in Real Time with Sagemaker.
+2. Multi Row Data Scoring in Real Time with Sagemaker.
 3. Interactive/RealTime Scoring as a Qlik Function with Sagemaker.
 4. Batch Scoring on Sagemaker End Point Using Qlik Script.
 5. Support of REST and WS version AWS Gateway.
