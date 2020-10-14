@@ -135,6 +135,9 @@ dmypy.json
 /mlflow
 /config
 /datarobot
+/veeva
+/salesforce
+/azure_ml
 #cognitive_services
 #/precog
 settings.json

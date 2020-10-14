@@ -2,7 +2,7 @@
 
 # Integrating Qlik with Sagemaker
 
-_[Qlik Rapid API Gateway]_ uses AWS Sagemaker Endpoint, AWS Lambda and AWS API Gateway for Integration. The overview of the solution looks like the following.
+__Qlik Rapid API Gateway__ uses AWS Sagemaker Endpoint, AWS Lambda and AWS API Gateway for Integration. The overview of the solution looks like the following.
 
 ![Qlik Sagemaker Architecture](../images/Sagemaker_architecture.png)
 
@@ -14,6 +14,9 @@ Here is a quick explanation of component and role in the architecture.
 - AWS DyanamoDB - Serverless Database Table to perform session management and storage layer for AWSLambda
 - AWS API Gateway - API managmeent and Access layer for Sagmaker Endpoints.
 
+The future view vision for architecture looks to create the following with a single script.
+![Qlik Sagemaker Architecture](../images/aws_sagemaker_future.png)
+
 ## Integration Use Cases
 
 In our current release we are using Qlik as a Client of Sagemaker Endpoints. Sagemaker Endpoints are trained ML Models that can respond with predictions based on input data.
@@ -23,10 +26,9 @@ _Future Releases are scheduled where Qlik Scripts can send Data to Sagemaker for
 Follwing are Currently Implemented Capbility
 
 1. Single Row Data Scoring in Real Time with Sagemaker.
-2. Multi Row Data Scroing in Real Time with Sagemaker.
+2. Multi Row Data Scoring in Real Time with Sagemaker.
 3. Interactive/RealTime Scoring as a Qlik Function with Sagemaker.
-4. Batch Scoring on Sagemaker End Point Using Qlik Script.
-5. Support of REST and WS version AWS Gateway.
+5. Support of REST andv WS version AWS Gateway.
 6. Batch Size Support on WS API.
 
 ## Qlik Sagemaker Business Flow
@@ -39,11 +41,20 @@ Follwing are Currently Implemented Capbility
 
 ## Installation and Setup
 
-Sagemaker Specific Setup
+**Sagemaker Specific Setup** 
+- Running Auto pilot
+- Running Sagemaker Model 
+- Creating Sagemaker Endpoint
 
-AWS Component Setup
+**AWS Component Setup**
+- Setting up Amazon API Gateway
+- Setting AWS Lambda
+- Setting Dynamodb
 
-QRAG/API Server Setup
+**QRAG/API Server Setup**
+- Setting up EC2 instance
+- Dowloanding Code
+- Settting up Service to Start on Reboot
 
 **Qlik Server Setup**
 
@@ -102,3 +113,5 @@ Up to 3000 row Bulk Scoring/Single Scoring Real Time
 Logs are located logs parent folder of QRAG and logger.cofing file determines verbosity of logs.
 
 ## References
+
+10 Part Video on Setting QRAG with Sagemaker in Works
