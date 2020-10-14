@@ -138,11 +138,12 @@ dmypy.json
 /veeva
 /salesforce
 /azure_ml
+/backup
 #cognitive_services
 #/precog
 settings.json
 #do not upload debug
 /debug
 .DS_Store
-qrag.ini
+*.ini
 

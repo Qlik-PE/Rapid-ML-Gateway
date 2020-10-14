@@ -1,10 +1,8 @@
 #! /usr/bin/env python3
-import qlist
-import pysize
-from ssedata import FunctionType
+# Add Generated folder to module path.
+
 from google.protobuf.json_format import MessageToDict
 import grpc
-import ServerSideExtension_pb2 as SSE
 import argparse
 import json
 import logging
@@ -21,11 +19,14 @@ from datetime import datetime
 import requests
 import configparser
 
-
-# Add Generated folder to module path.
 PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.join(PARENT_DIR, 'generated'))
 sys.path.append(os.path.join(PARENT_DIR, 'helper_functions'))
+import qlist
+import pysize
+from ssedata import FunctionType
+import ServerSideExtension_pb2 as SSE
+
 # import helper .py files
 
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
@@ -116,33 +117,20 @@ class ExtensionService(SSE.ConnectorServicer):
                 # Length of param is 1 since one column is received, the [0] collects the first value in the list
                 param = [d.strData for d in row.duals][0]
                 # Join with current timedate stamp
-<<<<<<< HEAD
-                if(param is None):
-                    logging.debug('No Data is in Param')
-=======
                 if (len(param) == 0):
                     logging.info('Exiting {} TimeStamp: {} due to Data being Empty ' .format(
                         function_name, datetime.now().strftime("%H:%M:%S.%f")))
->>>>>>> dc356dab56e43e469ce3139c4d9806e9bf525e60
                 else:
                     payload = '{"data":"' + param + '"}'
                     logging.debug('Showing Payload: {}'.format(payload))
                     resp = requests.post(url, data=payload)
-<<<<<<< HEAD
-                    logging.debug('Show Payload Response as Text: {}'.format(resp.text))
-=======
                     logging.debug(
                         'Show Payload Response as Text: {}'.format(resp.text))
->>>>>>> dc356dab56e43e469ce3139c4d9806e9bf525e60
                     result = resp.text
                     result = result.replace('"', '')
                     result = result.strip()
                     logging.debug('Show  Result: {}'.format(result))
-<<<<<<< HEAD
-                    #Create an iterable of dual with the result
-=======
                 # Create an iterable of dual with the result
->>>>>>> dc356dab56e43e469ce3139c4d9806e9bf525e60
                     duals = iter([SSE.Dual(strData=result)])
                     response_rows.append(SSE.Row(duals=duals))
                 # Yield the row data as bundled rows
@@ -567,11 +555,8 @@ class ExtensionService(SSE.ConnectorServicer):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    conf_file = os.path.join(os.path.dirname(
-        os.path.abspath(__file__)), 'config', 'qrag.ini')
-    print(conf_file)
-    logging.info('Location of qrag.ini {}' .format(conf_file))
-    config.read(conf_file)
+    #config.read(os.path.join(os.path.dirname(__file__), 'config', 'qrag.ini'))
+    config.read(os.path.join(os.path.dirname(__file__), 'config', 'qrag.ini'))
     port = config.get('base', 'port')
     parser.add_argument('--port', nargs='?', default=port)
     parser.add_argument('--pem_dir', nargs='?')
