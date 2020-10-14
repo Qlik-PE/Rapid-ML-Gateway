@@ -111,7 +111,7 @@ class ExtensionService(SSE.ConnectorServicer):
                 param = [d.strData for d in row.duals][0]
                 # Join with current timedate stamp
                 if (len(param) == 0):
-                    
+                    logging.info('Exiting {} TimeStamp: {} due to Data being Empty' .format(function_name, datetime.now().strftime("%H:%M:%S.%f")))
                 else:
                     payload = '{"data":"' + param + '"}'
                     logging.debug('Showing Payload: {}'.format(payload))
