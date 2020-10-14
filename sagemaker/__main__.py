@@ -118,18 +118,20 @@ class ExtensionService(SSE.ConnectorServicer):
                 # Length of param is 1 since one column is received, the [0] collects the first value in the list
                 param = [d.strData for d in row.duals][0]
                 # Join with current timedate stamp
-
-                payload = '{"data":"' + param + '"}'
-                logging.debug('Showing Payload: {}'.format(payload))
-                resp = requests.post(url, data=payload)
-                logging.debug('Show Payload Response as Text: {}'.format(resp.text))
-                result = resp.text
-                result = result.replace('"', '')
-                result = result.strip()
-                logging.debug('Show  Result: {}'.format(result))
-                #Create an iterable of dual with the result
-                duals = iter([SSE.Dual(strData=result)])
-                response_rows.append(SSE.Row(duals=duals))
+                if(param is None):
+                    logging.debug('No Data is in Param')
+                else:
+                    payload = '{"data":"' + param + '"}'
+                    logging.debug('Showing Payload: {}'.format(payload))
+                    resp = requests.post(url, data=payload)
+                    logging.debug('Show Payload Response as Text: {}'.format(resp.text))
+                    result = resp.text
+                    result = result.replace('"', '')
+                    result = result.strip()
+                    logging.debug('Show  Result: {}'.format(result))
+                    #Create an iterable of dual with the result
+                    duals = iter([SSE.Dual(strData=result)])
+                    response_rows.append(SSE.Row(duals=duals))
                 # Yield the row data as bundled rows
         yield SSE.BundledRows(rows=response_rows)
         logging.info('Exiting {} TimeStamp: {}' .format(function_name, datetime.now().strftime("%H:%M:%S.%f")))
