@@ -139,12 +139,11 @@ dmypy.json
 /salesforce
 /azure_ml
 /backup
-/prophet
-#cognitive_services
-#/precog
+/cognitive_services
+precog/
+prophet/
 settings.json
 #do not upload debug
 /debug
 .DS_Store
-*.ini
-
+*.i
