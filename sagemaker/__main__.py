@@ -1,6 +1,5 @@
 #! /usr/bin/env python3
-import qlist
-import pysize
+
 from ssedata import FunctionType
 from google.protobuf.json_format import MessageToDict
 import grpc
@@ -27,6 +26,9 @@ PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.join(PARENT_DIR, 'generated'))
 sys.path.append(os.path.join(PARENT_DIR, 'helper_functions'))
 # import helper .py files
+import qlist
+import pysize
+import ServerSideExtension_pb2 as SSE
 
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 config = configparser.ConfigParser()

@@ -139,6 +139,7 @@ dmypy.json
 /salesforce
 /azure_ml
 /backup
+/prophet
 #cognitive_services
 #/precog
 settings.json
