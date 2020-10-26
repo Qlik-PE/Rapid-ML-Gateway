@@ -146,4 +146,4 @@ settings.json
 #do not upload debug
 /debug
 .DS_Store
-*.i
+*.ini
