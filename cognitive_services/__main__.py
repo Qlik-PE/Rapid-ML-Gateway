@@ -108,6 +108,7 @@ class ExtensionService(SSE.ConnectorServicer):
         if(q_function_name=='translate'):
                     path = '/translate?api-version=3.0'
                     constructed_url = url + path 
+        
         for request_rows in request:
             logging.debug('Printing Request Rows - Request Counter {}' .format(request_counter))
             request_counter = request_counter +1
