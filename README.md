@@ -43,7 +43,7 @@ _This Qlik Application uses Data from UCI ML Repo and uses winning Model from Ka
 
 # Features
 
-## version 0.1.0
+## version 0.1.0 - Released August, 2020
 
 - Integration with API Gateway
 - Integration with AWS Lambda
@@ -51,15 +51,17 @@ _This Qlik Application uses Data from UCI ML Repo and uses winning Model from Ka
 - Support for Websocket
 - Support for REST Endpoints  
 
-## version 0.1.1
+## version 0.1.1 Released November, 2020
 
-- Docker Support- TBD
-- Win64 Installation Support
+- Docker Support
+- Precog Support
+- Azure Cognitive Services Support
 
 ## versions 0.1.2 
 
 - Security Mechanism
 - Statisics
+- 
 
   
 ***(More Fatures and versions will be released)***  
@@ -83,8 +85,16 @@ Each API Connector will need small different setting changes
 - Sagemaker
 - Precog
 - Azure Cognitive Services
-
+- Prophet(Release Date TBD)
+- Dataiku(Release Date TBD)
+- MLFlow(Release Date TBD)
 ## Using Docker
+
+Please pull from Docker hub from Partner Engineering Organization  
+[Qlik Partner Engineering Docker Hub](https://hub.docker.com/repository/docker/qlikpe/qrag)  
+[Qlik PE QRAG Realse Notes](https://github.com/Qlik-PE/Qlik-Rapid-API-Gateway/blob/master/docker/README.md)  
+#For Sample Test Please run (Please note Sagemaker Service is turned on and it is recommended you only turn on signle module for each Container for Production Use Case)
+`docker run -d -p 50057:50057  --name qrag4 qlikpe/qrag:latest`
 
 # Basic Usage
 
