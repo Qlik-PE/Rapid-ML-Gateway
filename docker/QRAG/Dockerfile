@@ -4,11 +4,13 @@ WORKDIR /app
 
 COPY ./app/requirements.txt .
 
-RUN pip install --upgrade pip  \
+RUN apt-get update \
+  && pip install --upgrade pip  \
   && pip install -r requirements.txt \
-  && apt-get update \
-  && apt-get apt-get install vim
+  && rm -rf /var/cache/apk/*
+
 RUN git clone https://github.com/Parkman328/QRAG-Docker.git
 COPY /app/install/sagemaker/qrag.ini /app/QRAG-Docker/sagemaker/config
 COPY /app/install/precog/qrag.ini /app/QRAG-Docker/precog/config
-#CMD python ../sagemaker
+CMD python QRAG-Docker/sagemaker
+
