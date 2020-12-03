@@ -148,3 +148,4 @@ settings.json
 .DS_Store
 *.ini
 app.py
+/finance

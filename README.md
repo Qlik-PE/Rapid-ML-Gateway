@@ -61,7 +61,7 @@ _This Qlik Application uses Data from UCI ML Repo and uses winning Model from Ka
 
 - Security Mechanism
 - Statisics
-- 
+- Real Time Monitoring
 
   
 ***(More Fatures and versions will be released)***  
