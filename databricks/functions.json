@@ -1,0 +1,35 @@
+{
+    "Functions": [
+        {
+            "Id": 0,
+            "Name": "wine_quality_score",
+            "Type": 2,
+            "QRAP_Type": "rest_single",
+            "ReturnType": 0,
+            "Params": {
+                "str1": 0
+            }
+        },
+        {
+            "Id": 1,
+            "Name": "wine_quality_var12",
+            "Type": 2,
+            "QRAP_Type": "rest_12",
+            "ReturnType": 0,
+            "Params": {
+                "col1": 0,
+                "col2": 0,
+                "col3": 0,
+                "col4": 0,
+                "col5": 0,
+                "col6": 0,
+                "col7": 0,
+                "col8": 0,
+                "col9": 0,
+                "col10": 0,
+                "col11": 0,
+                "col12": 0
+            }
+        }
+    ]
+}
