@@ -12,6 +12,7 @@ def score_model(dataset: pd.DataFrame, url,  headers):
 
 def convert_to_df(string, metadata):
   data_string = metadata + '\n' + string 
+  print(data_string)
   data = StringIO(data_string)
   df = pd.read_csv(data, sep=",")
   return df
