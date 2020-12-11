@@ -19,6 +19,7 @@ from concurrent import futures
 from datetime import datetime
 import requests
 import configparser
+import pandas as pd
 
 
 # Add Generated folder to module path.
@@ -29,6 +30,7 @@ import qlist
 import pysize
 from ssedata import FunctionType
 import ServerSideExtension_pb2 as SSE
+import databricks 
 
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 config = configparser.ConfigParser()
@@ -109,6 +111,9 @@ class ExtensionService(SSE.ConnectorServicer):
             context.send_initial_metadata(md)
         response_rows = []
         request_counter = 1
+        token = config.get('base', 'databricks_token')
+        header =  {'Authorization': f'Bearer {token}'}
+        print(header)
         for request_rows in request:
             logging.debug(
                 'Printing Request Rows - Request Counter {}' .format(request_counter))
@@ -119,11 +124,12 @@ class ExtensionService(SSE.ConnectorServicer):
                 param = [d.strData for d in row.duals][0]
                 # Join with current timedate stamp
                 if (len(param) == 0):
-                    logging.debug('No Payload: {}'.format(payload))
+                    logging.debug('No Payload')
                 else:
-                    payload = '{"data":"' + param + '"}'
+                    payload = databricks.convert_to_df(param) 
                     logging.debug('Showing Payload: {}'.format(payload))
-                    resp = requests.post(url, data=payload)
+                    
+                    resp = databricks.score_model(payload, url, header)
                     logging.debug(
                         'Show Payload Response as Text: {}'.format(resp.text))
                     result = resp.text
@@ -557,7 +563,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     conf_file = os.path.join(os.path.dirname(
         os.path.abspath(__file__)), 'config', 'qrag.ini')
-    print(conf_file)
+    
+    logging.debug(conf_file)
     logging.info('Location of qrag.ini {}' .format(conf_file))
     config.read(conf_file)
     port = config.get('base', 'port')
