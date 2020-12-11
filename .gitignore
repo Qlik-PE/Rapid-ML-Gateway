@@ -149,3 +149,4 @@ settings.json
 *.ini
 app.py
 /finance
+/debug

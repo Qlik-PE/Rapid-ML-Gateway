@@ -113,6 +113,7 @@ class ExtensionService(SSE.ConnectorServicer):
         request_counter = 1
         token = config.get('base', 'databricks_token')
         header =  {'Authorization': f'Bearer {token}'}
+        schema_metadata = config.get(q_function_name, 'schema_metadata')
         print(header)
         for request_rows in request:
             logging.debug(
@@ -126,9 +127,8 @@ class ExtensionService(SSE.ConnectorServicer):
                 if (len(param) == 0):
                     logging.debug('No Payload')
                 else:
-                    payload = databricks.convert_to_df(param) 
+                    payload = databricks.convert_to_df(param, schema_metadata) 
                     logging.debug('Showing Payload: {}'.format(payload))
-                    
                     resp = databricks.score_model(payload, url, header)
                     logging.debug(
                         'Show Payload Response as Text: {}'.format(resp.text))
