@@ -136,15 +136,20 @@ class ExtensionService(SSE.ConnectorServicer):
                 input_str = ""
                 #print("i in batches: {}" .format(i))
                 for j in i:
-                     #print("j in i: {} and type {}" .format(j, type(j)))
-                     row = j["duals"][0]["strData"]
-                     #print ('print row {} type {}' .format(row, type(row)))
-                     if( not input_str):
-                         input_str = row 
-                     else:
-                          input_str = input_str + '\n' + row
-                          #print ('print input_str {} type {}' .format(input_str, type(input_str)))
-                     #if(len(input_str)==0)
+                    #print("j in i: {} and type {}" .format(j, type(j)))
+                    try:
+                        row = j["duals"][0]["strData"]
+                    except KeyError as e:
+                        logging.info('Key Error Detected: {}' .format(e))
+                        input_str=""
+                        #print ('print row {} type {}' .format(row, type(row)))
+                    else:
+                        if( not input_str):
+                            input_str = row 
+                        else:
+                            input_str = input_str + '\n' + row
+                        #print ('print input_str {} type {}' .format(input_str, type(input_str)))
+                    #if(len(input_str)==0)
 
                 param = input_str
                 #print('****print param2: {}' .format(param2))
