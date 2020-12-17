@@ -51,7 +51,7 @@ class ExtensionService(SSE.ConnectorServicer):
         os.makedirs('logs', exist_ok=True)
         log_file = os.path.join(os.path.dirname(
             os.path.dirname(os.path.abspath(__file__))), 'logger.config')
-        print(log_file)
+        logging.debug(log_file)
         logging.config.fileConfig(log_file)
         logging.info(self._function_definitions)
         logging.info('Logging enabled')
@@ -419,7 +419,7 @@ if __name__ == '__main__':
     # need to locate the file when script is called from outside it's location dir.
     def_file = os.path.join(os.path.dirname(
         os.path.abspath(__file__)), args.definition_file)
-    print(def_file)
+    logging.debug(def_file)
     logging.info('*** Server Configurations Port: {}, Pem_Dir: {}, def_file {} TimeStamp: {} ***'.format(
         args.port, args.pem_dir, def_file, datetime.now().isoformat()))
     calc = ExtensionService(def_file)
