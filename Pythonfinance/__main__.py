@@ -77,7 +77,8 @@ class ExtensionService(SSE.ConnectorServicer):
             2: '_get_returns',
             3: '_simulate_random_portforlio',
             4: '_max_sharpe_ratio',
-            5: '_min_var_portfolio'
+            5: '_min_var_portfolio',
+            6: '_echo_table'
             
         }
 
