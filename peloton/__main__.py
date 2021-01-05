@@ -1,36 +1,34 @@
 #! /usr/bin/env python3
-
-
-from google.protobuf.json_format import MessageToDict
-import grpc
-from ssedata import FunctionType
-import argparse
-import json
-import logging
+# Add Generated folder to module path.
+import pandas as pd
+import configparser
+import requests
+from datetime import datetime
+from concurrent import futures
+import re
+import socket
+from websocket import create_connection
+import time
+import inspect
 import logging.config
+import logging
+import json
+import argparse
+from ssedata import FunctionType
+import grpc
+from google.protobuf.json_format import MessageToDict
+import qlist
+import pysize
+import ServerSideExtension_pb2 as SSE
+from scripteval import ScriptEval
 import os
 import sys
-import inspect
-import time
-from websocket import create_connection
-import socket
-import re
-from concurrent import futures
-from datetime import datetime
-import requests
-import configparser
-import pandas as pd
-
-
-# Add Generated folder to module path.
 PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.join(PARENT_DIR, 'generated'))
 sys.path.append(os.path.join(PARENT_DIR, 'helper_functions'))
-import qlist
-import pysize
-from ssedata import FunctionType
-import ServerSideExtension_pb2 as SSE
-import databricks 
+
+
+# Constant and Local Vars
 
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 config = configparser.ConfigParser()
@@ -47,7 +45,7 @@ class ExtensionService(SSE.ConnectorServicer):
         :param funcdef_file: a function definition JSON file
         """
         self._function_definitions = funcdef_file
-        #self.ScriptEval = ScriptEval()
+        self.ScriptEval = ScriptEval()
         os.makedirs('logs', exist_ok=True)
         log_file = os.path.join(os.path.dirname(
             os.path.dirname(os.path.abspath(__file__))), 'logger.config')
@@ -109,13 +107,15 @@ class ExtensionService(SSE.ConnectorServicer):
         response_rows = []
         request_counter = 1
         token = config.get('base', 'databricks_token')
-        header =  {'Authorization': f'Bearer {token}'}
+        header = {'Authorization': f'Bearer {token}'}
         schema_metadata = config.get(q_function_name, 'schema_metadata')
         batch_size = int(config.get(q_function_name, 'batch_size'))
         logging.debug('Batch Size {}' .format(batch_size))
-        logging.debug('Request is type {}. and raw data {}' .format(type(request), request))
+        logging.debug('Request is type {}. and raw data {}' .format(
+            type(request), request))
         for request_rows in request:
-            logging.debug('Request row is type {}. and raw data {}' .format(type(request_rows), request_rows))
+            logging.debug('Request row is type {}. and raw data {}' .format(
+                type(request_rows), request_rows))
             logging.debug(
                 'Printing Request Rows - Request Counter {}' .format(request_counter))
             request_counter = request_counter + 1
@@ -127,7 +127,7 @@ class ExtensionService(SSE.ConnectorServicer):
             logging.debug(
                 'Bundled Row Number of  Rows - {}' .format(request_size))
             batches = list(qlist.divide_chunks(test_rows, batch_size))
-            for  i in batches:
+            for i in batches:
                 # Retrieve string value of parameter and append to the params variable
                 # Length of param is 1 since one column is received, the [0] collects the first value in the list
                 input_str = ""
@@ -138,36 +138,36 @@ class ExtensionService(SSE.ConnectorServicer):
                         row = j["duals"][0]["strData"]
                     except KeyError as e:
                         logging.info('Key Error Detected: {}' .format(e))
-                        input_str=""
+                        input_str = ""
                         #print ('print row {} type {}' .format(row, type(row)))
                     else:
-                        if( not input_str):
-                            input_str = row 
+                        if(not input_str):
+                            input_str = row
                         else:
                             input_str = input_str + '\n' + row
                         #print ('print input_str {} type {}' .format(input_str, type(input_str)))
-                    #if(len(input_str)==0)
+                    # if(len(input_str)==0)
 
                 param = input_str
                 #print('****print param2: {}' .format(param2))
-                #payload2 = databricks.convert_to_df(param2, schema_metadata) 
+                #payload2 = databricks.convert_to_df(param2, schema_metadata)
                 #logging.debug("Print Type {}" .format(type(payload2)))
                 #logging.debug('*******Showing Payload: {}'.format(payload2))
                 #resp2 = databricks.score_model(payload2, url, header)
                 #logging.debug('Show Payload Response as Text: {}'.format(resp2))
                 #logging.debug("Print Type {}" .format(type(resp2)))
-                    #@result = str(resp[0])
+                # @result = str(resp[0])
                 # Join with current timedate stamp
-                #for row in request_rows.rows:
+                # for row in request_rows.rows:
                 # Retrieve string value of parameter and append to the params variable
                 # Length of param is 1 since one column is received, the [0] collects the first value in the list
-                #param = [d.strData for d in row.duals][0]  
+                #param = [d.strData for d in row.duals][0]
                 if (len(param) == 0):
                     logging.debug('No Payload')
                 else:
                     logging.debug("Showing Param: {}" .format(param))
-                    
-                    payload = databricks.convert_to_df(param, schema_metadata) 
+
+                    payload = databricks.convert_to_df(param, schema_metadata)
                     logging.debug("Print Type {}" .format(type(payload)))
                     logging.debug('Showing Payload: {}'.format(payload))
                     resp = databricks.score_model(payload, url, header)
@@ -175,7 +175,7 @@ class ExtensionService(SSE.ConnectorServicer):
                         'Show Payload Response as Text: {}'.format(resp))
                     logging.debug("Print Type {}" .format(type(resp)))
                     #result = str(resp[0])
-                    
+
                 # Create an iterable of dual with the result
                     for result in resp:
                         logging.debug('Show  Result: {}'.format(result))
@@ -406,7 +406,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     conf_file = os.path.join(os.path.dirname(
         os.path.abspath(__file__)), 'config', 'qrag.ini')
-    
+
     logging.debug(conf_file)
     logging.info('Location of qrag.ini {}' .format(conf_file))
     config.read(conf_file)

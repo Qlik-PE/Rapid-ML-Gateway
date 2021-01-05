@@ -2,7 +2,7 @@
     "Functions": [
         {
             "Id": 0,
-            "Name": "wine_quality_score",
+            "Name": "get_instructors",
             "Type": 2,
             "QRAP_Type": "rest_dataframe",
             "ReturnType": 0,
