@@ -1,5 +1,15 @@
 #! /usr/bin/env python3
+import os
+import sys
+PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(os.path.join(PARENT_DIR, 'generated'))
+sys.path.append(os.path.join(PARENT_DIR, 'helper_functions'))
+
 # Add Generated folder to module path.
+import qlist
+import pysize
+import ServerSideExtension_pb2 as SSE
+from scripteval import ScriptEval
 import pandas as pd
 import configparser
 import requests
@@ -17,15 +27,7 @@ import argparse
 from ssedata import FunctionType
 import grpc
 from google.protobuf.json_format import MessageToDict
-import qlist
-import pysize
-import ServerSideExtension_pb2 as SSE
-from scripteval import ScriptEval
-import os
-import sys
-PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(os.path.join(PARENT_DIR, 'generated'))
-sys.path.append(os.path.join(PARENT_DIR, 'helper_functions'))
+
 
 
 # Constant and Local Vars
@@ -419,8 +421,7 @@ if __name__ == '__main__':
     # need to locate the file when script is called from outside it's location dir.
     def_file = os.path.join(os.path.dirname(
         os.path.abspath(__file__)), args.definition_file)
-    logging.debug(def_file)
+    calc = ExtensionService(def_file)
     logging.info('*** Server Configurations Port: {}, Pem_Dir: {}, def_file {} TimeStamp: {} ***'.format(
         args.port, args.pem_dir, def_file, datetime.now().isoformat()))
-    calc = ExtensionService(def_file)
     calc.Serve(args.port, args.pem_dir)
