@@ -1,33 +1,33 @@
-#! /usr/bin/env python3
 import os
 import sys
 PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.join(PARENT_DIR, 'generated'))
 sys.path.append(os.path.join(PARENT_DIR, 'helper_functions'))
 
-# Add Generated folder to module path.
-import qlist
-import pysize
-import ServerSideExtension_pb2 as SSE
-from scripteval import ScriptEval
-import pandas as pd
-import configparser
-import requests
-from datetime import datetime
-from concurrent import futures
-import re
-import socket
-from websocket import create_connection
-import time
-import inspect
-import logging.config
-import logging
-import json
-import argparse
-from ssedata import FunctionType
-import grpc
-from google.protobuf.json_format import MessageToDict
 
+#! /usr/bin/env python3
+from google.protobuf.json_format import MessageToDict
+import grpc
+from ssedata import FunctionType
+import argparse
+import json
+import logging
+import logging.config
+import inspect
+import time
+import re
+from concurrent import futures
+from datetime import datetime
+import requests
+import configparser
+import pandas as pd
+from scripteval import ScriptEval
+import ServerSideExtension_pb2 as SSE
+import peloton
+import pysize
+import qlist
+
+# Add Generated folder to module path.
 
 
 # Constant and Local Vars
@@ -70,8 +70,11 @@ class ExtensionService(SSE.ConnectorServicer):
         :return: Mapping of function id and implementation
         """
         return {
-            0: '_rest_dataframe',
-            1: '_echo_table'
+            0: '_instructors',
+            1: '_user_info',
+            2: '_user_workout',
+            3: '_workout_details',
+            4: '_echo_table'
         }
 
     @staticmethod
