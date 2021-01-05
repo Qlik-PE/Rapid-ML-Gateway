@@ -1,9 +1,16 @@
 #! /usr/bin/env python3
+
+from ssedata import FunctionType
+from google.protobuf.json_format import MessageToDict
+import grpc
 import argparse
 import json
 import logging
 import logging.config
-import os, sys, inspect, time
+import os
+import sys
+import inspect
+import time
 from websocket import create_connection
 import socket
 import re
@@ -13,20 +20,21 @@ import requests
 import configparser
 
 
-
 # Add Generated folder to module path.
 PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.join(PARENT_DIR, 'generated'))
 sys.path.append(os.path.join(PARENT_DIR, 'helper_functions'))
-import ServerSideExtension_pb2 as SSE
-import grpc
-from google.protobuf.json_format import MessageToDict
-from ssedata import ArgType, FunctionType, ReturnType
-# import helper .py files
-import pysize
 import qlist
-import 
+import pysize
+from ssedata import FunctionType
+import ServerSideExtension_pb2 as SSE
+
+# import helper .py files
+import qlist
+import pysize
+import ServerSideExtension_pb2 as SSE
 from scripteval import ScriptEval
+import python_finance as pyFin
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 config = configparser.ConfigParser()
 
@@ -44,7 +52,8 @@ class ExtensionService(SSE.ConnectorServicer):
         self._function_definitions = funcdef_file
         self.ScriptEval = ScriptEval()
         os.makedirs('logs', exist_ok=True)
-        log_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logger.config')
+        log_file = os.path.join(os.path.dirname(
+            os.path.dirname(os.path.abspath(__file__))), 'logger.config')
         logging.config.fileConfig(log_file)
         logging.info(self._function_definitions)
         logging.info('Logging enabled')
@@ -63,13 +72,13 @@ class ExtensionService(SSE.ConnectorServicer):
         :return: Mapping of function id and implementation
         """
         return {
-            0: '_stock_data',
-            1: '_portfolio_optimization',
-            2: '_ws_single',
-            3: '_ws_batch',
-            4:  '_get_table_data'
-            #,
-            #4: '_echo_table'
+            0: '_get_ticker',
+            1: '_get_ticker_closing',
+            2: '_get_returns',
+            3: '_simulate_random_portforlio',
+            4: '_max_sharpe_ratio',
+            5: '_min_var_portfolio'
+            
         }
 
     @staticmethod
@@ -86,78 +95,54 @@ class ExtensionService(SSE.ConnectorServicer):
         return header.functionId
 
     @staticmethod
-    def _stock_data(request, context):
-        """
-        Echo the input table.
-        :param request:
-        :param context:
-        :return:
-        """
-        logging.info('Entering {} TimeStamp: {}' .format(function_name, datetime.now().strftime("%H:%M:%S.%f")))
-        url = config.get(q_function_name, 'url')
-        logging.debug("Rest Url is set to {}" .format(url))
-        bCache= config.get(q_function_name, 'cache')
+    def _get_ticker(request, context):
+        logging.info('Entering {} TimeStamp: {}' .format(
+        function_name, datetime.now().strftime("%H:%M:%S.%f")))
+        bCache = config.get(q_function_name, 'cache')
         logging.debug("Caching is set to {}" .format(bCache))
-        if (bCache.lower() =="true"):
-            logging.info("Caching ****Enabled*** for {}" .format(q_function_name))
+        if (bCache.lower() == "true"):
+            logging.info(
+                "Caching ****Enabled*** for {}" .format(q_function_name))
         else:
-            logging.info("Caching ****Disabled**** for {}" .format(q_function_name))
+            logging.info(
+                "Caching ****Disabled**** for {}" .format(q_function_name))
             md = (('qlik-cache', 'no-store'),)
             context.send_initial_metadata(md)
 
-        #'Get The Table Name'
+        #Get Input Data 
         for request_rows in request:
             response_rows = []
-        temp = MessageToDict(request_rows) 
-        table_name = temp["rows"][0]["duals"][0]["strData"]
-        logging.debug("Table Name : {}" .format(table_name))
-        #'Get The JSON Key And Values for Table'
-        table_id  = precog.get_table_id(table_name, url)
-        print(table_id[0])
-        print(table_id[1])
-        #try catch to catch bad url and kick out if resp is not 2000
-        logging.debug('Input Table Name: {} Table ID: {}' .format(table_name, table_id[0]))
-        create_token_tuple = precog.create_token(url,table_id[0])
-        print(create_token_tuple)
-        print(precog.get_count_of_all_tokens(url))
-        new_token = create_token_tuple[0]
-        new_secret = create_token_tuple[1]
-        response = create_token_tuple[2]
-        result = precog.get_result_csv(url, new_secret)
-        print(result[0])
-        output_str = result[1]
-        print(output_str)
-        parsed_csv = precog.convert_csv(result[1])
-        print(parsed_csv)
-        resp_clean = precog.cleanup_token(new_token, table_id[0], url)
-        print(resp_clean)
-        print(precog.get_count_of_all_tokens(url))
+        temp = MessageToDict(request_rows)
         bundledRows = SSE.BundledRows()
 
         yield SSE.BundledRows(rows=resp_clean)
-       
+
     @staticmethod
-    def _rest_single(request, context):
+    def _get_ticker_closing(request, context):
         """
         Rest using single variable
         """
-        logging.info('Entering {} TimeStamp: {}' .format(function_name, datetime.now().strftime("%H:%M:%S.%f")))
+        logging.info('Entering {} TimeStamp: {}' .format(
+            function_name, datetime.now().strftime("%H:%M:%S.%f")))
         url = config.get(q_function_name, 'url')
         logging.debug("Rest Url is set to {}" .format(url))
-        bCache= config.get(q_function_name, 'cache')
+        bCache = config.get(q_function_name, 'cache')
         logging.debug("Caching is set to {}" .format(bCache))
-        if (bCache.lower() =="true"):
-            logging.info("Caching ****Enabled*** for {}" .format(q_function_name))
+        if (bCache.lower() == "true"):
+            logging.info(
+                "Caching ****Enabled*** for {}" .format(q_function_name))
         else:
-            logging.info("Caching ****Disabled**** for {}" .format(q_function_name))
+            logging.info(
+                "Caching ****Disabled**** for {}" .format(q_function_name))
             md = (('qlik-cache', 'no-store'),)
             context.send_initial_metadata(md)
         response_rows = []
         request_counter = 1
         for request_rows in request:
-            logging.debug('Printing Request Rows - Request Counter {}' .format(request_counter))
-            request_counter = request_counter +1
-            #temp = MessageToDict(request_rows) 
+            logging.debug(
+                'Printing Request Rows - Request Counter {}' .format(request_counter))
+            request_counter = request_counter + 1
+            #temp = MessageToDict(request_rows)
             #test_rows = temp['rows']
             #request_size = len(test_rows)
             #logging.debug('Bundled Row Number of  Rows - {}' .format(request_size))
@@ -170,17 +155,111 @@ class ExtensionService(SSE.ConnectorServicer):
                 payload = '{"data":"' + param + '"}'
                 logging.debug('Showing Payload: {}'.format(payload))
                 resp = requests.post(url, data=payload)
-                logging.debug('Show Payload Response as Text: {}'.format(resp.text))
+                logging.debug(
+                    'Show Payload Response as Text: {}'.format(resp.text))
                 result = resp.text
                 result = result.replace('"', '')
                 result = result.strip()
                 logging.debug('Show  Result: {}'.format(result))
-                #Create an iterable of dual with the result
+                # Create an iterable of dual with the result
                 duals = iter([SSE.Dual(strData=result)])
                 response_rows.append(SSE.Row(duals=duals))
                 # Yield the row data as bundled rows
         yield SSE.BundledRows(rows=response_rows)
-        logging.info('Exiting {} TimeStamp: {}' .format(function_name, datetime.now().strftime("%H:%M:%S.%f")))
+        logging.info('Exiting {} TimeStamp: {}' .format(
+            function_name, datetime.now().strftime("%H:%M:%S.%f")))
+
+    @staticmethod
+    def _get_returns(request, context):
+        logging.info('Entering {} TimeStamp: {}' .format(
+        function_name, datetime.now().strftime("%H:%M:%S.%f")))
+        bCache = config.get(q_function_name, 'cache')
+        logging.debug("Caching is set to {}" .format(bCache))
+        if (bCache.lower() == "true"):
+            logging.info(
+                "Caching ****Enabled*** for {}" .format(q_function_name))
+        else:
+            logging.info(
+                "Caching ****Disabled**** for {}" .format(q_function_name))
+            md = (('qlik-cache', 'no-store'),)
+            context.send_initial_metadata(md)
+
+        #Get Input Data 
+        for request_rows in request:
+            response_rows = []
+        temp = MessageToDict(request_rows)
+        bundledRows = SSE.BundledRows()
+
+        yield SSE.BundledRows(rows=resp_clean)
+
+    @staticmethod
+    def _simulate_random_portforlio(request, context):
+        logging.info('Entering {} TimeStamp: {}' .format(
+        function_name, datetime.now().strftime("%H:%M:%S.%f")))
+        bCache = config.get(q_function_name, 'cache')
+        logging.debug("Caching is set to {}" .format(bCache))
+        if (bCache.lower() == "true"):
+            logging.info(
+                "Caching ****Enabled*** for {}" .format(q_function_name))
+        else:
+            logging.info(
+                "Caching ****Disabled**** for {}" .format(q_function_name))
+            md = (('qlik-cache', 'no-store'),)
+            context.send_initial_metadata(md)
+
+        #Get Input Data 
+        for request_rows in request:
+            response_rows = []
+        temp = MessageToDict(request_rows)
+        bundledRows = SSE.BundledRows()
+
+        yield SSE.BundledRows(rows=resp_clean)
+
+    @staticmethod
+    def _max_sharpe_ratio(request, context):
+        logging.info('Entering {} TimeStamp: {}' .format(
+        function_name, datetime.now().strftime("%H:%M:%S.%f")))
+        bCache = config.get(q_function_name, 'cache')
+        logging.debug("Caching is set to {}" .format(bCache))
+        if (bCache.lower() == "true"):
+            logging.info(
+                "Caching ****Enabled*** for {}" .format(q_function_name))
+        else:
+            logging.info(
+                "Caching ****Disabled**** for {}" .format(q_function_name))
+            md = (('qlik-cache', 'no-store'),)
+            context.send_initial_metadata(md)
+
+        #Get Input Data 
+        for request_rows in request:
+            response_rows = []
+        temp = MessageToDict(request_rows)
+        bundledRows = SSE.BundledRows()
+
+        yield SSE.BundledRows(rows=resp_clean)
+
+    @staticmethod
+    def _min_var_portfolio(request, context):
+        logging.info('Entering {} TimeStamp: {}' .format(
+        function_name, datetime.now().strftime("%H:%M:%S.%f")))
+        bCache = config.get(q_function_name, 'cache')
+        logging.debug("Caching is set to {}" .format(bCache))
+        if (bCache.lower() == "true"):
+            logging.info(
+                "Caching ****Enabled*** for {}" .format(q_function_name))
+        else:
+            logging.info(
+                "Caching ****Disabled**** for {}" .format(q_function_name))
+            md = (('qlik-cache', 'no-store'),)
+            context.send_initial_metadata(md)
+
+        #Get Input Data 
+        for request_rows in request:
+            response_rows = []
+        temp = MessageToDict(request_rows)
+        bundledRows = SSE.BundledRows()
+
+        yield SSE.BundledRows(rows=resp_clean)
 
     @staticmethod
     def _cache(request, context):
@@ -230,7 +309,7 @@ class ExtensionService(SSE.ConnectorServicer):
                 result = param + ' ' + datetime.now().isoformat()
                 # Create an iterable of dual with the result
                 duals = iter([SSE.Dual(strData=result)])
-       
+
                 # Yield the row data as bundled rows
                 yield SSE.BundledRows(rows=[SSE.Row(duals=duals)])
 
@@ -243,7 +322,7 @@ class ExtensionService(SSE.ConnectorServicer):
 
         # Get metadata for the call from the context
         metadata = dict(context.invocation_metadata())
-        
+
         # Get the function ID
         func_header = SSE.FunctionRequestHeader()
         func_header.ParseFromString(metadata['qlik-functionrequestheader-bin'])
@@ -258,22 +337,24 @@ class ExtensionService(SSE.ConnectorServicer):
             self.capabilities = self.GetCapabilities(None, context)
 
         # Get the name of the capability called in the function
-        capability = [function.name for function in self.capabilities.functions if function.functionId == func_id][0]
-                
+        capability = [
+            function.name for function in self.capabilities.functions if function.functionId == func_id][0]
+
         # Get the user ID using a regular expression
-        match = re.match(r"UserDirectory=(?P<UserDirectory>\w*)\W+UserId=(?P<UserId>\w*)", common_header.userId, re.IGNORECASE)
+        match = re.match(r"UserDirectory=(?P<UserDirectory>\w*)\W+UserId=(?P<UserId>\w*)",
+                         common_header.userId, re.IGNORECASE)
         if match:
             userId = match.group('UserDirectory') + '/' + match.group('UserId')
         else:
             userId = common_header.userId
-        
+
         # Get the app ID
         appId = common_header.appId
         # Get the call's origin
         peer = context.peer()
 
         return "{0} - Capability '{1}' called by user {2} from app {3}".format(peer, capability, userId, appId)
-   
+
     def EvaluateScript(self, request, context):
         """
         This plugin supports full script functionality, that is, all function types and all data types.
@@ -284,7 +365,7 @@ class ExtensionService(SSE.ConnectorServicer):
         logging.debug('In EvaluateScript: Main')
         # Parse header for script request
         metadata = dict(context.invocation_metadata())
-        logging.debug('Metadata {}',metadata)
+        logging.debug('Metadata {}', metadata)
         header = SSE.ScriptRequestHeader()
         header.ParseFromString(metadata['qlik-scriptrequestheader-bin'])
         logging.debug('Header is : {}'.format(header))
@@ -332,7 +413,7 @@ class ExtensionService(SSE.ConnectorServicer):
                 function.functionId = definition['Id']
                 function.functionType = definition['Type']
                 function.returnType = definition['ReturnType']
-            
+
                 # Retrieve name and type of each parameter
                 for param_name, param_type in sorted(definition['Params'].items()):
                     function.params.add(name=param_name, dataType=param_type)
@@ -353,21 +434,24 @@ class ExtensionService(SSE.ConnectorServicer):
         logging.info(self._get_call_info(context))
         # Call corresponding function
         logging.info('ExecuteFunctions (functionId: {})' .format(func_id))
-        #self.functions[func_id]))
-        current_function_def = (json.load(open(self.function_definitions))['Functions'])[func_id]
+        # self.functions[func_id]))
+        current_function_def = (json.load(open(self.function_definitions))[
+                                'Functions'])[func_id]
         logging.debug(current_function_def)
         global q_function_name
         q_function_name = current_function_def["Name"]
         logging.debug('Logical Method Called is: {}' .format(q_function_name))
-        
+
         current_qrap_type = current_function_def["QRAP_Type"]
-        qrag_function_name ='_' + current_qrap_type
-        logging.debug('This is the type of QRAG Method Name: {}' .format(current_qrap_type))
-        logging.debug('Physical Method Called is:  {}' .format(qrag_function_name))
+        qrag_function_name = '_' + current_qrap_type
+        logging.debug(
+            'This is the type of QRAG Method Name: {}' .format(current_qrap_type))
+        logging.debug(
+            'Physical Method Called is:  {}' .format(qrag_function_name))
         # Convers to Method Name to Physical Main Function
         qrag_id = qlist.find_key(self.functions, qrag_function_name)
         logging.debug('QRAG ID: {}' .format(qrag_id))
-        global function_name 
+        global function_name
         function_name = self.functions[qrag_id]
         return getattr(self, self.functions[qrag_id])(request_iterator, context)
 
@@ -390,23 +474,26 @@ class ExtensionService(SSE.ConnectorServicer):
                 cert_chain = f.read()
             with open(os.path.join(pem_dir, 'root_cert.pem'), 'rb') as f:
                 root_cert = f.read()
-            credentials = grpc.ssl_server_credentials([(private_key, cert_chain)], root_cert, True)
+            credentials = grpc.ssl_server_credentials(
+                [(private_key, cert_chain)], root_cert, True)
             server.add_secure_port('[::]:{}'.format(port), credentials)
-            logging.info('*** Running server in secure mode on port: {} ***'.format(port))
+            logging.info(
+                '*** Running server in secure mode on port: {} ***'.format(port))
         else:
             # Insecure connection
             server.add_insecure_port('[::]:{}'.format(port))
-            logging.info('*** Running server in insecure mode on port: {} ***'.format(port))
+            logging.info(
+                '*** Running server in insecure mode on port: {} ***'.format(port))
 
         # Start gRPC server
         server.start()
-       
+
         try:
             while True:
                 time.sleep(_ONE_DAY_IN_SECONDS)
         except KeyboardInterrupt:
             server.stop(0)
-            
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -414,11 +501,14 @@ if __name__ == '__main__':
     port = config.get('base', 'port')
     parser.add_argument('--port', nargs='?', default=port)
     parser.add_argument('--pem_dir', nargs='?')
-    parser.add_argument('--definition_file', nargs='?', default='functions.json')
+    parser.add_argument('--definition_file', nargs='?',
+                        default='functions.json')
     args = parser.parse_args()
     # need to locate the file when script is called from outside it's location dir.
-    def_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), args.definition_file)
-    #print(def_file)
-    logging.info('*** Server Configurations Port: {}, Pem_Dir: {}, def_file {} TimeStamp: {} ***'.format(args.port, args.pem_dir, def_file,datetime.now().isoformat()))
+    def_file = os.path.join(os.path.dirname(
+        os.path.abspath(__file__)), args.definition_file)
+    # print(def_file)
+    logging.info('*** Server Configurations Port: {}, Pem_Dir: {}, def_file {} TimeStamp: {} ***'.format(
+        args.port, args.pem_dir, def_file, datetime.now().isoformat()))
     calc = ExtensionService(def_file)
     calc.Serve(args.port, args.pem_dir)

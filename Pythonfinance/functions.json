@@ -2,81 +2,76 @@
     "Functions": [
         {
             "Id": 0,
-            "Name": "stock_data",
-            "Type": 2,
-            "QRAP_Type": "stock_data",
+            "Name": "get_ticker",
+            "Type": 3,
+            "QRAP_Type": "_get_ticker'",
             "ReturnType": 0,
             "Params": {
-                "str1": 0
+                "tickers": 0,
+                "start_date": 0,
+                "end_date": 0
+                
             }
         },
         {
             "Id": 1,
-            "Name": "sample_30",
+            "Name": "get_ticker_closing",
             "Type": 2,
-            "QRAP_Type": "rest_30",
+            "QRAP_Type": "_get_ticker_closing",
             "ReturnType": 0,
             "Params": {
-                "col1": 0,
-                "col2": 0,
-                "col3": 0,
-                "col4": 0,
-                "col5": 0,
-                "col6": 0,
-                "col7": 0,
-                "col8": 0,
-                "col9": 0,
-                "col10": 0,
-                "col11": 0,
-                "col12": 0,
-                "col13": 0,
-                "col14": 0,
-                "col15": 0,
-                "col16": 0,
-                "col17": 0,
-                "col18": 0,
-                "col19": 0,
-                "col20": 0,
-                "col21": 0,
-                "col22": 0,
-                "col23": 0,
-                "col24": 0,
-                "col25": 0,
-                "col26": 0,
-                "col27": 0,
-                "col28": 0,
-                "col29": 0,
-                "col30": 0
+                "tickers": 0,
+                "start_date": 0,
+                "end_date": 0
             }
         },
         {
             "Id": 2,
-            "Name": "stock_data",
+            "Name": "get_returns",
             "Type": 2,
-            "QRAP_Type": "ws_single",
+            "QRAP_Type": "_get_returns",
             "ReturnType": 0,
             "Params": {
-                "str1": 0
+                "tickers": 0,
+                "start_date": 0,
+                "end_date": 0
+                
             }
         },
         {
             "Id": 3,
-            "Name": "sample_ws_batch",
+            "Name": "simulated _random_portfolio",
             "Type": 2,
-            "QRAP_Type": "ws_batch",
+            "QRAP_Type": "_simulate_random_portforlio",
             "ReturnType": 0,
             "Params": {
-                "str1": 0
+                "tickers": 0,
+                "start_date": 0,
+                "end_date": 0
             }
         },
         {
             "Id": 4,
-            "Name": "get_table_data",
+            "Name": "max_sharpe_ratio",
             "Type": 2,
-            "QRAP_Type": "get_table_data",
+            "QRAP_Type": "_max_sharpe_ratio",
             "ReturnType": 0,
             "Params": {
-                "str1": 0
+                "tickers": 0,
+                "start_date": 0,
+                "end_date": 0
+            }
+        },
+        {
+            "Id": 5,
+            "Name": "min_var_portfolio",
+            "Type": 2,
+            "QRAP_Type": "_min_var_portfolio",
+            "ReturnType": 0,
+            "Params": {
+                "tickers": 0,
+                "start_date": 0,
+                "end_date": 0
             }
         }
     
