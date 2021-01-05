@@ -278,5 +278,49 @@ class ScriptEval:
         ###print(type(table))
         self.send_table_description(table, context)
         return result
+   
+    
+    @staticmethod
+    def getTableInfo (url):
+       logging.info("In getTableInfo using url {}" .format(url))
+       table_list = precog.get_tables(url)
+       x = list(table_list[0].keys())
+       results =[]
+       for i in x:
+            y = precog.get_table_information(i, url)[1]
+            temp_li =[]
+            for j in y:
+                col_str = json.dumps(j)
+                temp_li.append(col_str)
+            column_str = ''.join(temp_li)
+            result= [i, table_list[0][i]['name'], column_str]
+            results.append(result)
+            ###print(result)
+       return results
 
- 
+    @staticmethod
+    def getTableData(url, table_name):
+       logging.info("In getTableDatausing url {} and tablename {}" .format(url, table_name))
+       result = []
+       table_id  = precog.get_table_id(table_name, url)
+       #logging.debug('Table ID {}' .format(table_id[0]))
+       token = precog.get_access_tokens(table_id[0],url)
+       ###print(token[0].values())
+       token_count = len(token[0]["accessTokens"])
+       create_token_tuple = precog.create_token(url,table_id[0])
+       ##print(create_token_tuple)
+       ##print(precog.get_count_of_all_tokens(url))
+       new_token = create_token_tuple[0]
+       new_secret = create_token_tuple[1]
+       response = create_token_tuple[2]
+       result = precog.get_result_csv(url, new_secret)
+       ##print(result[0])
+       output_str = result[1]
+       logging.debug("JRP Size of output_str {}" .format(len(output_str)))
+       parsed_csv = precog.convert_csv(output_str)
+       logging.debug("JRP Size of parsed_csv {}" .format(len(parsed_csv[0])))
+       #print(type(parsed_csv))
+       #print(parsed_csv[:10])
+       resp_clean = precog.cleanup_token(new_token, table_id[0], url)
+       logging.debug('Token Cleaned Resp: {}' .format(resp_clean))
+       return parsed_csv[0]

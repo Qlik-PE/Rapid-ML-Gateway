@@ -1,8 +1,9 @@
 #! /usr/bin/env python3
 
-from ssedata import FunctionType
+
 from google.protobuf.json_format import MessageToDict
 import grpc
+from ssedata import FunctionType
 import argparse
 import json
 import logging
@@ -18,6 +19,7 @@ from concurrent import futures
 from datetime import datetime
 import requests
 import configparser
+import pandas as pd
 
 
 # Add Generated folder to module path.
@@ -28,13 +30,8 @@ import qlist
 import pysize
 from ssedata import FunctionType
 import ServerSideExtension_pb2 as SSE
+import databricks 
 
-# import helper .py files
-import qlist
-import pysize
-import ServerSideExtension_pb2 as SSE
-from scripteval import ScriptEval
-import python_finance as pyFin
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 config = configparser.ConfigParser()
 
@@ -50,10 +47,11 @@ class ExtensionService(SSE.ConnectorServicer):
         :param funcdef_file: a function definition JSON file
         """
         self._function_definitions = funcdef_file
-        self.ScriptEval = ScriptEval()
+        #self.ScriptEval = ScriptEval()
         os.makedirs('logs', exist_ok=True)
         log_file = os.path.join(os.path.dirname(
             os.path.dirname(os.path.abspath(__file__))), 'logger.config')
+        logging.debug(log_file)
         logging.config.fileConfig(log_file)
         logging.info(self._function_definitions)
         logging.info('Logging enabled')
@@ -72,14 +70,8 @@ class ExtensionService(SSE.ConnectorServicer):
         :return: Mapping of function id and implementation
         """
         return {
-            0: '_get_ticker',
-            1: '_get_ticker_closing',
-            2: '_get_returns',
-            3: '_simulate_random_portforlio',
-            4: '_max_sharpe_ratio',
-            5: '_min_var_portfolio',
-            6: '_echo_table'
-            
+            0: '_rest_dataframe',
+            1: '_echo_table'
         }
 
     @staticmethod
@@ -96,30 +88,7 @@ class ExtensionService(SSE.ConnectorServicer):
         return header.functionId
 
     @staticmethod
-    def _get_ticker(request, context):
-        logging.info('Entering {} TimeStamp: {}' .format(
-        function_name, datetime.now().strftime("%H:%M:%S.%f")))
-        bCache = config.get(q_function_name, 'cache')
-        logging.debug("Caching is set to {}" .format(bCache))
-        if (bCache.lower() == "true"):
-            logging.info(
-                "Caching ****Enabled*** for {}" .format(q_function_name))
-        else:
-            logging.info(
-                "Caching ****Disabled**** for {}" .format(q_function_name))
-            md = (('qlik-cache', 'no-store'),)
-            context.send_initial_metadata(md)
-
-        #Get Input Data 
-        for request_rows in request:
-            response_rows = []
-        temp = MessageToDict(request_rows)
-        bundledRows = SSE.BundledRows()
-
-        yield SSE.BundledRows(rows=resp_clean)
-
-    @staticmethod
-    def _get_ticker_closing(request, context):
+    def _rest_dataframe(request, context):
         """
         Rest using single variable
         """
@@ -139,128 +108,83 @@ class ExtensionService(SSE.ConnectorServicer):
             context.send_initial_metadata(md)
         response_rows = []
         request_counter = 1
+        token = config.get('base', 'databricks_token')
+        header =  {'Authorization': f'Bearer {token}'}
+        schema_metadata = config.get(q_function_name, 'schema_metadata')
+        batch_size = int(config.get(q_function_name, 'batch_size'))
+        logging.debug('Batch Size {}' .format(batch_size))
+        logging.debug('Request is type {}. and raw data {}' .format(type(request), request))
         for request_rows in request:
+            logging.debug('Request row is type {}. and raw data {}' .format(type(request_rows), request_rows))
             logging.debug(
                 'Printing Request Rows - Request Counter {}' .format(request_counter))
             request_counter = request_counter + 1
-            #temp = MessageToDict(request_rows)
-            #test_rows = temp['rows']
-            #request_size = len(test_rows)
-            #logging.debug('Bundled Row Number of  Rows - {}' .format(request_size))
-            for row in request_rows.rows:
+            temp = MessageToDict(request_rows)
+            logging.debug('Temp Message to Dict {}' .format(temp))
+            test_rows = temp['rows']
+            logging.debug('Test Rows: {}' .format(test_rows))
+            request_size = len(test_rows)
+            logging.debug(
+                'Bundled Row Number of  Rows - {}' .format(request_size))
+            batches = list(qlist.divide_chunks(test_rows, batch_size))
+            for  i in batches:
                 # Retrieve string value of parameter and append to the params variable
                 # Length of param is 1 since one column is received, the [0] collects the first value in the list
-                param = [d.strData for d in row.duals][0]
-                # Join with current timedate stamp
+                input_str = ""
+                #print("i in batches: {}" .format(i))
+                for j in i:
+                    #print("j in i: {} and type {}" .format(j, type(j)))
+                    try:
+                        row = j["duals"][0]["strData"]
+                    except KeyError as e:
+                        logging.info('Key Error Detected: {}' .format(e))
+                        input_str=""
+                        #print ('print row {} type {}' .format(row, type(row)))
+                    else:
+                        if( not input_str):
+                            input_str = row 
+                        else:
+                            input_str = input_str + '\n' + row
+                        #print ('print input_str {} type {}' .format(input_str, type(input_str)))
+                    #if(len(input_str)==0)
 
-                payload = '{"data":"' + param + '"}'
-                logging.debug('Showing Payload: {}'.format(payload))
-                resp = requests.post(url, data=payload)
-                logging.debug(
-                    'Show Payload Response as Text: {}'.format(resp.text))
-                result = resp.text
-                result = result.replace('"', '')
-                result = result.strip()
-                logging.debug('Show  Result: {}'.format(result))
+                param = input_str
+                #print('****print param2: {}' .format(param2))
+                #payload2 = databricks.convert_to_df(param2, schema_metadata) 
+                #logging.debug("Print Type {}" .format(type(payload2)))
+                #logging.debug('*******Showing Payload: {}'.format(payload2))
+                #resp2 = databricks.score_model(payload2, url, header)
+                #logging.debug('Show Payload Response as Text: {}'.format(resp2))
+                #logging.debug("Print Type {}" .format(type(resp2)))
+                    #@result = str(resp[0])
+                # Join with current timedate stamp
+                #for row in request_rows.rows:
+                # Retrieve string value of parameter and append to the params variable
+                # Length of param is 1 since one column is received, the [0] collects the first value in the list
+                #param = [d.strData for d in row.duals][0]  
+                if (len(param) == 0):
+                    logging.debug('No Payload')
+                else:
+                    logging.debug("Showing Param: {}" .format(param))
+                    
+                    payload = databricks.convert_to_df(param, schema_metadata) 
+                    logging.debug("Print Type {}" .format(type(payload)))
+                    logging.debug('Showing Payload: {}'.format(payload))
+                    resp = databricks.score_model(payload, url, header)
+                    logging.debug(
+                        'Show Payload Response as Text: {}'.format(resp))
+                    logging.debug("Print Type {}" .format(type(resp)))
+                    #result = str(resp[0])
+                    
                 # Create an iterable of dual with the result
-                duals = iter([SSE.Dual(strData=result)])
-                response_rows.append(SSE.Row(duals=duals))
+                    for result in resp:
+                        logging.debug('Show  Result: {}'.format(result))
+                        duals = iter([SSE.Dual(strData=str(result))])
+                        response_rows.append(SSE.Row(duals=duals))
                 # Yield the row data as bundled rows
         yield SSE.BundledRows(rows=response_rows)
         logging.info('Exiting {} TimeStamp: {}' .format(
             function_name, datetime.now().strftime("%H:%M:%S.%f")))
-
-    @staticmethod
-    def _get_returns(request, context):
-        logging.info('Entering {} TimeStamp: {}' .format(
-        function_name, datetime.now().strftime("%H:%M:%S.%f")))
-        bCache = config.get(q_function_name, 'cache')
-        logging.debug("Caching is set to {}" .format(bCache))
-        if (bCache.lower() == "true"):
-            logging.info(
-                "Caching ****Enabled*** for {}" .format(q_function_name))
-        else:
-            logging.info(
-                "Caching ****Disabled**** for {}" .format(q_function_name))
-            md = (('qlik-cache', 'no-store'),)
-            context.send_initial_metadata(md)
-
-        #Get Input Data 
-        for request_rows in request:
-            response_rows = []
-        temp = MessageToDict(request_rows)
-        bundledRows = SSE.BundledRows()
-
-        yield SSE.BundledRows(rows=resp_clean)
-
-    @staticmethod
-    def _simulate_random_portforlio(request, context):
-        logging.info('Entering {} TimeStamp: {}' .format(
-        function_name, datetime.now().strftime("%H:%M:%S.%f")))
-        bCache = config.get(q_function_name, 'cache')
-        logging.debug("Caching is set to {}" .format(bCache))
-        if (bCache.lower() == "true"):
-            logging.info(
-                "Caching ****Enabled*** for {}" .format(q_function_name))
-        else:
-            logging.info(
-                "Caching ****Disabled**** for {}" .format(q_function_name))
-            md = (('qlik-cache', 'no-store'),)
-            context.send_initial_metadata(md)
-
-        #Get Input Data 
-        for request_rows in request:
-            response_rows = []
-        temp = MessageToDict(request_rows)
-        bundledRows = SSE.BundledRows()
-
-        yield SSE.BundledRows(rows=resp_clean)
-
-    @staticmethod
-    def _max_sharpe_ratio(request, context):
-        logging.info('Entering {} TimeStamp: {}' .format(
-        function_name, datetime.now().strftime("%H:%M:%S.%f")))
-        bCache = config.get(q_function_name, 'cache')
-        logging.debug("Caching is set to {}" .format(bCache))
-        if (bCache.lower() == "true"):
-            logging.info(
-                "Caching ****Enabled*** for {}" .format(q_function_name))
-        else:
-            logging.info(
-                "Caching ****Disabled**** for {}" .format(q_function_name))
-            md = (('qlik-cache', 'no-store'),)
-            context.send_initial_metadata(md)
-
-        #Get Input Data 
-        for request_rows in request:
-            response_rows = []
-        temp = MessageToDict(request_rows)
-        bundledRows = SSE.BundledRows()
-
-        yield SSE.BundledRows(rows=resp_clean)
-
-    @staticmethod
-    def _min_var_portfolio(request, context):
-        logging.info('Entering {} TimeStamp: {}' .format(
-        function_name, datetime.now().strftime("%H:%M:%S.%f")))
-        bCache = config.get(q_function_name, 'cache')
-        logging.debug("Caching is set to {}" .format(bCache))
-        if (bCache.lower() == "true"):
-            logging.info(
-                "Caching ****Enabled*** for {}" .format(q_function_name))
-        else:
-            logging.info(
-                "Caching ****Disabled**** for {}" .format(q_function_name))
-            md = (('qlik-cache', 'no-store'),)
-            context.send_initial_metadata(md)
-
-        #Get Input Data 
-        for request_rows in request:
-            response_rows = []
-        temp = MessageToDict(request_rows)
-        bundledRows = SSE.BundledRows()
-
-        yield SSE.BundledRows(rows=resp_clean)
 
     @staticmethod
     def _cache(request, context):
@@ -355,24 +279,6 @@ class ExtensionService(SSE.ConnectorServicer):
         peer = context.peer()
 
         return "{0} - Capability '{1}' called by user {2} from app {3}".format(peer, capability, userId, appId)
-
-    def EvaluateScript(self, request, context):
-        """
-        This plugin supports full script functionality, that is, all function types and all data types.
-        :param request:
-        :param context:
-        :return:
-        """
-        logging.debug('In EvaluateScript: Main')
-        # Parse header for script request
-        metadata = dict(context.invocation_metadata())
-        logging.debug('Metadata {}', metadata)
-        header = SSE.ScriptRequestHeader()
-        header.ParseFromString(metadata['qlik-scriptrequestheader-bin'])
-        logging.debug('Header is : {}'.format(header))
-        logging.debug('Request is : {}' .format(request))
-        logging.debug("Context is: {}" .format(context))
-        return self.ScriptEval.EvaluateScript(header, request, context)
 
     @staticmethod
     def _echo_table(request, context):
@@ -498,7 +404,12 @@ class ExtensionService(SSE.ConnectorServicer):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    config.read(os.path.join(os.path.dirname(__file__), 'config', 'qrag.ini'))
+    conf_file = os.path.join(os.path.dirname(
+        os.path.abspath(__file__)), 'config', 'qrag.ini')
+    
+    logging.debug(conf_file)
+    logging.info('Location of qrag.ini {}' .format(conf_file))
+    config.read(conf_file)
     port = config.get('base', 'port')
     parser.add_argument('--port', nargs='?', default=port)
     parser.add_argument('--pem_dir', nargs='?')
@@ -508,7 +419,7 @@ if __name__ == '__main__':
     # need to locate the file when script is called from outside it's location dir.
     def_file = os.path.join(os.path.dirname(
         os.path.abspath(__file__)), args.definition_file)
-    # print(def_file)
+    logging.debug(def_file)
     logging.info('*** Server Configurations Port: {}, Pem_Dir: {}, def_file {} TimeStamp: {} ***'.format(
         args.port, args.pem_dir, def_file, datetime.now().isoformat()))
     calc = ExtensionService(def_file)
