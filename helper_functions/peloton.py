@@ -31,7 +31,16 @@ workout = "https://api.onepeloton.com/api/workout/"
 
 def get_instructors(url):
     s = requests.get(url)
-    return s
+    result = json.loads(s.text)
+    instructors = result["data"]
+    return_val = []
+    for x in instructors:
+        print(x['id'])
+        print(x['name'])
+        print(x['fitness_disciplines']
+        instructor_list_elem = [ x['id'], x['name'] x['fitness_disciplines'])
+        return_val.append((instructor_list_elem))
+    return return_val
 def get_instructor(url, instructor_id):
     s = requests.get(url+"/"+instructor_id)
     return s
