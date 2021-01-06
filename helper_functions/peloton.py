@@ -5,7 +5,7 @@ import requests
 
 
 # Anonymous Endpoints
-intructors = "https://api.onepeloton.com/api/instructor"
+#intructors = "https://api.onepeloton.com/api/instructor"
 # instructor_ = https://api.onepeloton.com/api/instructor/<instructor id>
 metadata_mapping = "https://api.onepeloton.com/api/ride/metadata_mappings"
 
@@ -29,8 +29,11 @@ workout = "https://api.onepeloton.com/api/workout/"
 # https://api.onepeloton.com/api/workout/<workout id>?joins=ride,ride.instructor&limit=1&page=0
 # https://api.onepeloton.com/api/workout/<workout id>/performance_graph?every_n=5
 
-def get_instructors():
-    s = requests.get(intructors)
+def get_instructors(url):
+    s = requests.get(url)
+    return s
+def get_instructor(url, instructor_id):
+    s = requests.get(url+"/"+instructor_id)
     return s
     
 def get_session(user_name, password):

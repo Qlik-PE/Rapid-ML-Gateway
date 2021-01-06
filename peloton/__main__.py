@@ -110,8 +110,8 @@ class ExtensionService(SSE.ConnectorServicer):
             md = (('qlik-cache', 'no-store'),)
             context.send_initial_metadata(md)
        
-        instructors = peloton.get_instructor()
-        loggin.debug(instructors.text)
+        instructors = peloton.get_instructors(url)
+        logging.debug(instructors.text)
         for request_rows in request:
             response_rows = []
             for row in request_rows.rows:
