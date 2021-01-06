@@ -91,7 +91,7 @@ class ExtensionService(SSE.ConnectorServicer):
         return header.functionId
 
     @staticmethod
-    def _rest_dataframe(request, context):
+    def _instructors(request, context):
         """
         Rest using single variable
         """
@@ -109,85 +109,15 @@ class ExtensionService(SSE.ConnectorServicer):
                 "Caching ****Disabled**** for {}" .format(q_function_name))
             md = (('qlik-cache', 'no-store'),)
             context.send_initial_metadata(md)
-        response_rows = []
-        request_counter = 1
-        token = config.get('base', 'databricks_token')
-        header = {'Authorization': f'Bearer {token}'}
-        schema_metadata = config.get(q_function_name, 'schema_metadata')
-        batch_size = int(config.get(q_function_name, 'batch_size'))
-        logging.debug('Batch Size {}' .format(batch_size))
-        logging.debug('Request is type {}. and raw data {}' .format(
-            type(request), request))
+       
+        instructors = peloton.get_instructor()
+        loggin.debug(instructors.text)
         for request_rows in request:
-            logging.debug('Request row is type {}. and raw data {}' .format(
-                type(request_rows), request_rows))
-            logging.debug(
-                'Printing Request Rows - Request Counter {}' .format(request_counter))
-            request_counter = request_counter + 1
-            temp = MessageToDict(request_rows)
-            logging.debug('Temp Message to Dict {}' .format(temp))
-            test_rows = temp['rows']
-            logging.debug('Test Rows: {}' .format(test_rows))
-            request_size = len(test_rows)
-            logging.debug(
-                'Bundled Row Number of  Rows - {}' .format(request_size))
-            batches = list(qlist.divide_chunks(test_rows, batch_size))
-            for i in batches:
-                # Retrieve string value of parameter and append to the params variable
-                # Length of param is 1 since one column is received, the [0] collects the first value in the list
-                input_str = ""
-                #print("i in batches: {}" .format(i))
-                for j in i:
-                    #print("j in i: {} and type {}" .format(j, type(j)))
-                    try:
-                        row = j["duals"][0]["strData"]
-                    except KeyError as e:
-                        logging.info('Key Error Detected: {}' .format(e))
-                        input_str = ""
-                        #print ('print row {} type {}' .format(row, type(row)))
-                    else:
-                        if(not input_str):
-                            input_str = row
-                        else:
-                            input_str = input_str + '\n' + row
-                        #print ('print input_str {} type {}' .format(input_str, type(input_str)))
-                    # if(len(input_str)==0)
-
-                param = input_str
-                #print('****print param2: {}' .format(param2))
-                #payload2 = databricks.convert_to_df(param2, schema_metadata)
-                #logging.debug("Print Type {}" .format(type(payload2)))
-                #logging.debug('*******Showing Payload: {}'.format(payload2))
-                #resp2 = databricks.score_model(payload2, url, header)
-                #logging.debug('Show Payload Response as Text: {}'.format(resp2))
-                #logging.debug("Print Type {}" .format(type(resp2)))
-                # @result = str(resp[0])
-                # Join with current timedate stamp
-                # for row in request_rows.rows:
-                # Retrieve string value of parameter and append to the params variable
-                # Length of param is 1 since one column is received, the [0] collects the first value in the list
-                #param = [d.strData for d in row.duals][0]
-                if (len(param) == 0):
-                    logging.debug('No Payload')
-                else:
-                    logging.debug("Showing Param: {}" .format(param))
-
-                    payload = databricks.convert_to_df(param, schema_metadata)
-                    logging.debug("Print Type {}" .format(type(payload)))
-                    logging.debug('Showing Payload: {}'.format(payload))
-                    resp = databricks.score_model(payload, url, header)
-                    logging.debug(
-                        'Show Payload Response as Text: {}'.format(resp))
-                    logging.debug("Print Type {}" .format(type(resp)))
-                    #result = str(resp[0])
-
-                # Create an iterable of dual with the result
-                    for result in resp:
-                        logging.debug('Show  Result: {}'.format(result))
-                        duals = iter([SSE.Dual(strData=str(result))])
-                        response_rows.append(SSE.Row(duals=duals))
-                # Yield the row data as bundled rows
+            response_rows = []
+            for row in request_rows.rows:
+                response_rows.append(row)
         yield SSE.BundledRows(rows=response_rows)
+       
         logging.info('Exiting {} TimeStamp: {}' .format(
             function_name, datetime.now().strftime("%H:%M:%S.%f")))
 

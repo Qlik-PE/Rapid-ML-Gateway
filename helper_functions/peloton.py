@@ -29,7 +29,10 @@ workout = "https://api.onepeloton.com/api/workout/"
 # https://api.onepeloton.com/api/workout/<workout id>?joins=ride,ride.instructor&limit=1&page=0
 # https://api.onepeloton.com/api/workout/<workout id>/performance_graph?every_n=5
 
-
+def get_instructors():
+    s = requests.get(intructors)
+    return s
+    
 def get_session(user_name, password):
     s = requests.Session()
     payload = {'username_or_email': user_name, 'password': password}

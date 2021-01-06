@@ -6,9 +6,7 @@
             "Type": 2,
             "QRAP_Type": "_instructors",
             "ReturnType": 0,
-            "Params": {
-                "str1": 0
-            }
+            "Params": {}
         },
         {
             "Id": 1,
