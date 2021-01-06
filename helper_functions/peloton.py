@@ -45,7 +45,8 @@ def get_instructors(url):
 
 def get_instructor(url, instructor_id):
     s = requests.get(url+"/"+instructor_id)
-    return s
+    result = json.loads(s.text)
+    return result
     
 def get_session(user_name, password):
     s = requests.Session()
