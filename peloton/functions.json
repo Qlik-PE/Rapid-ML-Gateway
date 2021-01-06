@@ -39,10 +39,10 @@
             }
         },
         {
-            "Id": "echo_table",
-            "Name": "get_instructors",
+            "Id": 4,
+            "Name": "echo_table",
             "Type": 2,
-            "QRAP_Type": "_instructors",
+            "QRAP_Type": "_echo_table",
             "ReturnType": 0,
             "Params": {
                 "str1": 0
