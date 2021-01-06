@@ -1,6 +1,6 @@
 from datetime import datetime
 from dateutil import tz
-import requests
+import requests, json
 
 
 
@@ -35,12 +35,14 @@ def get_instructors(url):
     instructors = result["data"]
     return_val = []
     for x in instructors:
-        print(x['id'])
-        print(x['name'])
-        print(x['fitness_disciplines']
-        instructor_list_elem = [ x['id'], x['name'] x['fitness_disciplines'])
+        instructor_list_elem = []
+        id = x['id']
+        name = x['name']
+        fitness_disciplines =  ', '.join([str(elem) for elem in x['fitness_disciplines']]) 
+        instructor_list_elem = [id, name, fitness_disciplines]
         return_val.append((instructor_list_elem))
     return return_val
+
 def get_instructor(url, instructor_id):
     s = requests.get(url+"/"+instructor_id)
     return s
