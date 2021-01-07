@@ -39,14 +39,11 @@ class ScriptEval:
         ##print(conf_file)
         logging.info('Location of qrag.ini {}' .format(conf_file))
         config.read(conf_file)
-        batch_size = int(config.get('base', 'batch_size'))
-        logging.info('Size of Batch Size {}' .format(batch_size))
-        #print(type(batch_size))
         logging.info('EvaluateScript: {} ({} {}) {}'
                      .format(header.script, arg_types, ret_type, func_type))
 
         # Check if parameters are provided
-        #print(header.params)
+        print(header.params)
         if header.params:
             all_rows = []
 
@@ -55,13 +52,13 @@ class ScriptEval:
                 # Iterate over rows
                 for row in request_rows.rows:
                     # Retrieve parameters
-                    #print('row {} jrp' .format(row))
+                    print('row {} jrp' .format(row))
                     params = self.get_arguments(context, arg_types, row.duals, header)
                     all_rows.append(params)
 
             # First element in the parameter list should contain the data of the first parameter.
             all_rows = [list(param) for param in zip(*all_rows)]
-            #print(all_rows)
+            print(all_rows)
             if arg_types == ArgType.Mixed:
                 param_datatypes = [param.dataType for param in header.params]
                 for i, datatype in enumerate(param_datatypes):
@@ -77,7 +74,7 @@ class ScriptEval:
         else:
             # No parameters provided
             logging.debug('No Parameteres Provided')
-            #print(ret_type)
+            print(ret_type)
             result = self.evaluate(context, header.script, ret_type)
         print(type(result))
         print(sys.getsizeof(result))
