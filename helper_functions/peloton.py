@@ -2,10 +2,6 @@ from datetime import datetime
 from dateutil import tz
 import requests, json
 
-
-
-
-
 def get_instructors(url):
     s = requests.get(url)
     result = json.loads(s.text)
