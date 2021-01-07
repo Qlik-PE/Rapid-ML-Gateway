@@ -4,30 +4,7 @@ import requests, json
 
 
 
-# Anonymous Endpoints
-#intructors = "https://api.onepeloton.com/api/instructor"
-# instructor_ = https://api.onepeloton.com/api/instructor/<instructor id>
-metadata_mapping = "https://api.onepeloton.com/api/ride/metadata_mappings"
 
-# Privileged Endpoints
-# Essential information about the logged in user
-my_detail = "https://api.onepeloton.com/api/me"
-
-# User details and workouts completed
-user_detail = "https://api.onepeloton.com/api/user/"
-# "<user id>
-
-
-# Workout specific info
-# https://api.onepeloton.com/api/user/<user id>/workouts
-# https://api.onepeloton.com/api/user/<user id>/workouts?joins=ride,ride.instructor&limit=10&page=0
-
-# Note that workouts, in this context, are what a user did. So, a workout can either be a tread or bike workout.
-
-workout = "https://api.onepeloton.com/api/workout/"
-#    <workout id>
-# https://api.onepeloton.com/api/workout/<workout id>?joins=ride,ride.instructor&limit=1&page=0
-# https://api.onepeloton.com/api/workout/<workout id>/performance_graph?every_n=5
 
 def get_instructors(url):
     s = requests.get(url)

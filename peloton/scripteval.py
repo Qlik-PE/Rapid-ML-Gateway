@@ -228,10 +228,6 @@ class ScriptEval:
         :return: a RowData of string dual
         """
         table = SSE.TableDescription()
-        #print('JRP: {}' .format(table))
-        # Evaluate script
-        #print(script)
-        #print(params)
         conf_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config', 'qrag.ini')
         ##print(conf_file)
         logging.info('Location of qrag.ini {}' .format(conf_file))
@@ -239,13 +235,13 @@ class ScriptEval:
         url = config.get('base', 'url')
         logging.debug('Precog URL {}' .format(url))
         
-        if (script.find('TableInfo') !=-1):
-            result = self.getTableInfo(url)
-            table.name = 'PreCog-Catalog'
-            table.fields.add(name="Table_Id", dataType=0)
+        if (script.find('get_all_instructors') !=-1):
+            result = self.get_all_instructors()
+            table.name = 'Peloton-Instructor'
+            table.fields.add(name="Instructor_ID", dataType=0)
             table.fields.add(name="Name", dataType=0)
-            table.fields.add(name="Column Desc", dataType=0)
-        elif (script.find('TableMetaData') !=-1):
+            table.fields.add(name="Fitness Disciplines", dataType=0)
+        elif (script.find('get_all_sessions') !=-1):
             vTable= script[:-14]
             logging.info('TableMetadata vTable {}' .format(vTable))
             table.name = vTable+"-Metadata"
@@ -258,7 +254,7 @@ class ScriptEval:
                 #print (part)
                 result.append(part)
             #print(result)
-        elif (script.find('getTableData') !=-1):
+        elif (script.find('get_all_workouts') !=-1):
             vTable = script[:-13] 
             logging.info('getTableData vTable {}' .format(vTable))
             table.name = script[:-13]
