@@ -28,8 +28,8 @@ def get_session(user_name, password):
     return s, r
 
 
-def user_workout(s, user_id, option):
-    url = user_detail + user_id + '/workouts' + option
+def user_workout(s, url, user_id, option):
+    url = url + user_id + '/workouts' + option
     r = s.get(url)
     return r
 

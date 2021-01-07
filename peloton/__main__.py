@@ -113,7 +113,6 @@ class ExtensionService(SSE.ConnectorServicer):
        
         instructors = peloton.get_instructors(url)
         logging.debug(instructors)
-        for 
         for request_rows in request:
             response_rows = []
             for row in request_rows.rows:

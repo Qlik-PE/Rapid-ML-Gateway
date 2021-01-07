@@ -228,12 +228,7 @@ class ScriptEval:
         :return: a RowData of string dual
         """
         table = SSE.TableDescription()
-        conf_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config', 'qrag.ini')
-        ##print(conf_file)
-        logging.info('Location of qrag.ini {}' .format(conf_file))
-        config.read(conf_file)
-        url = config.get('base', 'url')
-        logging.debug('Precog URL {}' .format(url))
+      
         
         if (script.find('get_all_instructors') !=-1):
             result = self.get_all_instructors()
@@ -280,17 +275,48 @@ class ScriptEval:
     
 @staticmethod
 def get_all_instructors():
+    conf_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config', 'qrag.ini')
+    logging.info('Location of qrag.ini {}' .format(conf_file))
+    config.read(conf_file)
+    url = config.get('instructor', 'url')
+    logging.debug('Peleton Get Instructor URL {}' .format(url))
     logging.info("In get_all_instructors")
     instructors = peloton.get_instructors(url)
     logging.debug(instructors)
     return instructors
     
-    @staticmethod
-    def get_all_sessions(user_name, password):
-        return results
-    @staticmethod
-    def get_all_workouts(user_name, password):
-        return results
-    @staticmethod
-    def get_all_workouts_details(user_name, password):
-        return results
+@staticmethod
+def get_all_sessions(user_name, password):
+    conf_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config', 'qrag.ini')
+    logging.info('Location of qrag.ini {}' .format(conf_file))
+    config.read(conf_file)
+    url = config.get('instructor', 'url')
+    logging.debug('Peleton Get All session URL {}' .format(url))
+    logging.info("In get_all_instructors")
+    all_session = peloton.get_instructors(url)
+    logging.debug(all_session)
+    return all_session
+
+@staticmethod
+def get_all_workouts(user_name, password):
+    conf_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config', 'qrag.ini')
+    logging.info('Location of qrag.ini {}' .format(conf_file))
+    config.read(conf_file)
+    url = config.get('instructor', 'url')
+    logging.debug('Peleton Get all workout URL {}' .format(url))
+    logging.info("In get_all_instructors")
+    all_session = peloton.get_instructors(url)
+    logging.debug(all_session)
+    return all_workouts
+
+@staticmethod
+def get_all_workouts_details(user_name, password):
+    conf_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config', 'qrag.ini')
+    logging.info('Location of qrag.ini {}' .format(conf_file))
+    config.read(conf_file)
+    url = config.get('instructor', 'url')
+    logging.debug('Peleton Get all workout deails URL {}' .format(url))
+    logging.info("In get_all_instructors")
+    all_session = peloton.get_instructors(url)
+    logging.debug(all_session)
+    return all_workout_details
