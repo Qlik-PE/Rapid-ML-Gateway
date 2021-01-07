@@ -229,7 +229,26 @@ class ExtensionService(SSE.ConnectorServicer):
             for row in request_rows.rows:
                 response_rows.append(row)
             yield SSE.BundledRows(rows=response_rows)
+    
 
+    def EvaluateScript(self, request, context):
+        """
+        This plugin supports full script functionality, that is, all function types and all data types.
+        :param request:
+        :param context:
+        :return:
+        """
+        logging.debug('In EvaluateScript: Main')
+        # Parse header for script request
+        metadata = dict(context.invocation_metadata())
+        logging.debug('Metadata {}',metadata)
+        header = SSE.ScriptRequestHeader()
+        header.ParseFromString(metadata['qlik-scriptrequestheader-bin'])
+        logging.debug('Header is : {}'.format(header))
+        logging.debug('Request is : {}' .format(request))
+        logging.debug("Context is: {}" .format(context))
+        return self.ScriptEval.EvaluateScript(header, request, context)
+        
     def GetCapabilities(self, request, context):
         """
         Get capabilities.
