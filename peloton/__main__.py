@@ -252,7 +252,7 @@ class ExtensionService(SSE.ConnectorServicer):
     def GetCapabilities(self, request, context):
         """
         Get capabilities.
-        Note that either request or context is used in the implementation of this method, but still added as
+        Note that either request or context is used in the implementation of this method, but ll added as
         parameters. The reason is that gRPC always sends both when making a function call and therefore we must include
         them to avoid error messages regarding too many parameters provided from the client.
         :param request: the request, not used in this method.

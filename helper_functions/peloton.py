@@ -2,7 +2,7 @@ from datetime import datetime
 from dateutil import tz
 import requests, json
 
-def get_instructors(url):
+def get_all_instructors(url):
     s = requests.get(url)
     result = json.loads(s.text)
     instructors = result["data"]
@@ -13,29 +13,46 @@ def get_instructors(url):
         name = x['name']
         fitness_disciplines =  ', '.join([str(elem) for elem in x['fitness_disciplines']]) 
         instructor_list_elem = [id, name, fitness_disciplines]
-        return_val.append((instructor_list_elem))
+        return_val.append(instructor_list_elem)
     return return_val
 
 def get_instructor(url, instructor_id):
     s = requests.get(url+"/"+instructor_id)
     result = json.loads(s.text)
-    return result
+    return_val = []
+    instructor_list_elem = []
+    id = result['id']
+    name = result['name']
+    fitness_disciplines =  ', '.join([str(elem) for elem in result['fitness_disciplines']]) 
+    instructor_list_elem = [id, name, fitness_disciplines]
+    return_val.append(instructor_list_elem)
+    return return_val
     
-def get_session(user_name, password):
+def get_all_sessions(user_name, password):
     s = requests.Session()
     payload = {'username_or_email': user_name, 'password': password}
     r = s.post('https://api.onepeloton.com/auth/login', json=payload)
-    return s, r
+    result = json.loads(r.text)
+    D_userdata = result['user_data']
+    L_workout = result['user_data']['workout_counts']
+
+    return s, result, D_userdata, L_workout
 
 
-def user_workout(s, url, user_id, option):
+def get_all_workouts(s, url, user_id, option):
     url = url + user_id + '/workouts' + option
+    print('Peleton url {}' .format(url))
     r = s.get(url)
-    return r
+    result = r.json()
+    return result
 
 
-def workout_detail(s, workout_id, option):
+def get_all_detail(s, workout_id, option):
     url = workout + workout_id + option
     print(url)
     r = s.get(url)
     return r
+
+
+
+    
