@@ -263,7 +263,7 @@ class ScriptEval:
             temp = [str(x) for x in values]
             result =[]
             result.append(temp)
-            table.name= UserData['name'] +'- Peloton User Data'
+            table.name= User +'- Peloton User Data'
             for i in columns:
                 FieldName = i
                 FieldType=0
@@ -275,7 +275,7 @@ class ScriptEval:
             logging.debug("Calling get_all_workouts")
             UserData = session[2]
             UserWorkout = session[3]
-            table.name = UserData['name'] +'- Peloton Work Out Data'
+            table.name = User +'- Peloton Work Out Data'
             table.fields.add(name="id", dataType=0)
             table.fields.add(name="workout type", dataType=0)
             table.fields.add(name="count", dataType=0)
@@ -294,30 +294,30 @@ class ScriptEval:
             options = config.get(script, 'options')
             url = config.get(script, 'url')
             UserData = self.get_all_workouts(session[0],url, session[2]["id"], options)
-            logging.debug('UserData type {} and Workout {}' .format(type(UserData), UserData))
+            UserData = UserData['data']
+            logging.debug('UserData type {} and UserData {}' .format(type(UserData), UserData))
             #filter all the non values
             #converst string representation to list
-            remlist = (config.get(script, 'remlist')).strip('][').split(', ')
-            logging.debug("Remlist Type {}, List {}" .format(type(remlist), remlist))
-            for x in remlist:
+            #remlist = (config.get(script, 'remlist')).strip('][').split(', ')
+            #logging.debug("Remlist Type {}, List {}" .format(type(remlist), remlist))
+            for x in UserData:
                 print(x)
-                del UserData[x]
-            columns = list(UserData.keys())
-            values = list(UserData.values())
+              #  del UserData[x]
+                columns = list(x.keys())
+                values = list(x.values())
             #remove '' values from dataset
-            indices = [index for index, element in enumerate(values) if element == '']
-            for x in indices:
-                print(x)
-                #logging.debug("Indice {} Column {} Value {} Length {}" .format(x, columns[x], values[x]))
-                del columns[x]
-                del values[x]
-            logging.debug("columns {}" .format(columns))
-            logging.debug("Empty {} Length {}" .format(indices, len(values)))
-            logging.debug("values {}" .format(values))
-            temp = [str(x) for x in values]
-            result =[]
-            result.append(temp)
-            table.name= UserData['name'] +'- Peloton Workout Data'
+                indices = [index for index, element in enumerate(values) if element == '']
+                for x in indices:
+                    print(x)
+                    #logging.debug("Indice {} Column {} Value {} Length {}" .format(x, columns[x], values[x]))
+                    del columns[x]
+                    del values[x]
+                logging.debug("columns {}" .format(columns))
+                logging.debug("Empty {} Length {}" .format(indices, len(values)))
+                logging.debug("values {}" .format(values))
+                temp = [str(x) for x in values]
+                result.append(temp)
+            table.name= User +'- Peloton Workout Data'
             for i in columns:
                 FieldName = i
                 FieldType=0
@@ -325,35 +325,85 @@ class ScriptEval:
             #result = [['a','b','c'],['a','b','c']]
             logging.debug("result {}" .format(result))
            
-        elif (script.find('get_all_ride') !=-1):
+        elif (script.find('get_all_rides') !=-1):
             result =[]
             options = config.get(script, 'options')
-            user_url = config.get(script, 'user_url')
-            workouts = self.get_all_workouts(session[0],user_url, session[2]["id"], options)
-            logging.debug('Workout type {} and Workout {}' .format(type(workouts), workouts))
-            my_workouts=workouts['data']
-            logging.debug('My Workout type {} and Workout {}' .format(type(my_workouts), my_workouts))
-            
-            #columns = list(my_workouts.keys())
-            #values = list(my_workouts.values())
-            for x in my_workouts:
-                ride = x['ride']
-                instructuror = ride['instrucor']
+            url = config.get(script, 'url')
+            UserData = self.get_all_workouts(session[0],url, session[2]["id"], options)
+            UserData = UserData['data']
+            logging.debug('UserData type {} and UserData {}' .format(type(UserData), UserData))
+            #filter all the non values
+            #converst string representation to list
+            #remlist = (config.get(script, 'remlist')).strip('][').split(', ')
+            #logging.debug("Remlist Type {}, List {}" .format(type(remlist), remlist))
+            for x in UserData:
+                ride = (x['ride'])
+              #  del UserData[x]
+                columns = list(ride.keys())
+                values = list(ride.values())
+            #remove '' values from dataset
+                indices = [index for index, element in enumerate(values) if element == '']
+                for x in indices:
+                    print(x)
+                    #logging.debug("Indice {} Column {} Value {} Length {}" .format(x, columns[x], values[x]))
+                    del columns[x]
+                    del values[x]
+                logging.debug("columns {}" .format(columns))
+                logging.debug("Empty {} Length {}" .format(indices, len(values)))
+                logging.debug("values {}" .format(values))
+                temp = [str(x) for x in values]
+                result.append(temp)
+            table.name= User +'- Peloton Ride Data'
+            for i in columns:
+                FieldName = i
+                FieldType=0
+                table.fields.add(name=FieldName, dataType=FieldType)
+            #result = [['a','b','c'],['a','b','c']]
+            logging.debug("result {}" .format(result))
         elif (script.find('get_all_output') !=-1):
             result =[]
-            options = config.get(script, 'options')
-            user_url = config.get(script, 'user_url')
-            workouts = self.get_all_workouts(session[0],user_url, session[2]["id"], options)
-            logging.debug('Workout type {} and Workout {}' .format(type(workouts), workouts))
-            my_workouts=workouts['data']
-            logging.debug('My Workout type {} and Workout {}' .format(type(my_workouts), my_workouts))
+            #get a list of workout ids
+            options = config.get(script, 'user_options')
+            url = config.get(script, 'user_url')
+            UserData = self.get_all_workouts(session[0],url, session[2]["id"], options)
+            UserData = UserData['data']
+            logging.debug('UserData type {} and UserData {}' .format(type(UserData), UserData))
+            #filter all the non values
+            #converst string representation to list
+            #remlist = (config.get(script, 'remlist')).strip('][').split(', ')
+            #logging.debug("Remlist Type {}, List {}" .format(type(remlist), remlist))
+            workout_ids =[]
+            for x in UserData:
+                workout_id = (x['id'])
+                workout_ids.append(workout_id)
+                logging.debug("Workout ID Type {}, Data {}" .format(type(workout_ids), workout_ids))
+            options = config.get(script, 'options_summary')
+            url = config.get(script, 'url')
             
-            #columns = list(my_workouts.keys())
-            #values = list(my_workouts.values())
-            for x in my_workouts:
-                ride = x['ride']
-                instructuror = ride['instrucor']
-
+            for x in workout_ids:
+                UserData = self.get_all_details(session[0],url, x, options)
+                logging.debug('UserData type {} and UserData {}' .format(type(UserData), UserData))
+                columns = list(UserData.keys())
+                values = list(UserData.values())
+                #remove '' values from dataset
+                #indices = [index for index, element in enumerate(values) if element == '']
+                #for x in indices:
+                 #   print(x)
+                    #logging.debug("Indice {} Column {} Value {} Length {}" .format(x, columns[x], values[x]))
+                  #  del columns[x]
+                   # del values[x]
+                logging.debug("columns {}" .format(columns))
+                #logging.debug("Empty {} Length {}" .format(indices, len(values)))
+                logging.debug("values {}" .format(values))
+                temp = [str(x) for x in values]
+                result.append(temp)
+            table.name= User +'- Peloton Output Data'
+            for i in columns:
+              FieldName = i
+              FieldType=0
+              table.fields.add(name=FieldName, dataType=FieldType)
+            #result = [['a','b','c'],['a','b','c']]
+            logging.debug("result {}" .format(result))
         else:
             result = []
        
@@ -373,5 +423,5 @@ class ScriptEval:
     def get_all_workouts(session, url, user_id, options):
         return peloton.get_all_workouts(session, url, user_id, options)
     @staticmethod
-    def get_all_details(session, workout_id, option):
-        return peloton.get_all_details(session, workout_id, option)
+    def get_all_details(session, url, workout_id, option):
+        return peloton.get_all_details(session, url, workout_id, option)

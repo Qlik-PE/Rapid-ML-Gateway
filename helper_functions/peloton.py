@@ -47,11 +47,12 @@ def get_all_workouts(s, url, user_id, option):
     return result
 
 
-def get_all_detail(s, workout_id, option):
-    url = workout + workout_id + option
+def get_all_details(s, url, workout_id, option):
+    url = url + workout_id + option
     print(url)
     r = s.get(url)
-    return r
+    result = r.json()
+    return result
 
 
 
