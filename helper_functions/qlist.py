@@ -1,4 +1,5 @@
 import glom
+
 #
 def divide_chunks(l, n): 
       
@@ -21,3 +22,21 @@ def get_table_id(input_dict, value):
             id = k
             #path = k +".description.table.steps"
     return id
+
+def convert_list_of_dicts(input_list):
+    result = []
+    for x in input_list:
+        columns = list(x.keys())
+        values = list(x.values())
+        values = ["NA" if x == '' else x for x in values]
+        temp = [str(x) for x in values]
+        result.append(temp)
+    return columns, result
+
+def convert_dicts_list(input_dict):
+    columns = list(input_dict.keys())
+    values = list(input_dict.values())
+    values = ["NA" if x == '' else x for x in values]
+    temp = [str(x) for x in values]
+    return columns, temp
+            

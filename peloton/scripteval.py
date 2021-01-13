@@ -4,7 +4,7 @@ sys.path.append(os.path.join(PARENT_DIR, 'generated'))
 sys.path.append(os.path.join(PARENT_DIR, 'helper_functions'))
 import logging
 import logging.config
-import peloton
+import peloton, qlist
 import ServerSideExtension_pb2 as SSE
 import grpc
 import numpy 
@@ -172,8 +172,29 @@ class ScriptEval:
             return ReturnType.Dual
         else:
             return ReturnType.Undefined
-
-    
+    @staticmethod
+    def remove_columns(remlist, list_of_dict):
+       
+        for x in remlist:
+            for dict in list_of_dict:
+                #logging.debug(dict['name'])
+                logging.debug("deleting {}" .format(x))
+                key  = x.strip()
+                logging.debug("deleting {}" .format(key))
+                if key in dict.keys():
+                    del dict[key]
+        return list_of_dict
+    @staticmethod
+    def remove_columns_dict(remlist, dict):
+        
+        for x in remlist:
+            #logging.debug(dict['name'])
+            logging.debug("deleting {}" .format(x))
+            key  = x.strip()
+            logging.debug("deleting {}" .format(key))
+            if key in dict.keys():
+                del dict[key]
+        return dict
     @staticmethod
     def get_duals(result, ret_type):
         if isinstance(result, str) or not hasattr(result, '__iter__'):
@@ -231,135 +252,100 @@ class ScriptEval:
 
         if (script.find('get_all_instructors') !=-1):
             result = self.get_all_instructors(url)
-            logging.debug("result {}" .format(result))
+            #list of Dictionary returned
+            logging.debug("result type  : {} data : {} " .format(type(result), result))
+            remlist = (config.get(script, 'remlist')).strip('][').split(', ')
+            logging.debug("Remlist Type {}, List {}" .format(type(remlist), remlist))
+            if (len(remlist)) > 1:
+                result = self.remove_columns(remlist, result)
+            logging.debug("result type  : {} data : {} " .format(type(result), result))
+            converted = qlist.convert_list_of_dicts(result)
+            logging.debug("converted type JRP : {} columns : {} data :{} " .format(type(converted[0]), converted[0], converted[1]))
+            
             table.name = 'Peloton-Instructor'
-            table.fields.add(name="Instructor_ID", dataType=0)
-            table.fields.add(name="Name", dataType=0)
-            table.fields.add(name="Fitness Disciplines", dataType=0)
-
+            for i in converted[0]:
+                FieldName = i
+                FieldType=0
+                table.fields.add(name=FieldName, dataType=FieldType)
+            result = converted[1]
+            logging.debug("result type  : {} data : {} " .format(type(result), result))
+            for x in result:
+                logging.debug("x type  : {} data : {} " .format(type(x), x))
         elif (script.find('get_all_sessions') !=-1):
-            logging.debug("Calling get_all_sessions")
+            logging.debug("get_all_sessions")
             UserData = session[2]
             UserWorkout = session[3]
             #filter all the non values
             #converst string representation to list
             remlist = (config.get(script, 'remlist')).strip('][').split(', ')
             logging.debug("Remlist Type {}, List {}" .format(type(remlist), remlist))
-            for x in remlist:
-                print(x)
-                del UserData[x]
-            columns = list(UserData.keys())
-            values = list(UserData.values())
-            #remove '' values from dataset
-            indices = [index for index, element in enumerate(values) if element == '']
-            for x in indices:
-                print(x)
-                #logging.debug("Indice {} Column {} Value {} Length {}" .format(x, columns[x], values[x]))
-                del columns[x]
-                del values[x]
-            logging.debug("columns {}" .format(columns))
-            logging.debug("Empty {} Length {}" .format(indices, len(values)))
-            logging.debug("values {}" .format(values))
-            temp = [str(x) for x in values]
-            result =[]
-            result.append(temp)
+            if (len(remlist)) > 1:
+                result = self.remove_columns_dict(remlist, UserData)
+            else:
+                result = UserData
+
+            converted = qlist.convert_dicts_list(result)
             table.name= User +'- Peloton User Data'
-            for i in columns:
+            logging.debug("column  {}" .format(converted[0]))
+            for i in converted[0]:
                 FieldName = i
                 FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
-            #result = [['a','b','c'],['a','b','c']]
+            result=[]
+            result.append(converted[1])
             logging.debug("result {}" .format(result))
             
         elif (script.find('get_all_workouts') !=-1):
             logging.debug("Calling get_all_workouts")
             UserData = session[2]
             UserWorkout = session[3]
+            remlist = (config.get(script, 'remlist')).strip('][').split(', ')
+            logging.debug("Remlist Type {}, List {}" .format(type(remlist), remlist))
+            if (len(remlist)) > 1:
+                result = self.remove_columns(remlist, UserWorkout)
+            else:
+                result = UserWorkout
+            logging.debug("result type  : {} data : {} " .format(type(result), result))
+            converted = qlist.convert_list_of_dicts(result)
+            logging.debug("converted type JRP : {} columns : {} data :{} " .format(type(converted[0]), converted[0], converted[1]))
+            
             table.name = User +'- Peloton Work Out Data'
-            table.fields.add(name="id", dataType=0)
-            table.fields.add(name="workout type", dataType=0)
-            table.fields.add(name="count", dataType=0)
-            result =[]
-            for x in UserWorkout:
-                list_elem =[]
-                id = UserData["id"]
-                count = str(x['count'])
-                name = x['name']
-                list_elem = [id, name, count]
-                result.append(list_elem)
-            logging.debug("result {}" .format(result))
-
-        elif (script.find('get_all_details') !=-1):
-            result =[]
-            options = config.get(script, 'options')
-            url = config.get(script, 'url')
-            UserData = self.get_all_workouts(session[0],url, session[2]["id"], options)
-            UserData = UserData['data']
-            logging.debug('UserData type {} and UserData {}' .format(type(UserData), UserData))
-            #filter all the non values
-            #converst string representation to list
-            #remlist = (config.get(script, 'remlist')).strip('][').split(', ')
-            #logging.debug("Remlist Type {}, List {}" .format(type(remlist), remlist))
-            for x in UserData:
-                print(x)
-              #  del UserData[x]
-                columns = list(x.keys())
-                values = list(x.values())
-            #remove '' values from dataset
-                indices = [index for index, element in enumerate(values) if element == '']
-                for x in indices:
-                    print(x)
-                    #logging.debug("Indice {} Column {} Value {} Length {}" .format(x, columns[x], values[x]))
-                    del columns[x]
-                    del values[x]
-                logging.debug("columns {}" .format(columns))
-                logging.debug("Empty {} Length {}" .format(indices, len(values)))
-                logging.debug("values {}" .format(values))
-                temp = [str(x) for x in values]
-                result.append(temp)
-            table.name= User +'- Peloton Workout Data'
-            for i in columns:
+            for i in converted[0]:
                 FieldName = i
                 FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
-            #result = [['a','b','c'],['a','b','c']]
-            logging.debug("result {}" .format(result))
-           
+            result = converted[1]
+            logging.debug("result type  : {} data : {} " .format(type(result), result))
+         
+       
         elif (script.find('get_all_rides') !=-1):
             result =[]
             options = config.get(script, 'options')
             url = config.get(script, 'url')
             UserData = self.get_all_workouts(session[0],url, session[2]["id"], options)
             UserData = UserData['data']
-            logging.debug('UserData type {} and UserData {}' .format(type(UserData), UserData))
-            #filter all the non values
-            #converst string representation to list
-            #remlist = (config.get(script, 'remlist')).strip('][').split(', ')
-            #logging.debug("Remlist Type {}, List {}" .format(type(remlist), remlist))
+            RideData =[]
             for x in UserData:
-                ride = (x['ride'])
-              #  del UserData[x]
-                columns = list(ride.keys())
-                values = list(ride.values())
-            #remove '' values from dataset
-                indices = [index for index, element in enumerate(values) if element == '']
-                for x in indices:
-                    print(x)
-                    #logging.debug("Indice {} Column {} Value {} Length {}" .format(x, columns[x], values[x]))
-                    del columns[x]
-                    del values[x]
-                logging.debug("columns {}" .format(columns))
-                logging.debug("Empty {} Length {}" .format(indices, len(values)))
-                logging.debug("values {}" .format(values))
-                temp = [str(x) for x in values]
-                result.append(temp)
+                RideData.append(x['ride'])
+            
+            logging.debug('RideData type {} and RideData {}' .format(type(RideData), RideData))
+            remlist = (config.get(script, 'remlist')).strip('][').split(', ')
+            logging.debug("Remlist Type {}, List {}" .format(type(remlist), remlist))
+            if (len(remlist)) > 1:
+                result = self.remove_columns(remlist, RideData)
+            else:
+                result = RideData
+            converted = qlist.convert_list_of_dicts(result)
+            logging.debug("converted type JRP : {} columns : {} data :{} " .format(type(converted[0]), converted[0], converted[1]))
+            
             table.name= User +'- Peloton Ride Data'
-            for i in columns:
+            for i in converted[0]:
                 FieldName = i
                 FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
-            #result = [['a','b','c'],['a','b','c']]
-            logging.debug("result {}" .format(result))
+            result = converted[1]
+            logging.debug("result type  : {} data : {} " .format(type(result), result))
+            
         elif (script.find('get_all_output') !=-1):
             result =[]
             #get a list of workout ids
@@ -368,10 +354,7 @@ class ScriptEval:
             UserData = self.get_all_workouts(session[0],url, session[2]["id"], options)
             UserData = UserData['data']
             logging.debug('UserData type {} and UserData {}' .format(type(UserData), UserData))
-            #filter all the non values
-            #converst string representation to list
-            #remlist = (config.get(script, 'remlist')).strip('][').split(', ')
-            #logging.debug("Remlist Type {}, List {}" .format(type(remlist), remlist))
+         
             workout_ids =[]
             for x in UserData:
                 workout_id = (x['id'])
@@ -380,25 +363,22 @@ class ScriptEval:
             options = config.get(script, 'options_summary')
             url = config.get(script, 'url')
             
+            remlist = (config.get(script, 'remlist')).strip('][').split(', ')
+            logging.debug("Remlist Type {}, List {}" .format(type(remlist), remlist))
+            logging.debug(len(remlist))
+            
             for x in workout_ids:
                 UserData = self.get_all_details(session[0],url, x, options)
                 logging.debug('UserData type {} and UserData {}' .format(type(UserData), UserData))
-                columns = list(UserData.keys())
-                values = list(UserData.values())
-                #remove '' values from dataset
-                #indices = [index for index, element in enumerate(values) if element == '']
-                #for x in indices:
-                 #   print(x)
-                    #logging.debug("Indice {} Column {} Value {} Length {}" .format(x, columns[x], values[x]))
-                  #  del columns[x]
-                   # del values[x]
-                logging.debug("columns {}" .format(columns))
-                #logging.debug("Empty {} Length {}" .format(indices, len(values)))
-                logging.debug("values {}" .format(values))
-                temp = [str(x) for x in values]
-                result.append(temp)
+                if (len(remlist)) > 1:
+                    temp = self.remove_columns_dict(remlist, UserData)
+                else:
+                    temp = UserData
+                logging.debug('Temp type {} and Temp {}' .format(type(temp), temp))
+                converted = qlist.convert_dicts_list(temp)
+                result.append(converted[1])
             table.name= User +'- Peloton Output Data'
-            for i in columns:
+            for i in converted[0]:
               FieldName = i
               FieldType=0
               table.fields.add(name=FieldName, dataType=FieldType)
