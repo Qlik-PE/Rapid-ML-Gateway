@@ -26,11 +26,11 @@ def get_all_sessions(user_name, password):
     payload = {'username_or_email': user_name, 'password': password}
     r = s.post('https://api.onepeloton.com/auth/login', json=payload)
     result = json.loads(r.text)
-    user_id = result['user_id']
+    S_userid = result['user_id']
     D_userdata = result['user_data']
     L_workout = result['user_data']['workout_counts']
 
-    return s, result, D_userdata, L_workout, user_id
+    return s, result, D_userdata, L_workout, S_userid
 
 
 def get_all_workouts(s, url, user_id, option):
