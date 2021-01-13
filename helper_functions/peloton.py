@@ -35,7 +35,7 @@ def get_all_sessions(user_name, password):
 
 def get_all_workouts(s, url, user_id, option):
     url = url + user_id + '/workouts' + option
-    print('Peleton url {}' .format(url))
+    #print('Peleton url {}' .format(url))
     r = s.get(url)
     result = r.json()
     return result
@@ -43,7 +43,7 @@ def get_all_workouts(s, url, user_id, option):
 
 def get_all_details(s, url, workout_id, option):
     url = url + workout_id + option
-    print(url)
+    #print(url)
     r = s.get(url)
     result = r.json()
     return result
