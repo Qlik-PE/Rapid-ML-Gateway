@@ -148,6 +148,5 @@ settings.json
 .DS_Store
 *.ini
 app.py
-/finance
 /debug
 logger.config
