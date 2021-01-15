@@ -417,7 +417,7 @@ class ScriptEval:
             logging.debug(len(remlist))
             
             for x in workout_ids:
-                UserData = self.get_all_details(session[0],url, x, options)
+                UserData = self.get_all_details(session[0],url, x, options).json()
                 logging.debug('UserData type {} and UserData {}' .format(type(UserData), UserData))
                 key_to_lookup = 'apple_watch_active_calories'
                 if key_to_lookup in UserData:
