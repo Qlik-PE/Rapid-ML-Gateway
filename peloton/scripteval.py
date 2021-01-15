@@ -339,9 +339,9 @@ class ScriptEval:
             remlist = (config.get(script, 'remlist')).strip('][').split(', ')
             logging.debug("Remlist Type {}, List {}" .format(type(remlist), remlist))
             if (len(remlist)) > 1:
-                result = self.remove_columns(remlist, RideData)
+                result = self.remove_columns(remlist, UserData)
             else:
-                result = RideData
+                result = UserData
             converted = qlist.convert_list_of_dicts(result)
             logging.debug("converted type JRP : {} columns : {} data :{} " .format(type(converted[0]), converted[0], converted[1]))
             converted[0].insert(0, 'user_id')
@@ -377,7 +377,7 @@ class ScriptEval:
             logging.debug(len(remlist))
             
             for x in workout_ids:
-                UserData = self.get_all_details(session[0],url, x, options)
+                UserData = self.get_all_details(session[0],url, x, options).json()
                 logging.debug('UserData type {} and UserData {}' .format(type(UserData), UserData))
                 if (len(remlist)) > 1:
                     temp = self.remove_columns_dict(remlist, UserData)
@@ -417,7 +417,7 @@ class ScriptEval:
             logging.debug(len(remlist))
             
             for x in workout_ids:
-                UserData = self.get_all_details(session[0],url, x, options)
+                UserData = self.get_all_details(session[0],url, x, options).json()
                 logging.debug('UserData type {} and UserData {}' .format(type(UserData), UserData))
                 key_to_lookup = 'apple_watch_active_calories'
                 if key_to_lookup in UserData:
