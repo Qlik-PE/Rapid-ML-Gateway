@@ -328,6 +328,7 @@ class ScriptEval:
             options = config.get(script, 'options')
             url = config.get(script, 'url')
             UserData = self.get_all_workouts(session[0],url, session[2]["id"], options)
+            logging.debug("get all workout {}" .format(UserData))
             UserData = UserData['data']
             UserId= session[4]
             RideData =[]
