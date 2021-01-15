@@ -377,7 +377,7 @@ class ScriptEval:
             logging.debug(len(remlist))
             
             for x in workout_ids:
-                UserData = self.get_all_details(session[0],url, x, options)
+                UserData = self.get_all_details(session[0],url, x, options).json()
                 logging.debug('UserData type {} and UserData {}' .format(type(UserData), UserData))
                 if (len(remlist)) > 1:
                     temp = self.remove_columns_dict(remlist, UserData)
