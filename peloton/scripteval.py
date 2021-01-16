@@ -333,14 +333,13 @@ class ScriptEval:
             UserId= session[4]
             UserData_Flattened = []
             logging.debug("UserData Type {}, List {}" .format(type(UserData), UserData))
-            for x in UserData
+            for x in UserData:
                 logging.debug("UserDataElements Type {}, List {}" .format(type(x), x))
                 flattend = flatten(x, reducer = 'underscore')
                 UserData_Flattened.append(flattend)
             
             remlist = (config.get(script, 'remlist')).strip('][').split(', ')
             logging.debug("Remlist Type {}, List {}" .format(type(remlist), remlist))
-            for 
             if (len(remlist)) > 1:
                 result = self.remove_columns(remlist, UserData_Flattened)
             else:
