@@ -358,7 +358,7 @@ class ScriptEval:
         elif (script.find('get_all_output') !=-1):
             result =[]
             #get a list of workout ids
-            options = config.get(script, 'user_options')
+            options = config.get(script, 'options')
             url = config.get(script, 'user_url')
             UserData = self.get_all_workouts(session[0],url, session[2]["id"], options)
             UserData = UserData['data']
@@ -398,7 +398,7 @@ class ScriptEval:
         elif (script.find('get_apple_watch_output') !=-1):
             result =[]
             #get a list of workout ids
-            options = config.get(script, 'user_options')
+            options = config.get(script, 'options')
             url = config.get(script, 'user_url')
             UserData = self.get_all_workouts(session[0],url, session[2]["id"], options)
             UserData = UserData['data']
