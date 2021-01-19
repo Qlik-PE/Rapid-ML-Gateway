@@ -383,8 +383,10 @@ class ScriptEval:
                 logging.debug('UserData type {} and UserData {}' .format(type(UserData), UserData))
                 if (len(remlist)) > 1:
                     temp = self.remove_columns_dict(remlist, UserData)
+                    logging.debug('Remoed UserData type {} and UserData {}' .format(type(UserData), UserData))
                 else:
                     temp = UserData
+                    logging.debug('No Var UserData type {} and UserData {}' .format(type(UserData), UserData))
                 if(temp in locals()):
                     logging.debug('Temp type {} and Temp {}' .format(type(temp), temp))
                     converted = qlist.convert_dicts_list(temp)
