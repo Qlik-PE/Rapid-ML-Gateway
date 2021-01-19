@@ -329,13 +329,13 @@ class ScriptEval:
             url = config.get(script, 'url')
             UserData = self.get_all_workouts(session[0],url, session[2]["id"], options)
             logging.debug("get all workout {}" .format(UserData))
-            UserData = UserData
+            UserData = UserData['data']
             UserId= session[4]
             UserData_Flattened = []
             logging.debug("UserData Type {}, List {}" .format(type(UserData), UserData))
             for x in UserData:
                 logging.debug("UserDataElements Type {}, List {}" .format(type(x), x))
-                flattend = flatten(x['data'], reducer = 'underscore')
+                flattend = flatten(x, reducer = 'underscore')
                 UserData_Flattened.append(flattend)
             
             remlist = (config.get(script, 'remlist')).strip('][').split(', ')
