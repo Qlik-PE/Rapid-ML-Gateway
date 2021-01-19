@@ -385,6 +385,10 @@ class ScriptEval:
                     temp = self.remove_columns_dict(remlist, UserData)
                 else:
                     temp = UserData
+                if(temp in locals()):
+                    logging.debug('Temp type {} and Temp {}' .format(type(temp), temp))
+                    converted = qlist.convert_dicts_list(temp)
+                    result.append(converted[1])
                 logging.debug('Temp type {} and Temp {}' .format(type(temp), temp))
                 converted = qlist.convert_dicts_list(temp)
                 result.append(converted[1])
@@ -427,10 +431,10 @@ class ScriptEval:
                         temp = self.remove_columns_dict(remlist, UserData)
                     else:
                         temp = UserData
-                
-                logging.debug('Temp type {} and Temp {}' .format(type(temp), temp))
-                converted = qlist.convert_dicts_list(temp)
-                result.append(converted[1])
+                if(temp in locals()):
+                    logging.debug('Temp type {} and Temp {}' .format(type(temp), temp))
+                    converted = qlist.convert_dicts_list(temp)
+                    result.append(converted[1])
             table.name= User +'- Peloton Apple Watch Output Data'
             for i in converted[0]:
               FieldName = i
