@@ -11,7 +11,7 @@ import numpy
 import configparser
 from ssedata import ArgType, FunctionType, ReturnType
 config = configparser.ConfigParser()
-
+from flatten_dict import flatten
 
 class ScriptEval:
     """
@@ -331,15 +331,17 @@ class ScriptEval:
             logging.debug("get all workout {}" .format(UserData))
             UserData = UserData['data']
             UserId= session[4]
-            RideData =[]
+            UserData_Flattened = []
+            logging.debug("UserData Type {}, List {}" .format(type(UserData), UserData))
             for x in UserData:
-                RideData.append(x['ride'])
+                logging.debug("UserDataElements Type {}, List {}" .format(type(x), x))
+                flattend = flatten(x, reducer = 'underscore')
+                UserData_Flattened.append(flattend)
             
-            logging.debug('RideData type {} and RideData {}' .format(type(RideData), RideData))
             remlist = (config.get(script, 'remlist')).strip('][').split(', ')
             logging.debug("Remlist Type {}, List {}" .format(type(remlist), remlist))
             if (len(remlist)) > 1:
-                result = self.remove_columns(remlist, UserData)
+                result = self.remove_columns(remlist, UserData_Flattened)
             else:
                 result = UserData
             converted = qlist.convert_list_of_dicts(result)
@@ -358,7 +360,7 @@ class ScriptEval:
         elif (script.find('get_all_output') !=-1):
             result =[]
             #get a list of workout ids
-            options = config.get(script, 'user_options')
+            options = config.get(script, 'options')
             url = config.get(script, 'user_url')
             UserData = self.get_all_workouts(session[0],url, session[2]["id"], options)
             UserData = UserData['data']
@@ -398,7 +400,7 @@ class ScriptEval:
         elif (script.find('get_apple_watch_output') !=-1):
             result =[]
             #get a list of workout ids
-            options = config.get(script, 'user_options')
+            options = config.get(script, 'options')
             url = config.get(script, 'user_url')
             UserData = self.get_all_workouts(session[0],url, session[2]["id"], options)
             UserData = UserData['data']
