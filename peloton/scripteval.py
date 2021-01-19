@@ -346,7 +346,7 @@ class ScriptEval:
                 result = UserData_Flattened
             converted = qlist.convert_list_of_dicts(result)
             logging.debug("converted type JRP : {} columns : {} data :{} " .format(type(converted[0]), converted[0], converted[1]))
-            #converted[0].insert(0, 'user_id')
+            converted[0].insert(0, 'user_id')
             for x in converted[1]:
                 x.insert(0, UserId)
             table.name= User +'- Peloton Ride Data'
