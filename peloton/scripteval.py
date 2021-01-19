@@ -343,7 +343,7 @@ class ScriptEval:
             if (len(remlist)) > 1:
                 result = self.remove_columns(remlist, UserData_Flattened)
             else:
-                result = UserData
+                result = UserData_Flattened
             converted = qlist.convert_list_of_dicts(result)
             logging.debug("converted type JRP : {} columns : {} data :{} " .format(type(converted[0]), converted[0], converted[1]))
             converted[0].insert(0, 'user_id')
