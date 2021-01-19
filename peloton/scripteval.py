@@ -427,12 +427,13 @@ class ScriptEval:
                 if key_to_lookup in UserData:
                     if (len(remlist)) > 1:
                         temp = self.remove_columns_dict(remlist, UserData)
+                        logging.debug('Removed UserData type {} and UserData {}' .format(type(UserData), UserData))
                     else:
                         temp = UserData
-                if(temp in locals()):
-                    logging.debug('Temp type {} and Temp {}' .format(type(temp), temp))
-                    converted = qlist.convert_dicts_list(temp)
-                    result.append(converted[1])
+                        logging.debug('No Var UserData type {} and UserData {}' .format(type(UserData), UserData))
+                logging.debug('Temp type {} and Temp {}' .format(type(temp), temp))
+                converted = qlist.convert_dicts_list(temp)
+                result.append(converted[1])
             table.name= User +'- Peloton Apple Watch Output Data'
             for i in converted[0]:
               FieldName = i
