@@ -427,8 +427,11 @@ class ScriptEval:
                         temp = self.remove_columns_dict(remlist, UserData)
                         logging.debug('Removed UserData type {} and UserData {}' .format(type(UserData), UserData))
                     else:
-                        temp = UserData
                         logging.debug('No Var UserData type {} and UserData {}' .format(type(UserData), UserData))
+                        temp = UserData
+                else :
+                    temp['apple_watch_active_calories'] = ''
+                    temp['apple_watch_total_calories'] = ''
                 logging.debug('Temp type {} and Temp {}' .format(type(temp), temp))
                 converted = qlist.convert_dicts_list(temp)
                 result.append(converted[1])
