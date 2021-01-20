@@ -422,16 +422,15 @@ class ScriptEval:
                 UserData = self.get_all_details(session[0],url, x, options).json()
                 logging.debug('UserData type {} and UserData {}' .format(type(UserData), UserData))
                 key_to_lookup = 'apple_watch_active_calories'
-                
-                if key_to_lookup in UserData:
-                    if (len(remlist)) > 1:
-                        temp = self.remove_columns_dict(remlist, UserData)
-                        logging.debug('Removed UserData type {} and UserData {}' .format(type(UserData), UserData))
-                    else:
-                        logging.debug('No Var UserData type {} and UserData {}' .format(type(UserData), UserData))
-                        temp = UserData
-                else :
+                if (len(remlist)) > 1:
+                    temp = self.remove_columns_dict(remlist, UserData)
+                    logging.debug('Removed UserData type {} and UserData {}' .format(type(UserData), UserData))
+                else:
+                    logging.debug('No Var UserData type {} and UserData {}' .format(type(UserData), UserData))
                     temp = UserData
+                if key_to_lookup in temp:
+                    logging.debug('We have no Apple Watchj Data {} {}' .format(type(temp), temp))
+                else :
                     temp['apple_watch_active_calories'] = ''
                     temp['apple_watch_total_calories'] = ''
                 logging.debug('Temp type {} and Temp {}' .format(type(temp), temp))
