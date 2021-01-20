@@ -422,6 +422,7 @@ class ScriptEval:
                 UserData = self.get_all_details(session[0],url, x, options).json()
                 logging.debug('UserData type {} and UserData {}' .format(type(UserData), UserData))
                 key_to_lookup = 'apple_watch_active_calories'
+                tmep = {}
                 if key_to_lookup in UserData:
                     if (len(remlist)) > 1:
                         temp = self.remove_columns_dict(remlist, UserData)
