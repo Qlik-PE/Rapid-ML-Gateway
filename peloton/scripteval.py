@@ -383,19 +383,20 @@ class ScriptEval:
                 logging.debug('UserData type {} and UserData {}' .format(type(UserData), UserData))
                 if (len(remlist)) > 1:
                     temp = self.remove_columns_dict(remlist, UserData)
+                    logging.debug('Removed UserData type {} and UserData {}' .format(type(UserData), UserData))
                 else:
                     temp = UserData
+                    logging.debug('No Var UserData type {} and UserData {}' .format(type(UserData), UserData))
                 logging.debug('Temp type {} and Temp {}' .format(type(temp), temp))
                 converted = qlist.convert_dicts_list(temp)
                 result.append(converted[1])
-           
+                
             table.name= User +'- Peloton Output Data'
             for i in converted[0]:
-              FieldName = i
-              FieldType=0
-              table.fields.add(name=FieldName, dataType=FieldType)
+                FieldName = i
+                FieldType=0
+                table.fields.add(name=FieldName, dataType=FieldType)
             #result = [['a','b','c'],['a','b','c']]
-           
             logging.debug("result {}" .format(result))
         elif (script.find('get_apple_watch_output') !=-1):
             result =[]
@@ -405,7 +406,6 @@ class ScriptEval:
             UserData = self.get_all_workouts(session[0],url, session[2]["id"], options)
             UserData = UserData['data']
             logging.debug('UserData type {} and UserData {}' .format(type(UserData), UserData))
-         
             workout_ids =[]
             for x in UserData:
                 workout_id = (x['id'])
@@ -422,31 +422,32 @@ class ScriptEval:
                 UserData = self.get_all_details(session[0],url, x, options).json()
                 logging.debug('UserData type {} and UserData {}' .format(type(UserData), UserData))
                 key_to_lookup = 'apple_watch_active_calories'
-                if key_to_lookup in UserData:
-                    if (len(remlist)) > 1:
-                        temp = self.remove_columns_dict(remlist, UserData)
-                    else:
-                        temp = UserData
-                
+                if (len(remlist)) > 1:
+                    temp = self.remove_columns_dict(remlist, UserData)
+                    logging.debug('Removed UserData type {} and UserData {}' .format(type(UserData), UserData))
+                else:
+                    logging.debug('No Var UserData type {} and UserData {}' .format(type(UserData), UserData))
+                    temp = UserData
+                if key_to_lookup in temp:
+                    logging.debug('We have no Apple Watchj Data {} {}' .format(type(temp), temp))
+                else :
+                    temp['apple_watch_active_calories'] = ''
+                    temp['apple_watch_total_calories'] = ''
                 logging.debug('Temp type {} and Temp {}' .format(type(temp), temp))
                 converted = qlist.convert_dicts_list(temp)
                 result.append(converted[1])
             table.name= User +'- Peloton Apple Watch Output Data'
             for i in converted[0]:
-              FieldName = i
-              FieldType=0
-              table.fields.add(name=FieldName, dataType=FieldType)
+                FieldName = i
+                FieldType=0
+                table.fields.add(name=FieldName, dataType=FieldType)
             logging.debug('JRP Columns type {} and columns {}' .format(type(converted[0]), converted[0]))
             logging.debug("result {}" .format(result))
         else:
             result = []
-       
+
         self.send_table_description(table, context)
-       
         return result
-
-       
-
     @staticmethod
     def get_all_instructors(url):
         return peloton.get_all_instructors(url)
