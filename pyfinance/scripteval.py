@@ -241,16 +241,16 @@ class ScriptEval:
             index=script.index('(')
             TickerList = script[index:]
             script = script[:index]
-            #UserPass = (UserPass.replace('(','')).replace(')','')
-            #index=UserPass.index(',')
-            #Pass = (UserPass[index:]).replace(',','')
-            #User = UserPass[:index]
-            logging.debug("index {}, Script {} , TickerList {}" .format(index, script, TickerList))
-            #session = self.get_all_sessions(User, Pass)
-        #url = config.get(script, 'url')
-
-        if (script.find('get_all_instructors') !=-1):
-            result = self.get_all_instructors(url)
+            TickerList = (TickerList.replace('(','')).replace(')','')
+            #We need to Fix here
+            start_date='20210121'
+            end_date='20210120'
+            provider='yahoo'
+            attrib = 'Adj Close'
+            logging.debug("index {}, Script {} , TickerList {} start_date{} end_date{} attrib{}" .format(index, script, TickerList, start_date, end_date, attrib))
+            
+        if (script.find('get_ticker_data') !=-1):
+            result = self.get_ticker_data(ticker, start_date, end_date)
             #list of Dictionary returned
             logging.debug("result type  : {} data : {} " .format(type(result), result))
             remlist = (config.get(script, 'remlist')).strip('][').split(', ')
@@ -449,8 +449,8 @@ class ScriptEval:
 
 
     @staticmethod
-    def get_tickers(tickers, start, end, attrib):
-        return python_finance.get_tickers(tickers, start, end, attrib)
+    def get_ticker_data(tickers, start, end):
+        return python_finance.get_ticker_data(tickers, start, end)
     @staticmethod
     def get_Percent_change(ticker, start, end, attrib):
         return python_finance.get_Percent_change(ticker, start, end, attrib)
