@@ -45,5 +45,5 @@ def convert_df_list(input_df):
     values = list(input_df.values)
     values = ["NA" if x == '' else x for x in values]
     #fix for non numerical
-    temp = [str(round(x, 2)) for x in values]
-    return columns, temp
+    #temp = [str(x) for x in values]
+    return columns, values
