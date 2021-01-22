@@ -40,3 +40,9 @@ def convert_dicts_list(input_dict):
     temp = [str(x) for x in values]
     return columns, temp
             
+def convert_df_list(input_df):
+    columns = list(input_df.columns)
+    values = list(input_df)
+    values = ["NA" if x == '' else x for x in values]
+    temp = [str(x) for x in values]
+    return columns, temp

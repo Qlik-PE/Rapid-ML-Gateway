@@ -253,12 +253,7 @@ class ScriptEval:
             result = self.get_ticker_data(TickerList, start_date, end_date)
             #list of Dictionary returned
             logging.debug("result type  : {} data : {} " .format(type(result), result))
-            remlist = (config.get(script, 'remlist')).strip('][').split(', ')
-            logging.debug("Remlist Type {}, List {}" .format(type(remlist), remlist))
-            if (len(remlist)) > 1:
-                result = self.remove_columns(remlist, result)
-            logging.debug("result type  : {} data : {} " .format(type(result), result))
-            converted = qlist.convert_list_of_dicts(result)
+            converted = qlist.convert_df_list(result)
             logging.debug("converted type JRP : {} columns : {} data :{} " .format(type(converted[0]), converted[0], converted[1]))
             
             table.name = 'python_finance-Instructor'
