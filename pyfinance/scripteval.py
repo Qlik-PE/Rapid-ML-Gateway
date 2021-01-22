@@ -1,14 +1,18 @@
-
-import os, json, logging
+import os, sys
+PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(os.path.join(PARENT_DIR, 'generated'))
+sys.path.append(os.path.join(PARENT_DIR, 'helper_functions'))
+import logging
 import logging.config
-import sys
+import python_finance, qlist
 import ServerSideExtension_pb2 as SSE
 import grpc
-import precog, qlist, pysize
+import numpy 
 import configparser
 from ssedata import ArgType, FunctionType, ReturnType
-
 config = configparser.ConfigParser()
+from flatten_dict import flatten
+
 class ScriptEval:
     """
     Class for SSE plugin ScriptEval functionality.
@@ -24,27 +28,22 @@ class ScriptEval:
         :param context: the context sent from client
         :return: an iterable sequence of RowData.
         """
-        logging.debug('In EvaluateScritp: ScriptEval')
-        # Retrieve function type
-        func_type = self.get_func_type(header)
-        #logging.debug('Function Type {}' .format(func_type))
-        # Retrieve data types from header
-        arg_types = self.get_arg_types(header)
-        #logging.debug('Arg Type {}' .format(arg_types))
-        ret_type = self.get_return_type(header)
-        #logging.debug('Return Type {}' .format(ret_type))
+        # Read Qrag File 
         conf_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config', 'qrag.ini')
-        ##print(conf_file)
         logging.info('Location of qrag.ini {}' .format(conf_file))
         config.read(conf_file)
-        batch_size = int(config.get('base', 'batch_size'))
-        logging.info('Size of Batch Size {}' .format(batch_size))
-        #print(type(batch_size))
+
+        # Retrieve function type
+        func_type = self.get_func_type(header)
+
+        # Retrieve data types from header
+        arg_types = self.get_arg_types(header)
+        ret_type = self.get_return_type(header)
+
         logging.info('EvaluateScript: {} ({} {}) {}'
                      .format(header.script, arg_types, ret_type, func_type))
 
         # Check if parameters are provided
-        #print(header.params)
         if header.params:
             all_rows = []
 
@@ -53,13 +52,12 @@ class ScriptEval:
                 # Iterate over rows
                 for row in request_rows.rows:
                     # Retrieve parameters
-                    #print('row {} jrp' .format(row))
                     params = self.get_arguments(context, arg_types, row.duals, header)
                     all_rows.append(params)
 
             # First element in the parameter list should contain the data of the first parameter.
             all_rows = [list(param) for param in zip(*all_rows)]
-            #print(all_rows)
+
             if arg_types == ArgType.Mixed:
                 param_datatypes = [param.dataType for param in header.params]
                 for i, datatype in enumerate(param_datatypes):
@@ -70,37 +68,23 @@ class ScriptEval:
                         all_rows[i] = [list(datatype) for datatype in zip(*all_rows[i])]
 
             logging.debug('Received data from Qlik (args): {}'.format(all_rows))
-            return_val = self.evaluate(context, header.script, ret_type, params=all_rows)
+            result = self.evaluate(context, header.script, ret_type, params=all_rows)
 
         else:
             # No parameters provided
             logging.debug('No Parameteres Provided')
-            #print(ret_type)
             result = self.evaluate(context, header.script, ret_type)
-        print(type(result))
-        print(sys.getsizeof(result))
-        #bundledRows = SSE.BundledRows()
+        bundledRows = SSE.BundledRows()
         if isinstance(result, str) or not hasattr(result, '__iter__'):
             # A single value is returned
             bundledRows.rows.add(duals=self.get_duals(result, ret_type))
         else:
-            logging.debug('Size of Result {} {}'.format(len(result), pysize.get_size(result)))
-            #if(len(result) > )
-            #result = result[:10000]
-            batches = list(qlist.divide_chunks(result, batch_size)) 
-            for i in batches:
-                #print("loop")
-                bundledRows = SSE.BundledRows()
-                for row in i:
-                    # note that each element of the result should represent a row
-                    #logging.debug(row)
-                    #logging.debug(type(row))
-                    #logging.debug(ret_type)
-        
-                    #Yield the row data as bundled rows
-                    bundledRows.rows.add(duals=self.get_duals(row, ret_type))
-                #logging.debug('Size of BundledRow {}'.format(sys.getsizeof(bundledRows)))
-                yield bundledRows
+            for row in result:
+                # note that each element of the result should represent a row
+                bundledRows.rows.add(duals=self.get_duals(row, ret_type))
+
+        yield bundledRows
+
     @staticmethod
     def get_func_type(header):
         """
@@ -188,7 +172,29 @@ class ScriptEval:
             return ReturnType.Dual
         else:
             return ReturnType.Undefined
-
+    @staticmethod
+    def remove_columns(remlist, list_of_dict):
+       
+        for x in remlist:
+            for dict in list_of_dict:
+                #logging.debug(dict['name'])
+                logging.debug("deleting {}" .format(x))
+                key  = x.strip()
+                logging.debug("deleting {}" .format(key))
+                if key in dict.keys():
+                    del dict[key]
+        return list_of_dict
+    @staticmethod
+    def remove_columns_dict(remlist, dict):
+        
+        for x in remlist:
+            #logging.debug(dict['name'])
+            logging.debug("deleting {}" .format(x))
+            key  = x.strip()
+            logging.debug("deleting {}" .format(key))
+            if key in dict.keys():
+                del dict[key]
+        return dict
     @staticmethod
     def get_duals(result, ret_type):
         if isinstance(result, str) or not hasattr(result, '__iter__'):
@@ -199,7 +205,6 @@ class ScriptEval:
         elif ret_type == ReturnType.Numeric:
             duals = [SSE.Dual(numData=col) for col in result]
         return iter(duals)
-
     @staticmethod
     def send_table_description(table, context):
         """
@@ -225,102 +230,240 @@ class ScriptEval:
         :param params: params to evaluate. Default: []
         :return: a RowData of string dual
         """
-        table = SSE.TableDescription()
-        #print('JRP: {}' .format(table))
         # Evaluate script
-        #print(script)
-        #print(params)
-        conf_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config', 'qrag.ini')
-        ##print(conf_file)
-        logging.info('Location of qrag.ini {}' .format(conf_file))
-        config.read(conf_file)
-        url = config.get('base', 'url')
-        logging.debug('Precog URL {}' .format(url))
-        
-        if (script.find('TableInfo') !=-1):
-            result = self.getTableInfo(url)
-            table.name = 'PreCog-Catalog'
-            table.fields.add(name="Table_Id", dataType=0)
-            table.fields.add(name="Name", dataType=0)
-            table.fields.add(name="Column Desc", dataType=0)
-        elif (script.find('TableMetaData') !=-1):
-            vTable= script[:-14]
-            logging.info('TableMetadata vTable {}' .format(vTable))
-            table.name = vTable+"-Metadata"
-            result =[]
-            column_data = precog.get_column_info(vTable, url)
-            table.fields.add(name="column", dataType=0)
-            table.fields.add(name="type", dataType=0)
-            for i in column_data:
-                part = [i["column"], i["type"]]
-                #print (part)
-                result.append(part)
-            #print(result)
-        elif (script.find('getTableData') !=-1):
-            vTable = script[:-13] 
-            logging.info('getTableData vTable {}' .format(vTable))
-            table.name = script[:-13]
-            column_data = precog.get_column_info(vTable, url)
-            for i in column_data:
-                FieldName = i["column"]
-                if(i["type"]=="number"):
-                    FieldType=0
-                else:
-                    FieldType=0
-                #logging.debug("Viewing Metadata from PreCog: {}" .format(i))
-                #logging.debug('Adding Fields name :{}, dataType:{}' .format(FieldName, FieldType))
+        logging.info("In Evaluate {} {} {}" .format(script, ret_type, params))
+
+
+        table = SSE.TableDescription()
+        logging.info("python_finance Function {} called" .format(script))
+        #If User name and Password Present Remove Username and Password and Pass only function name
+        if(script.find('(') !=-1):
+            index=script.index('(')
+            UserPass = script[index:]
+            script = script[:index]
+            UserPass = (UserPass.replace('(','')).replace(')','')
+            index=UserPass.index(',')
+            Pass = (UserPass[index:]).replace(',','')
+            User = UserPass[:index]
+            logging.debug("index {}, Script {} , UserPass {}, User {} Pass {}" .format(index, script, UserPass, User, Pass ))
+            session = self.get_all_sessions(User, Pass)
+        url = config.get(script, 'url')
+
+        if (script.find('get_all_instructors') !=-1):
+            result = self.get_all_instructors(url)
+            #list of Dictionary returned
+            logging.debug("result type  : {} data : {} " .format(type(result), result))
+            remlist = (config.get(script, 'remlist')).strip('][').split(', ')
+            logging.debug("Remlist Type {}, List {}" .format(type(remlist), remlist))
+            if (len(remlist)) > 1:
+                result = self.remove_columns(remlist, result)
+            logging.debug("result type  : {} data : {} " .format(type(result), result))
+            converted = qlist.convert_list_of_dicts(result)
+            logging.debug("converted type JRP : {} columns : {} data :{} " .format(type(converted[0]), converted[0], converted[1]))
+            
+            table.name = 'python_finance-Instructor'
+            for i in converted[0]:
+                FieldName = i
+                FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
-            result = self.getTableData(url, vTable)
+            result = converted[1]
+            logging.debug("result type  : {} data : {} " .format(type(result), result))
+            for x in result:
+                logging.debug("x type  : {} data : {} " .format(type(x), x))
+        elif (script.find('get_all_sessions') !=-1):
+            logging.debug("get_all_sessions")
+            UserData = session[2]
+            UserWorkout = session[3]
+            UserId=session[4]
+            #filter all the non values
+            #converst string representation to list
+            remlist = (config.get(script, 'remlist')).strip('][').split(', ')
+            logging.debug("Remlist Type {}, List {}" .format(type(remlist), remlist))
+            if (len(remlist)) > 1:
+                result = self.remove_columns_dict(remlist, UserData)
+            else:
+                result = UserData
+
+            converted = qlist.convert_dicts_list(result)
+            table.name= User +'- python_finance User Data'
+            logging.debug("column  {}" .format(converted[0]))
+            for i in converted[0]:
+                FieldName = i
+                FieldType=0
+                table.fields.add(name=FieldName, dataType=FieldType)
+            result=[]
+            result.append(converted[1])
+            logging.debug("result {}" .format(result))
+            
+        elif (script.find('get_all_workouts') !=-1):
+            logging.debug("Calling get_all_workouts")
+            UserData = session[2]
+            UserWorkout = session[3]
+            UserId=session[4]
+            remlist = (config.get(script, 'remlist')).strip('][').split(', ')
+            logging.debug("Remlist Type {}, List {}" .format(type(remlist), remlist))
+            if (len(remlist)) > 1:
+                result = self.remove_columns(remlist, UserWorkout)
+            else:
+                result = UserWorkout
+            logging.debug("result type  : {} data : {} " .format(type(result), result))
+            converted = qlist.convert_list_of_dicts(result)
+            logging.debug("converted type JRP : {} columns : {} data :{} " .format(type(converted[0]), converted[0], converted[1]))
+            #insert user id
+            converted[0].insert(0, 'user_id')
+            for x in converted[1]:
+                x.insert(0, UserId)
+            table.name = User +'- python_finance Work Out Data'
+            for i in converted[0]:
+                FieldName = i
+                FieldType=0
+                table.fields.add(name=FieldName, dataType=FieldType)
+            result = converted[1]
+            logging.debug("result type  : {} data : {} " .format(type(result), result))
+         
+       
+        elif (script.find('get_all_rides') !=-1):
+            result =[]
+            options = config.get(script, 'options')
+            url = config.get(script, 'url')
+            UserData = self.get_all_workouts(session[0],url, session[2]["id"], options)
+            logging.debug("get all workout {}" .format(UserData))
+            UserData = UserData['data']
+            UserId= session[4]
+            UserData_Flattened = []
+            logging.debug("UserData Type {}, List {}" .format(type(UserData), UserData))
+            for x in UserData:
+                logging.debug("UserDataElements Type {}, List {}" .format(type(x), x))
+                flattend = flatten(x, reducer = 'underscore')
+                UserData_Flattened.append(flattend)
+            
+            remlist = (config.get(script, 'remlist')).strip('][').split(', ')
+            logging.debug("Remlist Type {}, List {}" .format(type(remlist), remlist))
+            if (len(remlist)) > 1:
+                result = self.remove_columns(remlist, UserData_Flattened)
+            else:
+                result = UserData_Flattened
+            converted = qlist.convert_list_of_dicts(result)
+            logging.debug("converted type JRP : {} columns : {} data :{} " .format(type(converted[0]), converted[0], converted[1]))
+            converted[0].insert(0, 'user_id')
+            for x in converted[1]:
+                x.insert(0, UserId)
+            table.name= User +'- python_finance Ride Data'
+            for i in converted[0]:
+                FieldName = i
+                FieldType=0
+                table.fields.add(name=FieldName, dataType=FieldType)
+            result = converted[1]
+            logging.debug("result type  : {} data : {} " .format(type(result), result))
+            
+        elif (script.find('get_all_output') !=-1):
+            result =[]
+            #get a list of workout ids
+            options = config.get(script, 'options')
+            url = config.get(script, 'user_url')
+            UserData = self.get_all_workouts(session[0],url, session[2]["id"], options)
+            UserData = UserData['data']
+            logging.debug('UserData type {} and UserData {}' .format(type(UserData), UserData))
+         
+            workout_ids =[]
+            for x in UserData:
+                workout_id = (x['id'])
+                workout_ids.append(workout_id)
+                logging.debug("Workout ID Type {}, Data {}" .format(type(workout_ids), workout_ids))
+            options = config.get(script, 'options_summary')
+            url = config.get(script, 'url')
+            
+            remlist = (config.get(script, 'remlist')).strip('][').split(', ')
+            logging.debug("Remlist Type {}, List {}" .format(type(remlist), remlist))
+            logging.debug(len(remlist))
+            
+            for x in workout_ids:
+                UserData = self.get_all_details(session[0],url, x, options).json()
+                logging.debug('UserData type {} and UserData {}' .format(type(UserData), UserData))
+                if (len(remlist)) > 1:
+                    temp = self.remove_columns_dict(remlist, UserData)
+                    logging.debug('Removed UserData type {} and UserData {}' .format(type(UserData), UserData))
+                else:
+                    temp = UserData
+                    logging.debug('No Var UserData type {} and UserData {}' .format(type(UserData), UserData))
+                logging.debug('Temp type {} and Temp {}' .format(type(temp), temp))
+                converted = qlist.convert_dicts_list(temp)
+                result.append(converted[1])
+                
+            table.name= User +'- python_finance Output Data'
+            for i in converted[0]:
+                FieldName = i
+                FieldType=0
+                table.fields.add(name=FieldName, dataType=FieldType)
+            #result = [['a','b','c'],['a','b','c']]
+            logging.debug("result {}" .format(result))
+        elif (script.find('get_apple_watch_output') !=-1):
+            result =[]
+            #get a list of workout ids
+            options = config.get(script, 'options')
+            url = config.get(script, 'user_url')
+            UserData = self.get_all_workouts(session[0],url, session[2]["id"], options)
+            UserData = UserData['data']
+            logging.debug('UserData type {} and UserData {}' .format(type(UserData), UserData))
+            workout_ids =[]
+            for x in UserData:
+                workout_id = (x['id'])
+                workout_ids.append(workout_id)
+                logging.debug("Workout ID Type {}, Data {}" .format(type(workout_ids), workout_ids))
+            options = config.get(script, 'options_summary')
+            url = config.get(script, 'url')
+            
+            remlist = (config.get(script, 'remlist')).strip('][').split(', ')
+            logging.debug("Remlist Type {}, List {}" .format(type(remlist), remlist))
+            logging.debug(len(remlist))
+            
+            for x in workout_ids:
+                UserData = self.get_all_details(session[0],url, x, options).json()
+                logging.debug('UserData type {} and UserData {}' .format(type(UserData), UserData))
+                key_to_lookup = 'apple_watch_active_calories'
+                if (len(remlist)) > 1:
+                    temp = self.remove_columns_dict(remlist, UserData)
+                    logging.debug('Removed UserData type {} and UserData {}' .format(type(UserData), UserData))
+                else:
+                    logging.debug('No Var UserData type {} and UserData {}' .format(type(UserData), UserData))
+                    temp = UserData
+                if key_to_lookup in temp:
+                    logging.debug('We have no Apple Watchj Data {} {}' .format(type(temp), temp))
+                else :
+                    temp['apple_watch_active_calories'] = ''
+                    temp['apple_watch_total_calories'] = ''
+                logging.debug('Temp type {} and Temp {}' .format(type(temp), temp))
+                converted = qlist.convert_dicts_list(temp)
+                result.append(converted[1])
+            table.name= User +'- python_finance Apple Watch Output Data'
+            for i in converted[0]:
+                FieldName = i
+                FieldType=0
+                table.fields.add(name=FieldName, dataType=FieldType)
+            logging.debug('JRP Columns type {} and columns {}' .format(type(converted[0]), converted[0]))
+            logging.debug("result {}" .format(result))
         else:
             result = []
-        #logging.debug('Result: {}'.format(result))
-        ###print(table)
-        ###print(type(table))
+
         self.send_table_description(table, context)
         return result
-   
-    
-    @staticmethod
-    def getTableInfo (url):
-       logging.info("In getTableInfo using url {}" .format(url))
-       table_list = precog.get_tables(url)
-       x = list(table_list[0].keys())
-       results =[]
-       for i in x:
-            y = precog.get_table_information(i, url)[1]
-            temp_li =[]
-            for j in y:
-                col_str = json.dumps(j)
-                temp_li.append(col_str)
-            column_str = ''.join(temp_li)
-            result= [i, table_list[0][i]['name'], column_str]
-            results.append(result)
-            ###print(result)
-       return results
+
 
     @staticmethod
-    def getTableData(url, table_name):
-       logging.info("In getTableDatausing url {} and tablename {}" .format(url, table_name))
-       result = []
-       table_id  = precog.get_table_id(table_name, url)
-       #logging.debug('Table ID {}' .format(table_id[0]))
-       token = precog.get_access_tokens(table_id[0],url)
-       ###print(token[0].values())
-       token_count = len(token[0]["accessTokens"])
-       create_token_tuple = precog.create_token(url,table_id[0])
-       ##print(create_token_tuple)
-       ##print(precog.get_count_of_all_tokens(url))
-       new_token = create_token_tuple[0]
-       new_secret = create_token_tuple[1]
-       response = create_token_tuple[2]
-       result = precog.get_result_csv(url, new_secret)
-       ##print(result[0])
-       output_str = result[1]
-       logging.debug("JRP Size of output_str {}" .format(len(output_str)))
-       parsed_csv = precog.convert_csv(output_str)
-       logging.debug("JRP Size of parsed_csv {}" .format(len(parsed_csv[0])))
-       #print(type(parsed_csv))
-       #print(parsed_csv[:10])
-       resp_clean = precog.cleanup_token(new_token, table_id[0], url)
-       logging.debug('Token Cleaned Resp: {}' .format(resp_clean))
-       return parsed_csv[0]
+    def get_tickers(tickers, start, end, attrib):
+        return python_finance.get_tickers(tickers, start, end, attrib)
+    @staticmethod
+    def get_Percent_change(ticker, start, end, attrib):
+        return python_finance.get_Percent_change(ticker, start, end, attrib)
+    @staticmethod
+    def get_Mean_Daily_Return(ticker, start, end, attrib):
+        return python_finance.get_all_workouts(ticker, start, end, attrib)
+    @staticmethod
+    def get_Cov_Matrix(ticker, start, end, attrib):
+        return python_finance.get_Cov_Matrix(ticker, start, end, attrib)
+    @staticmethod
+    def calc_portfolio_perf(weights, mean_returns, cov, rf):
+        return python_finance.calc_portfolio_perf(weights, mean_returns, cov, rf):
+    @staticmethod
+    def simulate_random_portfolios(num_portfolios, mean_returns, cov, rf,tickers)::
+        return python_finance.get_all_details(num_portfolios, mean_returns, cov, rf,tickers)

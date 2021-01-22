@@ -10,15 +10,24 @@ from pandas_datareader import data, wb
 import datetime
 import scipy.optimize as sco
 from scipy import stats
-import qlist
+
+
+def get_latest_week_date(date):
+    ret_date = date
+    return ret_date
 
 def get_tickers(tickers, start, end, attrib):
-    ticker_data = pd.DataFrame([_get_ticker_data(x, start, end)[attrib] for x in tickers]).T
-    ticker_data.columns = tickers
+    li_tickers = list(tickers.split(","))
+    for x in li_tickers:
+        print(x.strip())
+    ticker_data = pd.DataFrame([get_ticker_data(x.strip(), start, end)[attrib] for x in li_tickers]).T
+    ticker_data.columns = li_tickers
     return ticker_data
 
-def _get_ticker_data(ticker, start, end):
+def get_ticker_data(ticker, start, end):
+    print('{},  {},  {}' .format(ticker, start, end))
     ticker_data = data.DataReader(ticker, 'yahoo', start, end)
+    ticker_data.sort_values(by='Date') 
     return ticker_data
 
 def get_Percent_change(ticker, start, end, attrib):
