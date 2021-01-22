@@ -239,15 +239,15 @@ class ScriptEval:
         #If User name and Password Present Remove Username and Password and Pass only function name
         if(script.find('(') !=-1):
             index=script.index('(')
-            UserPass = script[index:]
+            TickerList = script[index:]
             script = script[:index]
-            UserPass = (UserPass.replace('(','')).replace(')','')
-            index=UserPass.index(',')
-            Pass = (UserPass[index:]).replace(',','')
-            User = UserPass[:index]
-            logging.debug("index {}, Script {} , UserPass {}, User {} Pass {}" .format(index, script, UserPass, User, Pass ))
-            session = self.get_all_sessions(User, Pass)
-        url = config.get(script, 'url')
+            #UserPass = (UserPass.replace('(','')).replace(')','')
+            #index=UserPass.index(',')
+            #Pass = (UserPass[index:]).replace(',','')
+            #User = UserPass[:index]
+            logging.debug("index {}, Script {} , TickerList {}" .format(index, script, TickerList))
+            #session = self.get_all_sessions(User, Pass)
+        #url = config.get(script, 'url')
 
         if (script.find('get_all_instructors') !=-1):
             result = self.get_all_instructors(url)
@@ -364,7 +364,6 @@ class ScriptEval:
             UserData = self.get_all_workouts(session[0],url, session[2]["id"], options)
             UserData = UserData['data']
             logging.debug('UserData type {} and UserData {}' .format(type(UserData), UserData))
-         
             workout_ids =[]
             for x in UserData:
                 workout_id = (x['id'])
