@@ -250,7 +250,7 @@ class ScriptEval:
             logging.debug("index {}, Script {} , TickerList {} start_date{} end_date{} attrib{}" .format(index, script, TickerList, start_date, end_date, attrib))
             
         if (script.find('get_ticker_data') !=-1):
-            result = self.get_ticker_data(ticker, start_date, end_date)
+            result = self.get_ticker_data(TickerList, start_date, end_date)
             #list of Dictionary returned
             logging.debug("result type  : {} data : {} " .format(type(result), result))
             remlist = (config.get(script, 'remlist')).strip('][').split(', ')
@@ -448,6 +448,9 @@ class ScriptEval:
         return result
 
 
+    @staticmethod
+    def get_tickers(tickers, start, end, attrib):
+        return python_finance.get_tickers(tickers, start, end)
     @staticmethod
     def get_ticker_data(tickers, start, end):
         return python_finance.get_ticker_data(tickers, start, end)
