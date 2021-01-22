@@ -463,7 +463,7 @@ class ScriptEval:
         return python_finance.get_Cov_Matrix(ticker, start, end, attrib)
     @staticmethod
     def calc_portfolio_perf(weights, mean_returns, cov, rf):
-        return python_finance.calc_portfolio_perf(weights, mean_returns, cov, rf):
+        return python_finance.calc_portfolio_perf(weights, mean_returns, cov, rf)
     @staticmethod
     def simulate_random_portfolios(num_portfolios, mean_returns, cov, rf,tickers):
         return python_finance.get_all_details(num_portfolios, mean_returns, cov, rf,tickers)
