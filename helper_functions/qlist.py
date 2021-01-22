@@ -42,7 +42,7 @@ def convert_dicts_list(input_dict):
             
 def convert_df_list(input_df):
     columns = list(input_df.columns)
-    values = list(input_df)
+    values = list(input_df.values)
     values = ["NA" if x == '' else x for x in values]
     temp = [str(x) for x in values]
     return columns, temp
