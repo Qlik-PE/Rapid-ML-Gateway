@@ -243,8 +243,8 @@ class ScriptEval:
             script = script[:index]
             TickerList = (TickerList.replace('(','')).replace(')','')
             #We need to Fix here
-            start_date='20210121'
-            end_date='20210120'
+            start_date='20210120'
+            end_date='20210121'
             provider='yahoo'
             attrib = 'Adj Close'
             logging.debug("index {}, Script {} , TickerList {} start_date{} end_date{} attrib{}" .format(index, script, TickerList, start_date, end_date, attrib))
