@@ -279,7 +279,7 @@ class ScriptEval:
                     FieldName = 'Stock '+str(x)+' '+attrib
                     x += 1
                 else:
-                    FieldName=i+'-'+attrib    
+                    FieldName= i    
                 FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
             result= converted[1]
@@ -303,7 +303,7 @@ class ScriptEval:
                     FieldName = 'Stock '+str(x)+'-Percent Change'
                     x += 1
                 else:
-                    FieldName = i+'-Percent Change'
+                    FieldName = i
                 FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
             result= converted[1]
