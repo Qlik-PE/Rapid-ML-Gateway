@@ -287,6 +287,7 @@ class ScriptEval:
             attrib = Arguments[2]
             logging.debug("get_Percent_change - tickers: {} Arguments {} start_date : {} end_date :{} attrib :{} " .format(tickers, Arguments, start_date, end_date, attrib))
             result = self.get_Percent_change(tickers, start_date, end_date, attrib)
+            logging.debug("result - type: {} data: {}" .format(type(result), result))
             converted = qlist.convert_df_list(result)
             table.name= ' '.join([str(elem) for elem in tickers]) + '-' + attrib + '- Percent Change'
             logging.debug("column  {}" .format(converted[0]))
