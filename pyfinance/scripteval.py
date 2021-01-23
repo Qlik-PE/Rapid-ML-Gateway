@@ -299,6 +299,7 @@ class ScriptEval:
             result= converted[1]
             logging.debug("result {}" .format(result))
         elif (script.find('get_Mean_Daily_Return') !=-1):
+            result =[]
             tickers = Arguments[: len(Arguments) - 3]
             Arguments = Arguments[len(Arguments) - 3:]
             start_date=Arguments[0]
@@ -312,11 +313,11 @@ class ScriptEval:
             converted = qlist.convert_df_list(result)
             table.name= ' '.join([str(elem) for elem in tickers]) + '-' + attrib + '- Mean Daily Returns'
             logging.debug("column  {}" .format(converted[0]))
-            for i in converted[0]:
-                FieldName = i
+            for i in tickers:
+                FieldName = i+'-Mean Daily Return' 
                 FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
-            result= converted[1]
+            result.append(list_result)
             logging.debug("result {}" .format(result))
         elif (script.find('get_Cov_Matrix') !=-1):
             tickers = Arguments[: len(Arguments) - 3]
