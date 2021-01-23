@@ -263,6 +263,7 @@ class ScriptEval:
             for x in result:
                 logging.debug("x type  : {} data : {} " .format(type(x), x))
         elif (script.find('get_tickers') !=-1):
+            logging.debug('JRP')
             tickers = Arguments[: len(Arguments) - 3]
             Arguments = Arguments[len(Arguments) - 3:]
             start_date=Arguments[0]
