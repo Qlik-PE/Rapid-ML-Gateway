@@ -20,8 +20,8 @@ def get_tickers(tickers, start, end, attrib):
     #li_tickers = list(tickers.split(","))
     for x in tickers:
         print(x.strip())
-    ticker_data = pd.DataFrame([get_ticker_data(x.strip(), start, end)[attrib] for x in li_tickers]).T
-    ticker_data.columns = li_tickers
+    ticker_data = pd.DataFrame([get_ticker_data(x.strip(), start, end)[attrib] for x in tickers]).T
+    ticker_data.columns = tickers
     return ticker_data
 
 def get_ticker_data(ticker, start, end):
