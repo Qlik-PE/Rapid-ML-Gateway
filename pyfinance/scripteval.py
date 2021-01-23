@@ -276,7 +276,7 @@ class ScriptEval:
             x = 1
             for i in converted[0]:
                 FieldName = 'Stock '+str(x)+' '+attrib
-                x =+ 1
+                x += 1
                 FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
             result= converted[1]
