@@ -271,10 +271,12 @@ class ScriptEval:
             logging.debug("get tickers - tickers: {} Arguments {} start_date : {} end_date :{} attrib :{} " .format(tickers, Arguments, start_date, end_date, attrib))
             result = self.get_tickers(tickers, start_date, end_date, attrib)
             converted = qlist.convert_df_list(result)
-            table.name= ' '.join([str(elem) for elem in tickers]) + '-' + attrib + '- Data'
+            table.name= ' '.join([str(elem) for elem in tickers]) + '-' + attrib + '-Data'
             logging.debug("column  {}" .format(converted[0]))
+            x = 1
             for i in converted[0]:
-                FieldName = i +'-'+attrib
+                FieldName = 'Stock '+x+' '+attrib
+                x =+ 1
                 FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
             result= converted[1]
@@ -291,9 +293,11 @@ class ScriptEval:
             converted = qlist.convert_df_list(result)
             table.name= ' '.join([str(elem) for elem in tickers]) + '-' + attrib + '- Percent Change'
             #table.name= 'Percent Change'
+            x =1
             logging.debug("column  {}" .format(converted[0]))
             for i in converted[0]:
-                FieldName = i+'-Percent Change'
+                FieldName = 'Stock '+x+'-Percent Change'
+                x =+ 1
                 FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
             result= converted[1]
@@ -312,8 +316,10 @@ class ScriptEval:
             logging.debug("list_result - type: {} data: {}" .format(type(list_result), list_result))
             table.name= ' '.join([str(elem) for elem in tickers]) + '-' + attrib + '- Mean Daily Returns'
             logging.debug("column  {}" .format(tickers))
+            x=1
             for i in tickers:
-                FieldName = i+'-Mean Daily Return' 
+                FieldName = 'Stock'+x+'-Mean Daily Return'
+                x =+ 1
                 FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
             logging.debug("outputdata type: {} data: {}" .format(type(output_data), output_data))
@@ -332,8 +338,10 @@ class ScriptEval:
             converted = qlist.convert_df_list_cov(result)
             table.name= ' '.join([str(elem) for elem in tickers]) + '-' + attrib + '- Cov Matrix'
             logging.debug("column  {}" .format(converted[0]))
+            x=1
             for i in converted[0]:
-                FieldName = i+'-Cov Matrix'
+                FieldName = 'Stock '+x+'-Cov Matrix'
+                x =+ 1
                 FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
             result= converted[1]
