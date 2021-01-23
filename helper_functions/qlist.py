@@ -50,4 +50,5 @@ def convert_df_list(input_df):
     for x in values:
         x.insert(0, np.datetime_as_string(input_df.index.values[i], unit='D'))
         i +=1
-    return columns, values
+    temp = [str(x) for x in values]
+    return columns, temp
