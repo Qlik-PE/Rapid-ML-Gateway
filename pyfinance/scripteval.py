@@ -268,7 +268,8 @@ class ScriptEval:
             start_date=Arguments[0]
             end_date=Arguments[1]
             attrib = Arguments[2]
-            result = self.get_tickers(tickers, start, end, attrib)
+            logging.debug("get tickers - tickers: {} start_date : {} end_date :{} attrib :{} " .format(tickers, Arguments, start_date, end_date, attrib))
+            result = self.get_tickers(tickers, start_date, end_date, attrib)
             converted = qlist.convert_df_list(result)
             table.name= ' '.join([str(elem) for elem in ticker_list]) + '- Data'
             logging.debug("column  {}" .format(converted[0]))
