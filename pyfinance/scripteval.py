@@ -330,7 +330,7 @@ class ScriptEval:
                 table.fields.add(name=FieldName, dataType=FieldType)
             result= converted[1]
             logging.debug("result {}" .format(result))
-       else:
+        else:
             result = []
 
         self.send_table_description(table, context)
