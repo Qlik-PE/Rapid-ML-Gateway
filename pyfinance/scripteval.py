@@ -290,11 +290,11 @@ class ScriptEval:
             result = self.get_Percent_change(tickers, start_date, end_date, attrib)
             logging.debug("result - type: {} data: {}" .format(type(result), result))
             converted = qlist.convert_df_list(result)
-            #table.name= ' '.join([str(elem) for elem in tickers]) + '-' + attrib + '- Percent Change'
-            table.name= 'Percent Change'
+            table.name= ' '.join([str(elem) for elem in tickers]) + '-' + attrib + '- Percent Change'
+            #table.name= 'Percent Change'
             logging.debug("column  {}" .format(converted[0]))
             for i in converted[0]:
-                FieldName = i
+                FieldName = i+'Percent Change'
                 FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
             result= converted[1]
