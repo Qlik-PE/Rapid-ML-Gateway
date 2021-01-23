@@ -40,15 +40,17 @@ def convert_dicts_list(input_dict):
     values = ["NA" if x == '' else x for x in values]
     temp = [str(x) for x in values]
     return columns, temp
-            
+
 def convert_df_list(input_df):
     temp_dict = input_df.to_dict('split')
     columns = temp_dict['columns']
     columns.insert(0,input_df.index.name) 
-    values = temp_dict['data']
+    values = []
+    temp_dict['data']
     i = 0
-    for x in values:
+    for x in temp_dict['data']:
         x.insert(0, np.datetime_as_string(input_df.index.values[i], unit='D'))
         i +=1
-    temp = [str(x) for x in values]
-    return columns, temp
+        temp = [str(y) for y in x]
+        values.append(temp)
+    return columns, values
