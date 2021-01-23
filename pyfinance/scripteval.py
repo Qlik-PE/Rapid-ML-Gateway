@@ -274,13 +274,12 @@ class ScriptEval:
             table.name= ' '.join([str(elem) for elem in tickers]) + '-' + attrib + '- Data'
             logging.debug("column  {}" .format(converted[0]))
             for i in converted[0]:
-                FieldName = i
+                FieldName = i +'-'+attrib
                 FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
             result= converted[1]
             logging.debug("result {}" .format(result))
         elif (script.find('get_Percent_change') !=-1):
-            result =[]
             tickers = Arguments[: len(Arguments) - 3]
             Arguments = Arguments[len(Arguments) - 3:]
             start_date=Arguments[0]
@@ -294,7 +293,7 @@ class ScriptEval:
             #table.name= 'Percent Change'
             logging.debug("column  {}" .format(converted[0]))
             for i in converted[0]:
-                FieldName = i+'Percent Change'
+                FieldName = i+'-Percent Change'
                 FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
             result= converted[1]
