@@ -348,7 +348,7 @@ class ScriptEval:
         return python_finance.get_Percent_change(ticker, start, end, attrib)
     @staticmethod
     def get_Mean_Daily_Return(ticker, start, end, attrib):
-        return python_finance.get_all_workouts(ticker, start, end, attrib)
+        return python_finance.get_Mean_Daily_Return(ticker, start, end, attrib)
     @staticmethod
     def get_Cov_Matrix(ticker, start, end, attrib):
         return python_finance.get_Cov_Matrix(ticker, start, end, attrib)
