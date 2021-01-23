@@ -17,15 +17,12 @@ def get_latest_week_date(date):
     return ret_date
 
 def get_tickers(tickers, start, end, attrib):
-    #li_tickers = list(tickers.split(","))
-    for x in tickers:
-        print(x.strip())
     ticker_data = pd.DataFrame([get_ticker_data(x.strip(), start, end)[attrib] for x in tickers]).T
     ticker_data.columns = tickers
     return ticker_data
 
 def get_ticker_data(ticker, start, end):
-    print('{},  {},  {}' .format(ticker, start, end))
+    #print('{},  {},  {}' .format(ticker, start, end))
     ticker_data = data.DataReader(ticker, 'yahoo', start, end)
     ticker_data.sort_values(by='Date') 
     return ticker_data
