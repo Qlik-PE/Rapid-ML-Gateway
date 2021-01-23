@@ -242,18 +242,18 @@ class ScriptEval:
             Arguments = script[index:].strip(')(').split(',') 
             fName = script[:index]
             provider='yahoo'
-            attrib = 'Adj Close'
+            #attrib = 'Adj Close'
             #logging.debug("index {}, Script {} , TickerList {} start_date{} end_date{} attrib{}" .format(index, script, TickerList, start_date, end_date, attrib))
             
         if (script.find('get_ticker_data') !=-1):
-            TickerList = Arguments[0]
+            ticker = Arguments[0]
             start_date=Arguments[1]
             end_date=Arguments[2]
-            result = self.get_ticker_data(TickerList, start_date, end_date)
+            result = self.get_ticker_data(ticker, start_date, end_date)
             logging.debug("result type  : {} data : {} " .format(type(result), result))
             converted = qlist.convert_df_list(result)
             logging.debug("converted type JRP : {} columns : {} data :{} " .format(type(converted[0]), converted[0], converted[1]))
-            table.name = 'python_get_ticker_data'
+            table.name = 'Arguments[0] - ticker_data'
             for i in converted[0]:
                 FieldName = i
                 FieldType=0
@@ -263,20 +263,12 @@ class ScriptEval:
             for x in result:
                 logging.debug("x type  : {} data : {} " .format(type(x), x))
         elif (script.find('get_all_sessions') !=-1):
-            logging.debug("get_all_sessions")
-            UserData = session[2]
-            UserWorkout = session[3]
-            UserId=session[4]
-            #filter all the non values
-            #converst string representation to list
-            remlist = (config.get(script, 'remlist')).strip('][').split(', ')
-            logging.debug("Remlist Type {}, List {}" .format(type(remlist), remlist))
-            if (len(remlist)) > 1:
-                result = self.remove_columns_dict(remlist, UserData)
-            else:
-                result = UserData
-
-            converted = qlist.convert_dicts_list(result)
+            ticker = Arguments[0]
+            start_date=Arguments[1]
+            end_date=Arguments[2]
+            attrib = Arguments[3]
+            result = self.get_tickers(tickers, start, end, attrib)
+            converted = qlist.convert_df_list(result)
             table.name= User +'- python_finance User Data'
             logging.debug("column  {}" .format(converted[0]))
             for i in converted[0]:
