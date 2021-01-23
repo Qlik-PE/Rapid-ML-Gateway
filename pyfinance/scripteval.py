@@ -311,13 +311,13 @@ class ScriptEval:
             list_result = result.tolist()
             output_data = [str(y) for y in list_result]
             logging.debug("list_result - type: {} data: {}" .format(type(list_result), list_result))
-            converted = qlist.convert_df_list(result)
             table.name= ' '.join([str(elem) for elem in tickers]) + '-' + attrib + '- Mean Daily Returns'
-            logging.debug("column  {}" .format(converted[0]))
+            logging.debug("column  {}" .format(ticker))
             for i in tickers:
                 FieldName = i+'-Mean Daily Return' 
                 FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
+            logging.debug("outputdata  {}" .format(outputdata))
             result.append(output_data)
             logging.debug("result {}" .format(result))
         elif (script.find('get_Cov_Matrix') !=-1):
