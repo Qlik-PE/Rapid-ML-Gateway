@@ -17,8 +17,8 @@ def get_latest_week_date(date):
     return ret_date
 
 def get_tickers(tickers, start, end, attrib):
-    li_tickers = list(tickers.split(","))
-    for x in li_tickers:
+    #li_tickers = list(tickers.split(","))
+    for x in tickers:
         print(x.strip())
     ticker_data = pd.DataFrame([get_ticker_data(x.strip(), start, end)[attrib] for x in li_tickers]).T
     ticker_data.columns = li_tickers

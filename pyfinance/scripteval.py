@@ -253,7 +253,7 @@ class ScriptEval:
             logging.debug("result type  : {} data : {} " .format(type(result), result))
             converted = qlist.convert_df_list(result)
             logging.debug("converted type JRP : {} columns : {} data :{} " .format(type(converted[0]), converted[0], converted[1]))
-            table.name = 'Arguments[0] - ticker_data'
+            table.name = Arguments[0] +'- ticker_data'
             for i in converted[0]:
                 FieldName = i
                 FieldType=0
@@ -262,14 +262,15 @@ class ScriptEval:
             logging.debug("result type  : {} data : {} " .format(type(result), result))
             for x in result:
                 logging.debug("x type  : {} data : {} " .format(type(x), x))
-        elif (script.find('get_all_sessions') !=-1):
-            ticker = Arguments[0]
-            start_date=Arguments[1]
-            end_date=Arguments[2]
-            attrib = Arguments[3]
+        elif (script.find('get_tickers') !=-1):
+            tickers = Arguments[: len(Arguments) - 3]
+            Arguments = Arguments[len(Arguments) - 3:]
+            start_date=Arguments[0]
+            end_date=Arguments[1]
+            attrib = Arguments[2]
             result = self.get_tickers(tickers, start, end, attrib)
             converted = qlist.convert_df_list(result)
-            table.name= User +'- python_finance User Data'
+            table.name= ' '.join([str(elem) for elem in ticker_list]) + '- Data'
             logging.debug("column  {}" .format(converted[0]))
             for i in converted[0]:
                 FieldName = i
