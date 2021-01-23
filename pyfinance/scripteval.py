@@ -278,8 +278,7 @@ class ScriptEval:
                 FieldName = i
                 FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
-            result=[]
-            result.append(converted[1])
+            result= converted[1]
             logging.debug("result {}" .format(result))
             
         elif (script.find('get_all_workouts') !=-1):
