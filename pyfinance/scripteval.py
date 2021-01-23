@@ -242,9 +242,9 @@ class ScriptEval:
             Arguments = script[index:].strip(')(').split(',') 
             fName = script[:index]
             provider='yahoo'
-            #attrib = 'Adj Close'
-            #logging.debug("index {}, Script {} , TickerList {} start_date{} end_date{} attrib{}" .format(index, script, TickerList, start_date, end_date, attrib))
-            
+        else:
+            result=[]
+        
         if (script.find('get_ticker_data') !=-1):
             ticker = Arguments[0]
             start_date=Arguments[1]
@@ -269,7 +269,7 @@ class ScriptEval:
             start_date=Arguments[0]
             end_date=Arguments[1]
             attrib = Arguments[2]
-            logging.debug("get tickers - tickers: {} start_date : {} end_date :{} attrib :{} " .format(tickers, Arguments, start_date, end_date, attrib))
+            logging.debug("get tickers - tickers: {} Arguments {} start_date : {} end_date :{} attrib :{} " .format(tickers, Arguments, start_date, end_date, attrib))
             result = self.get_tickers(tickers, start_date, end_date, attrib)
             converted = qlist.convert_df_list(result)
             table.name= ' '.join([str(elem) for elem in ticker_list]) + '- Data'
