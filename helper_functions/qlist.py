@@ -55,12 +55,13 @@ def convert_df_list(input_df):
         values.append(temp)
     return columns, values
 
-def convert_df_list_2(input_df):
+def convert_df_list_cov(input_df):
     temp_dict = input_df.to_dict('split')
     columns = temp_dict['columns']
-    #columns.insert(0,input_df.index.name) 
+    columns.insert(0,'matrix') 
     values = []
     #temp_dict['data']
+    i= 0
     print(input_df.index.values)
     for x in temp_dict['data']:
         x.insert(0, input_df.index.values[i])
