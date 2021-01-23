@@ -299,8 +299,11 @@ class ScriptEval:
             x =1
             logging.debug("column  {}" .format(converted[0]))
             for i in converted[0]:
-                FieldName = 'Stock '+x+'-Percent Change'
-                x =+ 1
+                if(i!='Date'):
+                    FieldName = 'Stock '+str(x)+'-Percent Change'
+                    x += 1
+                else:
+                    FieldName = i+'-Percent Change'
                 FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
             result= converted[1]
