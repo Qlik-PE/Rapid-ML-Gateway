@@ -437,7 +437,7 @@ class ScriptEval:
 
     @staticmethod
     def get_tickers(tickers, start, end, attrib):
-        return python_finance.get_tickers(tickers, start, end)
+        return python_finance.get_tickers(tickers, start, end, attrib)
     @staticmethod
     def get_ticker_data(tickers, start, end):
         return python_finance.get_ticker_data(tickers, start, end)
