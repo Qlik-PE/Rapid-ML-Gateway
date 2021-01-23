@@ -263,7 +263,6 @@ class ScriptEval:
             for x in result:
                 logging.debug("x type  : {} data : {} " .format(type(x), x))
         elif (script.find('get_tickers') !=-1):
-            logging.debug('JRP')
             tickers = Arguments[: len(Arguments) - 3]
             Arguments = Arguments[len(Arguments) - 3:]
             start_date=Arguments[0]
@@ -280,107 +279,56 @@ class ScriptEval:
                 table.fields.add(name=FieldName, dataType=FieldType)
             result= converted[1]
             logging.debug("result {}" .format(result))
-            
-        elif (script.find('get_all_workouts') !=-1):
-            logging.debug("Calling get_all_workouts")
-            UserData = session[2]
-            UserWorkout = session[3]
-            UserId=session[4]
-            remlist = (config.get(script, 'remlist')).strip('][').split(', ')
-            logging.debug("Remlist Type {}, List {}" .format(type(remlist), remlist))
-            if (len(remlist)) > 1:
-                result = self.remove_columns(remlist, UserWorkout)
-            else:
-                result = UserWorkout
-            logging.debug("result type  : {} data : {} " .format(type(result), result))
-            converted = qlist.convert_list_of_dicts(result)
-            logging.debug("converted type JRP : {} columns : {} data :{} " .format(type(converted[0]), converted[0], converted[1]))
-            #insert user id
-            converted[0].insert(0, 'user_id')
-            for x in converted[1]:
-                x.insert(0, UserId)
-            table.name = User +'- python_finance Work Out Data'
+        elif (script.find('get_Percent_change') !=-1):
+            tickers = Arguments[: len(Arguments) - 3]
+            Arguments = Arguments[len(Arguments) - 3:]
+            start_date=Arguments[0]
+            end_date=Arguments[1]
+            attrib = Arguments[2]
+            logging.debug("get_Percent_change - tickers: {} Arguments {} start_date : {} end_date :{} attrib :{} " .format(tickers, Arguments, start_date, end_date, attrib))
+            result = self.get_Percent_change(tickers, start_date, end_date, attrib)
+            converted = qlist.convert_df_list(result)
+            table.name= ' '.join([str(elem) for elem in tickers]) + '-' + attrib + '- Percent Change'
+            logging.debug("column  {}" .format(converted[0]))
             for i in converted[0]:
                 FieldName = i
                 FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
-            result = converted[1]
-            logging.debug("result type  : {} data : {} " .format(type(result), result))
-         
-       
-        elif (script.find('get_all_rides') !=-1):
-            result =[]
-            options = config.get(script, 'options')
-            url = config.get(script, 'url')
-            UserData = self.get_all_workouts(session[0],url, session[2]["id"], options)
-            logging.debug("get all workout {}" .format(UserData))
-            UserData = UserData['data']
-            UserId= session[4]
-            UserData_Flattened = []
-            logging.debug("UserData Type {}, List {}" .format(type(UserData), UserData))
-            for x in UserData:
-                logging.debug("UserDataElements Type {}, List {}" .format(type(x), x))
-                flattend = flatten(x, reducer = 'underscore')
-                UserData_Flattened.append(flattend)
-            
-            remlist = (config.get(script, 'remlist')).strip('][').split(', ')
-            logging.debug("Remlist Type {}, List {}" .format(type(remlist), remlist))
-            if (len(remlist)) > 1:
-                result = self.remove_columns(remlist, UserData_Flattened)
-            else:
-                result = UserData_Flattened
-            converted = qlist.convert_list_of_dicts(result)
-            logging.debug("converted type JRP : {} columns : {} data :{} " .format(type(converted[0]), converted[0], converted[1]))
-            converted[0].insert(0, 'user_id')
-            for x in converted[1]:
-                x.insert(0, UserId)
-            table.name= User +'- python_finance Ride Data'
+            result= converted[1]
+            logging.debug("result {}" .format(result))
+        elif (script.find('get_Mean_Daily_Return') !=-1):
+            tickers = Arguments[: len(Arguments) - 3]
+            Arguments = Arguments[len(Arguments) - 3:]
+            start_date=Arguments[0]
+            end_date=Arguments[1]
+            attrib = Arguments[2]
+            logging.debug("get_Mean_Daily_Return - tickers: {} Arguments {} start_date : {} end_date :{} attrib :{} " .format(tickers, Arguments, start_date, end_date, attrib))
+            result = self.get_Mean_Daily_Return(tickers, start_date, end_date, attrib)
+            converted = qlist.convert_df_list(result)
+            table.name= ' '.join([str(elem) for elem in tickers]) + '-' + attrib + '- Mean Daily Returns'
+            logging.debug("column  {}" .format(converted[0]))
             for i in converted[0]:
                 FieldName = i
                 FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
-            result = converted[1]
-            logging.debug("result type  : {} data : {} " .format(type(result), result))
-            
-        elif (script.find('get_all_output') !=-1):
-            result =[]
-            #get a list of workout ids
-            options = config.get(script, 'options')
-            url = config.get(script, 'user_url')
-            UserData = self.get_all_workouts(session[0],url, session[2]["id"], options)
-            UserData = UserData['data']
-            logging.debug('UserData type {} and UserData {}' .format(type(UserData), UserData))
-            workout_ids =[]
-            for x in UserData:
-                workout_id = (x['id'])
-                workout_ids.append(workout_id)
-                logging.debug("Workout ID Type {}, Data {}" .format(type(workout_ids), workout_ids))
-            options = config.get(script, 'options_summary')
-            url = config.get(script, 'url')
-            
-            remlist = (config.get(script, 'remlist')).strip('][').split(', ')
-            logging.debug("Remlist Type {}, List {}" .format(type(remlist), remlist))
-            logging.debug(len(remlist))
-            
-            for x in workout_ids:
-                UserData = self.get_all_details(session[0],url, x, options).json()
-                logging.debug('UserData type {} and UserData {}' .format(type(UserData), UserData))
-                if (len(remlist)) > 1:
-                    temp = self.remove_columns_dict(remlist, UserData)
-                    logging.debug('Removed UserData type {} and UserData {}' .format(type(UserData), UserData))
-                else:
-                    temp = UserData
-                    logging.debug('No Var UserData type {} and UserData {}' .format(type(UserData), UserData))
-                logging.debug('Temp type {} and Temp {}' .format(type(temp), temp))
-                converted = qlist.convert_dicts_list(temp)
-                result.append(converted[1])
-                
-            table.name= User +'- python_finance Output Data'
+            result= converted[1]
+            logging.debug("result {}" .format(result))
+        elif (script.find('get_Cov_Matrix') !=-1):
+            tickers = Arguments[: len(Arguments) - 3]
+            Arguments = Arguments[len(Arguments) - 3:]
+            start_date=Arguments[0]
+            end_date=Arguments[1]
+            attrib = Arguments[2]
+            logging.debug("get_Cov_Matrix - tickers: {} Arguments {} start_date : {} end_date :{} attrib :{} " .format(tickers, Arguments, start_date, end_date, attrib))
+            result = self.get_Cov_Matrix(tickers, start_date, end_date, attrib)
+            converted = qlist.convert_df_list(result)
+            table.name= ' '.join([str(elem) for elem in tickers]) + '-' + attrib + '- Cov Matrix'
+            logging.debug("column  {}" .format(converted[0]))
             for i in converted[0]:
                 FieldName = i
                 FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
-            #result = [['a','b','c'],['a','b','c']]
+            result= converted[1]
             logging.debug("result {}" .format(result))
         elif (script.find('get_apple_watch_output') !=-1):
             result =[]
