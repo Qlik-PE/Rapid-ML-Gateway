@@ -243,7 +243,7 @@ class ScriptEval:
             fName = script[:index]
             provider='yahoo'
         else:
-            result=[]
+            raise ValueError('Incorrect Formating of Function')
         
         if (script.find('get_ticker_data') !=-1):
             ticker = Arguments[0]
@@ -330,52 +330,7 @@ class ScriptEval:
                 table.fields.add(name=FieldName, dataType=FieldType)
             result= converted[1]
             logging.debug("result {}" .format(result))
-        elif (script.find('get_apple_watch_output') !=-1):
-            result =[]
-            #get a list of workout ids
-            options = config.get(script, 'options')
-            url = config.get(script, 'user_url')
-            UserData = self.get_all_workouts(session[0],url, session[2]["id"], options)
-            UserData = UserData['data']
-            logging.debug('UserData type {} and UserData {}' .format(type(UserData), UserData))
-            workout_ids =[]
-            for x in UserData:
-                workout_id = (x['id'])
-                workout_ids.append(workout_id)
-                logging.debug("Workout ID Type {}, Data {}" .format(type(workout_ids), workout_ids))
-            options = config.get(script, 'options_summary')
-            url = config.get(script, 'url')
-            
-            remlist = (config.get(script, 'remlist')).strip('][').split(', ')
-            logging.debug("Remlist Type {}, List {}" .format(type(remlist), remlist))
-            logging.debug(len(remlist))
-            
-            for x in workout_ids:
-                UserData = self.get_all_details(session[0],url, x, options).json()
-                logging.debug('UserData type {} and UserData {}' .format(type(UserData), UserData))
-                key_to_lookup = 'apple_watch_active_calories'
-                if (len(remlist)) > 1:
-                    temp = self.remove_columns_dict(remlist, UserData)
-                    logging.debug('Removed UserData type {} and UserData {}' .format(type(UserData), UserData))
-                else:
-                    logging.debug('No Var UserData type {} and UserData {}' .format(type(UserData), UserData))
-                    temp = UserData
-                if key_to_lookup in temp:
-                    logging.debug('We have no Apple Watchj Data {} {}' .format(type(temp), temp))
-                else :
-                    temp['apple_watch_active_calories'] = ''
-                    temp['apple_watch_total_calories'] = ''
-                logging.debug('Temp type {} and Temp {}' .format(type(temp), temp))
-                converted = qlist.convert_dicts_list(temp)
-                result.append(converted[1])
-            table.name= User +'- python_finance Apple Watch Output Data'
-            for i in converted[0]:
-                FieldName = i
-                FieldType=0
-                table.fields.add(name=FieldName, dataType=FieldType)
-            logging.debug('JRP Columns type {} and columns {}' .format(type(converted[0]), converted[0]))
-            logging.debug("result {}" .format(result))
-        else:
+       else:
             result = []
 
         self.send_table_description(table, context)
