@@ -332,7 +332,7 @@ class ScriptEval:
             table.name= ' '.join([str(elem) for elem in tickers]) + '-' + attrib + '- Cov Matrix'
             logging.debug("column  {}" .format(converted[0]))
             for i in converted[0]:
-                FieldName = i
+                FieldName = i+'-Cov Matrix'
                 FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
             result= converted[1]
