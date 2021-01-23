@@ -239,23 +239,20 @@ class ScriptEval:
         #If User name and Password Present Remove Username and Password and Pass only function name
         if(script.find('(') !=-1):
             index=script.index('(')
-            TickerList = script[index:]
-            script = script[:index]
-            TickerList = (TickerList.replace('(','')).replace(')','')
-            #We need to Fix here
-            start_date='20210120'
-            end_date='20210121'
+            Arguments = script[index:].strip(')(').split(',') 
+            fName = script[:index]
             provider='yahoo'
             attrib = 'Adj Close'
-            logging.debug("index {}, Script {} , TickerList {} start_date{} end_date{} attrib{}" .format(index, script, TickerList, start_date, end_date, attrib))
+            #logging.debug("index {}, Script {} , TickerList {} start_date{} end_date{} attrib{}" .format(index, script, TickerList, start_date, end_date, attrib))
             
         if (script.find('get_ticker_data') !=-1):
+            TickerList = Arguments[0]
+            start_date=Arguments[1]
+            end_date=Arguments[2]
             result = self.get_ticker_data(TickerList, start_date, end_date)
-            #list of Dictionary returned
             logging.debug("result type  : {} data : {} " .format(type(result), result))
             converted = qlist.convert_df_list(result)
             logging.debug("converted type JRP : {} columns : {} data :{} " .format(type(converted[0]), converted[0], converted[1]))
-            
             table.name = 'python_get_ticker_data'
             for i in converted[0]:
                 FieldName = i
