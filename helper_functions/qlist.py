@@ -1,4 +1,5 @@
 import glom
+import numpy as np
 
 #
 def divide_chunks(l, n): 
@@ -41,9 +42,12 @@ def convert_dicts_list(input_dict):
     return columns, temp
             
 def convert_df_list(input_df):
-    columns = list(input_df.columns)
-    values = list(input_df.values)
-    values = ["NA" if x == '' else x for x in values]
-    #fix for non numerical
-    #temp = [str(x) for x in values]
+    temp_dict = input_df.to_dict('split')
+    columns = temp_dict['columns']
+    columns.insert(0,input_df.index.name) 
+    values = temp_dict['data']
+    i = 0
+    for x in values:
+        x.insert(0, np.datetime_as_string(input_df.index.values[i], unit='D'))
+        i +=1
     return columns, values

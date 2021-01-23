@@ -256,7 +256,7 @@ class ScriptEval:
             converted = qlist.convert_df_list(result)
             logging.debug("converted type JRP : {} columns : {} data :{} " .format(type(converted[0]), converted[0], converted[1]))
             
-            table.name = 'python_finance-Instructor'
+            table.name = 'python_get_ticker_data'
             for i in converted[0]:
                 FieldName = i
                 FieldType=0
