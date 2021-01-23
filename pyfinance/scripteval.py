@@ -312,7 +312,7 @@ class ScriptEval:
             output_data = [str(y) for y in list_result]
             logging.debug("list_result - type: {} data: {}" .format(type(list_result), list_result))
             table.name= ' '.join([str(elem) for elem in tickers]) + '-' + attrib + '- Mean Daily Returns'
-            logging.debug("column  {}" .format(ticker))
+            logging.debug("column  {}" .format(tickers))
             for i in tickers:
                 FieldName = i+'-Mean Daily Return' 
                 FieldType=0
