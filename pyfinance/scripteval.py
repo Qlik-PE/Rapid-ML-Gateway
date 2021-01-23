@@ -329,7 +329,7 @@ class ScriptEval:
             logging.debug("get_Cov_Matrix - tickers: {} Arguments {} start_date : {} end_date :{} attrib :{} " .format(tickers, Arguments, start_date, end_date, attrib))
             result = self.get_Cov_Matrix(tickers, start_date, end_date, attrib)
             logging.debug("result - type: {} data: {} " .format(type(result), result))
-            converted = qlist.convert_df_list_2(result)
+            converted = qlist.convert_df_list_cov(result)
             table.name= ' '.join([str(elem) for elem in tickers]) + '-' + attrib + '- Cov Matrix'
             logging.debug("column  {}" .format(converted[0]))
             for i in converted[0]:
