@@ -299,7 +299,7 @@ class ScriptEval:
             result= converted[1]
             logging.debug("result {}" .format(result))
         elif (script.find('get_Mean_Daily_Return') !=-1):
-            result =[]
+            result = list()
             tickers = Arguments[: len(Arguments) - 3]
             Arguments = Arguments[len(Arguments) - 3:]
             start_date=Arguments[0]
@@ -318,7 +318,7 @@ class ScriptEval:
                 FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
             logging.debug("outputdata type: {} data: {}" .format(type(output_data), output_data))
-            result.insert(0, output_data)
+            result.append(output_data)
             logging.debug("result {}" .format(result))
         elif (script.find('get_Cov_Matrix') !=-1):
             tickers = Arguments[: len(Arguments) - 3]
