@@ -279,7 +279,7 @@ class ScriptEval:
                     FieldName = 'Stock '+str(x)+' '+attrib
                     x += 1
                 else:
-                    FieldName=i    
+                    FieldName=i+'-'+attrib    
                 FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
             result= converted[1]
