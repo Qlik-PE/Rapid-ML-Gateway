@@ -324,8 +324,8 @@ class ScriptEval:
             logging.debug("column  {}" .format(tickers))
             x=1
             for i in tickers:
-                FieldName = 'Stock'+x+'-Mean Daily Return'
-                x =+ 1
+                FieldName = 'Stock'+str(x)+'-Mean Daily Return'
+                x += 1
                 FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
             logging.debug("outputdata type: {} data: {}" .format(type(output_data), output_data))
