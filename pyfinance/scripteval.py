@@ -365,6 +365,29 @@ class ScriptEval:
                 table.fields.add(name=FieldName, dataType=FieldType)
             result= converted[1]
             logging.debug("result {}" .format(result))
+        elif (script.find('get_Simulate_Random_Portfolios') !=-1):
+            tickers = Arguments[: len(Arguments) - 3]
+            Arguments = Arguments[len(Arguments) - 3:]
+            start_date=Arguments[0]
+            end_date=Arguments[1]
+            attrib = Arguments[2]
+            logging.debug("get_Simulate_Random_Portfolios - tickers: {} Arguments {} start_date : {} end_date :{} attrib :{} " .format(tickers, Arguments, start_date, end_date, attrib))
+            result = self.get_Cov_Matrix(tickers, start_date, end_date, attrib)
+            logging.debug("result - type: {} data: {} " .format(type(result), result))
+            converted = qlist.convert_df_list_cov(result)
+            table.name= ' '.join([str(elem) for elem in tickers]) + '-' + attrib + '- Cov Matrix'
+            logging.debug("column  {}" .format(converted[0]))
+            x=1
+            for i in converted[0]:
+                if(i!='matrix'):
+                    FieldName = 'Stock '+str(x)+'-Cov Matrix'
+                    x += 1
+                else:
+                    FieldName = i
+                FieldType=0
+                table.fields.add(name=FieldName, dataType=FieldType)
+            result= converted[1]
+            logging.debug("result {}" .format(result))
         else:
             result = []
 
