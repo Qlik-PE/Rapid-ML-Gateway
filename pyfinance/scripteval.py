@@ -365,14 +365,18 @@ class ScriptEval:
                 table.fields.add(name=FieldName, dataType=FieldType)
             result= converted[1]
             logging.debug("result {}" .format(result))
-        elif (script.find('get_Simulate_Random_Portfolios') !=-1):
-            tickers = Arguments[: len(Arguments) - 3]
-            Arguments = Arguments[len(Arguments) - 3:]
+        elif (script.find('get_Simulated_Random_Portfolios') !=-1):
+            tickers = Arguments[: len(Arguments) - 5]
+            Arguments = Arguments[len(Arguments) - 5:]
             start_date=Arguments[0]
             end_date=Arguments[1]
             attrib = Arguments[2]
-            logging.debug("get_Simulate_Random_Portfolios - tickers: {} Arguments {} start_date : {} end_date :{} attrib :{} " .format(tickers, Arguments, start_date, end_date, attrib))
-            result = self.get_Cov_Matrix(tickers, start_date, end_date, attrib)
+            num_portfolios=Arguments[3]
+            rf=Arguments[4]
+            logging.debug("get_Simulatd_Random_Portfolios - tickers: {} Arguments {} start_date : {} end_date :{} attrib :{} num_portfolios :{} rf : {} " .format(tickers, Arguments, start_date, end_date, attrib, num_portfolios, rf))
+            mean_returns = self.get_Mean_Daily_Return(tickers, start_date, end_date, attrib)
+            cov = self.get_Cov_Matrix(tickers, start_date, end_date, attrib)
+            result = self.simulate_random_portfolios(num_portfolios, mean_returns, cov, rf,tickers)
             logging.debug("result - type: {} data: {} " .format(type(result), result))
             converted = qlist.convert_df_list_cov(result)
             table.name= ' '.join([str(elem) for elem in tickers]) + '-' + attrib + '- Cov Matrix'
@@ -414,5 +418,5 @@ class ScriptEval:
     def calc_portfolio_perf(weights, mean_returns, cov, rf):
         return python_finance.calc_portfolio_perf(weights, mean_returns, cov, rf)
     @staticmethod
-    def simulate_random_portfolios(num_portfolios, mean_returns, cov, rf,tickers):
-        return python_finance.get_all_details(num_portfolios, mean_returns, cov, rf,tickers)
+    def get_Simulated_Random_Portfolios(num_portfolios, mean_returns, cov, rf,tickers):
+        return python_finance.simulate_random_portfolios(num_portfolios, mean_returns, cov, rf,tickers):
