@@ -52,6 +52,7 @@ def calc_portfolio_perf(weights, mean_returns, cov, rf):
 
 
 def simulate_random_portfolios(num_portfolios, mean_returns, cov, rf,tickers):
+    print("JRP")
     results_matrix = np.zeros((len(mean_returns)+3, num_portfolios))
     for i in range(num_portfolios):
         weights = np.random.random(len(mean_returns))
