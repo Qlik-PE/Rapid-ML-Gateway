@@ -262,6 +262,8 @@ class ScriptEval:
                         FieldName = ticker+' '+i
                     else:
                         FieldName = i
+                else:
+                    FieldName= i
                 FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
             for x in converted[1]:
