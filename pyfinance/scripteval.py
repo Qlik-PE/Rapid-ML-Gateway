@@ -254,6 +254,7 @@ class ScriptEval:
             converted = qlist.convert_df_list(result)
             logging.debug("converted type JRP : {} columns : {} data :{} " .format(type(converted[0]), converted[0], converted[1]))
             table.name = Arguments[0] +'- ticker_data'
+            converted[0].insert(0, 'StockId')
             for i in converted[0]:
                 if(i!='Date'):
                     FieldName = ticker+' '+i
@@ -261,6 +262,8 @@ class ScriptEval:
                     FieldName = i
                 FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
+            for x in converted[1]:
+                x.insert(0, ticker)
             result = converted[1]
             logging.debug("result type  : {} data : {} " .format(type(result), result))
             for x in result:
