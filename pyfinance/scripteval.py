@@ -255,7 +255,10 @@ class ScriptEval:
             logging.debug("converted type JRP : {} columns : {} data :{} " .format(type(converted[0]), converted[0], converted[1]))
             table.name = Arguments[0] +'- ticker_data'
             for i in converted[0]:
-                FieldName = i
+                if(i!='Date'):
+                    FieldName = ticker+' '+i
+                else:
+                    FieldName = i
                 FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
             result = converted[1]
