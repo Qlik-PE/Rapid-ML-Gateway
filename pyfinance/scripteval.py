@@ -256,6 +256,7 @@ class ScriptEval:
             table.name = Arguments[0] +'- ticker_data'
             converted[0].insert(0, 'StockId')
             for i in converted[0]:
+                logging.debut('This is i {}'  .format(i))
                 if i!='Date' or i!='StockId':
                     FieldName = ticker+' '+i
                 else:
