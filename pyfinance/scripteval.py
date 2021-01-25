@@ -257,13 +257,13 @@ class ScriptEval:
             converted[0].insert(0, 'Ticker')
             for i in converted[0]:
                 logging.debug('This is i {}'  .format(i))
-                if (i!='Date'):
-                    if (i!='Ticker'):
-                        FieldName = ticker+' '+i
-                    else:
-                        FieldName = i
-                else:
-                    FieldName= i
+                #if (i!='Date'):
+                    #if (i!='Ticker'):
+                 #       FieldName = ticker+' '+i
+                    #else:
+                #        FieldName = i
+               # else:
+                FieldName= i
                 FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
             for x in converted[1]:
