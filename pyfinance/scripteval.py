@@ -366,6 +366,7 @@ class ScriptEval:
             result= converted[1]
             logging.debug("result {}" .format(result))
         elif (script.find('get_Simulated_Random_Portfolios') !=-1):
+            logging.debug("Inside Else Block JRP ")
             tickers = Arguments[: len(Arguments) - 5]
             Arguments = Arguments[len(Arguments) - 5:]
             start_date=Arguments[0]
