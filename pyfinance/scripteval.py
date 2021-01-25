@@ -257,8 +257,9 @@ class ScriptEval:
             converted[0].insert(0, 'StockId')
             for i in converted[0]:
                 logging.debug('This is i {}'  .format(i))
-                if i!='Date' or i!='StockId':
-                    FieldName = ticker+' '+i
+                if (i!='Date'):
+                    if (i!='StockId'):
+                        FieldName = ticker+' '+i
                 else:
                     FieldName = i
                 FieldType=0
