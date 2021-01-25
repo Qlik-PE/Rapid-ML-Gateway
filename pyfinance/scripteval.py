@@ -382,15 +382,11 @@ class ScriptEval:
             result = self.get_Simulated_Random_Portfolios(num_portfolios, mean_returns, cov, rf,tickers)
             logging.debug("result - type: {} data: {} " .format(type(result), result))
             converted = qlist.convert_df_list_cov(result)
-            table.name= ' '.join([str(elem) for elem in tickers]) + '-' + attrib + '- Cov Matrix'
+            table.name= ' '.join([str(elem) for elem in tickers]) + '-' +'- Simulated_Random_Portfolios'
             logging.debug("column  {}" .format(converted[0]))
             x=1
             for i in converted[0]:
-                if(i!='matrix'):
-                    FieldName = 'Stock '+str(x)+'-Cov Matrix'
-                    x += 1
-                else:
-                    FieldName = i
+                FieldName = i
                 FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
             result= converted[1]
