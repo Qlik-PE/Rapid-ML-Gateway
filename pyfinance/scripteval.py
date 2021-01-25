@@ -376,7 +376,9 @@ class ScriptEval:
             rf=Arguments[4]
             logging.debug("get_Simulatd_Random_Portfolios - tickers: {} Arguments {} start_date : {} end_date :{} attrib :{} num_portfolios :{} rf : {} " .format(tickers, Arguments, start_date, end_date, attrib, num_portfolios, rf))
             mean_returns = self.get_Mean_Daily_Return(tickers, start_date, end_date, attrib)
+            logging.debug("mean_returns - type: {} data: {} " .format(type(mean+returns), mean_returns))
             cov = self.get_Cov_Matrix(tickers, start_date, end_date, attrib)
+            logging.debug("cov - type: {} data: {} " .format(type(cov), cov))
             result = self.get_Simulated_Random_Portfolios(num_portfolios, mean_returns, cov, rf,tickers)
             logging.debug("result - type: {} data: {} " .format(type(result), result))
             converted = qlist.convert_df_list_cov(result)
