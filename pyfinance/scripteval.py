@@ -381,7 +381,7 @@ class ScriptEval:
             logging.debug("cov - type: {} data: {} " .format(type(cov), cov))
             result = self.get_Simulated_Random_Portfolios(num_portfolios, mean_returns, cov, rf,tickers)
             logging.debug("result - type: {} data: {} " .format(type(result), result))
-            converted = qlist.convert_df_list_cov(result)
+            converted = qlist.convert_df_list_sim(result)
             table.name= ' '.join([str(elem) for elem in tickers]) + '-' +'- Simulated_Random_Portfolios'
             logging.debug("column  {}" .format(converted[0]))
             x=1
