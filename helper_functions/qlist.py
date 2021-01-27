@@ -52,6 +52,7 @@ def convert_df_list(input_df):
         x.insert(0, np.datetime_as_string(input_df.index.values[i], unit='D'))
         i +=1
         temp = [str(y) for y in x]
+        print('Temp {}', .format(temp)
         values.append(temp)
     return columns, values
 
