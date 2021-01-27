@@ -35,11 +35,11 @@ def get_Percent_change(ticker, start, end, attrib):
 
 def get_Mean_Daily_Return(ticker, start, end, attrib):
     ticker_data = get_Percent_change(ticker,start, end, attrib)
-    print('ticker_data type {}, data{}' .format(type(ticker_data), ticker_data))
+    #print('ticker_data type {}, data{}' .format(type(ticker_data), ticker_data))
     return_data = ticker_data.round(6)
-    print('return_data type {}, data{}' .format(type(return_data), return_data))
+    #print('return_data type {}, data{}' .format(type(return_data), return_data))
     mean_daily_returns = return_data.mean()
-    print('mean_daily_returns type {}, data{}' .format(type(mean_daily_returns), mean_daily_returns))
+    #print('mean_daily_returns type {}, data{}' .format(type(mean_daily_returns), mean_daily_returns))
     return mean_daily_returns
 
 def get_Cov_Matrix(ticker, start, end, attrib):
