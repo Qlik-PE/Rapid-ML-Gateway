@@ -72,4 +72,4 @@ def simulate_random_portfolios(num_portfolios, mean_returns, cov, rf,tickers):
     results_df['portfolio_id'] = results_df.index
     output_df = results_df.melt(id_vars=['portfolio_id','ret', 'stdev', 'sharpe'], var_name='Ticker', value_name='percentage')
         
-    return output_df, result_df
+    return output_df, results_df
