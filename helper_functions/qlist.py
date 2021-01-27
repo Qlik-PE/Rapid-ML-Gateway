@@ -52,9 +52,9 @@ def convert_df_list(input_df):
         temp = [round(y,6) for y in x]
         temp.insert(0, np.datetime_as_string(input_df.index.values[i], unit='D'))
         i +=1
-        temp2 = [str(y) for y in x]
-        print('Temp {}', format(temp2))
-        values.append(temp2)
+        data = [str(y) for y in temp]
+        print('data {}', format(data))
+        values.append(data)
     return columns, values
 
 def convert_df_list_cov(input_df):
