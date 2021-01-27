@@ -69,5 +69,7 @@ def simulate_random_portfolios(num_portfolios, mean_returns, cov, rf,tickers):
             results_matrix[j+3,i] = weights[j]
             
     results_df = pd.DataFrame(results_matrix.T,columns=['ret','stdev','sharpe'] + [ticker for ticker in tickers])
+    results_df['portfolio_id'] = results_df.index
+    output_df = results_df.melt(id_vars=['portfolio_id','ret', 'stdev', 'sharpe'], var_name='ticker', value_name='percentage')
         
-    return results_df
+    return output_df
