@@ -44,8 +44,8 @@ def get_Mean_Daily_Return(ticker, start, end, attrib):
 
 def get_Cov_Matrix(ticker, start, end, attrib):
     ticker_data = get_Percent_change(ticker,start, end, attrib)
-    print('ticker_data type {}, data{}' .format(type(ticker_data), ticker_data))
-    cov_matrix = ticker_data.cov()
+    return_data = ticker_data.round(6)
+    cov_matrix = return_data.cov()
     return cov_matrix
 
 def calc_portfolio_perf(weights, mean_returns, cov, rf):
