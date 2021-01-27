@@ -60,16 +60,17 @@ def convert_df_list(input_df):
 def convert_df_list_cov(input_df):
     temp_dict = input_df.to_dict('split')
     columns = temp_dict['columns']
-    columns.insert(0,'matrix') 
+    columns.insert(0,'ticker') 
     values = []
     #temp_dict['data']
     i= 0
     print(input_df.index.values)
     for x in temp_dict['data']:
-        x.insert(0, input_df.index.values[i])
+        temp = [round(y,6) for y in x]
+        temp.insert(0, input_df.index.values[i])
         i +=1
-        temp = [str(y) for y in x]
-        values.append(temp)
+        data = [str(y) for y in temp]
+        values.append(data)
     return columns, values
 
 def convert_df_list_sim(input_df):
