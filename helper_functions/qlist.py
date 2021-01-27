@@ -62,7 +62,7 @@ def convert_df_list_cov(input_df):
     columns = temp_dict['columns']
     columns.insert(0,'Ticker') 
     values = []
-    #temp_dict['data']
+    print('temp_dict type: {} data: {}'  .format(type(temp_dict['data']), temp_dict['data']))
     i= 0
     print(input_df.index.values)
     for x in temp_dict['data']:
