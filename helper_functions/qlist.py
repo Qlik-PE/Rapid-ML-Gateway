@@ -67,9 +67,11 @@ def convert_df_list_cov(input_df):
     print(input_df.index.values)
     for x in temp_dict['data']:
         temp = [round(y,6) for y in x]
+        print('temp type:{} data:{}' .format(type(temp), temp))
         temp.insert(0, input_df.index.values[i])
         i +=1
         data = [str(y) for y in temp]
+        print('data type:{} data:{}' .format(type(data), dat))
         values.append(data)
     return columns, values
 
