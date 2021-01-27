@@ -71,7 +71,7 @@ def convert_df_list_cov(input_df):
         temp.insert(0, input_df.index.values[i])
         i +=1
         data = [str(y) for y in temp]
-        print('data type:{} data:{}' .format(type(data), dat))
+        print('data type:{} data:{}' .format(type(data), data))
         values.append(data)
     return columns, values
 
