@@ -60,7 +60,7 @@ def convert_df_list(input_df):
 def convert_df_list_cov(input_df):
     temp_dict = input_df.to_dict('split')
     columns = temp_dict['columns']
-    columns.insert(0,'ticker') 
+    columns.insert(0,'Ticker') 
     values = []
     #temp_dict['data']
     i= 0

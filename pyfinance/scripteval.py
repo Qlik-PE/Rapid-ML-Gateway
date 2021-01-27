@@ -354,13 +354,8 @@ class ScriptEval:
             converted = qlist.convert_df_list_cov(result)
             table.name= ' '.join([str(elem) for elem in tickers]) + '-' + attrib + '- Cov Matrix'
             logging.debug("column  {}" .format(converted[0]))
-            x=1
             for i in converted[0]:
-                if(i!='matrix'):
-                    FieldName = 'Stock '+str(x)+'-Cov Matrix'
-                    x += 1
-                else:
-                    FieldName = i
+                FieldName = i
                 FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
             result= converted[1]
