@@ -36,8 +36,8 @@ def get_Percent_change(ticker, start, end, attrib):
 def get_Mean_Daily_Return(ticker, start, end, attrib):
     ticker_data = get_Percent_change(ticker,start, end, attrib)
     return_data = ticker_data.round(6)
-    #print(type(return_data))
-    return round(return_data.mean(),6)
+    mean_daily_returns = return_data.mean()
+    return mean_daily_returns
 
 def get_Cov_Matrix(ticker, start, end, attrib):
     ticker_data = get_Percent_change(ticker,start, end, attrib)
