@@ -49,7 +49,7 @@ def convert_df_list(input_df):
     #temp_dict['data']
     i = 0
     for x in temp_dict['data']:
-        temp = [round(y,6) for y in x]
+        temp =  ['%.6f' % y for y in x]
         temp.insert(0, np.datetime_as_string(input_df.index.values[i], unit='D'))
         i +=1
         data = [str(y) for y in temp]
@@ -66,7 +66,7 @@ def convert_df_list_cov(input_df):
     i= 0
     print(input_df.index.values)
     for x in temp_dict['data']:
-        temp = [round(y, 6) for y in x]
+        temp = ['%.6f' % y for y in x]
         print('temp type:{} data:{}' .format(type(temp), temp))
         temp.insert(0, input_df.index.values[i])
         i +=1
