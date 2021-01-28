@@ -335,12 +335,10 @@ class ScriptEval:
             for y in temp_dict['data']:
                 y =  ['%.6f' % z for z in y]
                 y.insert(0,temp_dict['index'][i])
-                ID = 'Stock' +str(i+1)
-                y.insert(0,ID)
                 data.append(y)
                 i =+1
             table.name= ' '.join([str(elem) for elem in tickers]) + '-' + attrib + '- Mean Daily Returns'
-            columns = ['StockId', 'Ticker' ,'Mean_Daily_Return']
+            columns = ['Ticker' ,'Mean_Daily_Return']
             logging.debug("column  {}" .format(columns))
             for i in columns:
                 FieldName = i
