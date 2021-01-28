@@ -327,20 +327,27 @@ class ScriptEval:
             logging.debug("get_Mean_Daily_Return - tickers: {} Arguments {} start_date : {} end_date :{} attrib :{} " .format(tickers, Arguments, start_date, end_date, attrib))
             result = self.get_Mean_Daily_Return(tickers, start_date, end_date, attrib)
             logging.debug("result - type: {} data: {} name: {}" .format(type(result), result, result.name))
-            list_result = result.tolist()
-            output_data = [str(y) for y in list_result]
-            logging.debug("list_result - type: {} data: {}" .format(type(list_result), list_result))
+            df_result = result.to_frame()
+            logging.debug("df_result - type: {} data: {}" .format(type(df_result), df_result))
+            temp_dict = df_result.to_dict("split")
+            data =[]
+            i =0
+            for y in temp_dict['data']:
+                y =  ['%.6f' % z for z in y]
+                y.insert(0,temp_dict['index'][i])
+                ID = 'Stock' +str(i+1)
+                y.insert(0,ID)
+                data.append(y)
+                i =+1
             table.name= ' '.join([str(elem) for elem in tickers]) + '-' + attrib + '- Mean Daily Returns'
-            logging.debug("column  {}" .format(tickers))
-            x=1
-            for i in tickers:
-                FieldName = 'Stock'+str(x)+'-Mean Daily Return'
-                x += 1
+            columns = ['StockId', 'Ticker' 'Mean_Daily_Return']
+            logging.debug("column  {}" .format(columns))
+            for i in columns:
+                FieldName = i
                 FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
-            logging.debug("outputdata type: {} data: {}" .format(type(output_data), output_data))
-            result=list()
-            result.append(output_data)
+            logging.debug("data type: {} data: {}" .format(type(data), data))
+            result=data
             logging.debug("result {}" .format(result))
         elif (script.find('get_Cov_Matrix') !=-1):
             tickers = Arguments[: len(Arguments) - 3]
