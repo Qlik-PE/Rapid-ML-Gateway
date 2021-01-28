@@ -340,7 +340,7 @@ class ScriptEval:
                 data.append(y)
                 i =+1
             table.name= ' '.join([str(elem) for elem in tickers]) + '-' + attrib + '- Mean Daily Returns'
-            columns = ['StockId', 'Ticker' 'Mean_Daily_Return']
+            columns = ['StockId', 'Ticker' ,'Mean_Daily_Return']
             logging.debug("column  {}" .format(columns))
             for i in columns:
                 FieldName = i
