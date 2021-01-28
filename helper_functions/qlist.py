@@ -58,7 +58,7 @@ def convert_df_list(input_df):
     return columns, values
 
 def convert_df_list_cov(input_df):
-    temp_dict = input_df.round(6).to_dict('split')
+    temp_dict = input_df.to_dict('split')
     columns = temp_dict['columns']
     columns.insert(0,'Ticker') 
     values = []
@@ -66,7 +66,7 @@ def convert_df_list_cov(input_df):
     i= 0
     print(input_df.index.values)
     for x in temp_dict['data']:
-        temp = [str(y) for y in x]
+        temp = [round(y, 6) for y in x]
         print('temp type:{} data:{}' .format(type(temp), temp))
         temp.insert(0, input_df.index.values[i])
         i +=1
