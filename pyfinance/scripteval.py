@@ -267,7 +267,7 @@ class ScriptEval:
                 FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
             for x in converted[1]:
-                x.insert(0, ticker)
+                x.insert(0, ticker.strip())
             result = converted[1]
             logging.debug("result type  : {} data : {} " .format(type(result), result))
             for x in result:
