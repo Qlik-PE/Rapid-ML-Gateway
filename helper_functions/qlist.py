@@ -84,7 +84,7 @@ def convert_df_list_sim(input_df):
     i= 0
     print(input_df.index.values)
     for x in temp_dict['data']:
-        x.insert(0, input_df.index.values[i])
+        x.insert(0, input_df.index.values[i].strip())
         i +=1
         temp = [str(y) for y in x]
         values.append(temp)
