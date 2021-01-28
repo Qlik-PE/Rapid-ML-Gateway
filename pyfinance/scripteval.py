@@ -334,7 +334,7 @@ class ScriptEval:
             i =0
             for y in temp_dict['data']:
                 y =  ['%.6f' % z for z in y]
-                y.insert(0,temp_dict['index'][i])
+                y.insert(0,temp_dict['index'][i].strip())
                 data.append(y)
                 i +=1
             table.name= ' '.join([str(elem) for elem in tickers]) + '-' + attrib + '- Mean Daily Returns'
