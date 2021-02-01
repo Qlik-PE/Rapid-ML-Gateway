@@ -1,14 +1,18 @@
-
-import os, json, logging
+import os, sys
+PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(os.path.join(PARENT_DIR, 'generated'))
+sys.path.append(os.path.join(PARENT_DIR, 'helper_functions'))
+import logging
 import logging.config
-import sys
+import python_finance, qlist
 import ServerSideExtension_pb2 as SSE
 import grpc
-import precog, qlist, pysize
+import numpy 
 import configparser
 from ssedata import ArgType, FunctionType, ReturnType
-
 config = configparser.ConfigParser()
+from flatten_dict import flatten
+
 class ScriptEval:
     """
     Class for SSE plugin ScriptEval functionality.
@@ -24,27 +28,22 @@ class ScriptEval:
         :param context: the context sent from client
         :return: an iterable sequence of RowData.
         """
-        logging.debug('In EvaluateScritp: ScriptEval')
-        # Retrieve function type
-        func_type = self.get_func_type(header)
-        #logging.debug('Function Type {}' .format(func_type))
-        # Retrieve data types from header
-        arg_types = self.get_arg_types(header)
-        #logging.debug('Arg Type {}' .format(arg_types))
-        ret_type = self.get_return_type(header)
-        #logging.debug('Return Type {}' .format(ret_type))
+        # Read Qrag File 
         conf_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config', 'qrag.ini')
-        ##print(conf_file)
         logging.info('Location of qrag.ini {}' .format(conf_file))
         config.read(conf_file)
-        batch_size = int(config.get('base', 'batch_size'))
-        logging.info('Size of Batch Size {}' .format(batch_size))
-        #print(type(batch_size))
+
+        # Retrieve function type
+        func_type = self.get_func_type(header)
+
+        # Retrieve data types from header
+        arg_types = self.get_arg_types(header)
+        ret_type = self.get_return_type(header)
+
         logging.info('EvaluateScript: {} ({} {}) {}'
                      .format(header.script, arg_types, ret_type, func_type))
 
         # Check if parameters are provided
-        #print(header.params)
         if header.params:
             all_rows = []
 
@@ -53,13 +52,12 @@ class ScriptEval:
                 # Iterate over rows
                 for row in request_rows.rows:
                     # Retrieve parameters
-                    #print('row {} jrp' .format(row))
                     params = self.get_arguments(context, arg_types, row.duals, header)
                     all_rows.append(params)
 
             # First element in the parameter list should contain the data of the first parameter.
             all_rows = [list(param) for param in zip(*all_rows)]
-            #print(all_rows)
+
             if arg_types == ArgType.Mixed:
                 param_datatypes = [param.dataType for param in header.params]
                 for i, datatype in enumerate(param_datatypes):
@@ -70,37 +68,23 @@ class ScriptEval:
                         all_rows[i] = [list(datatype) for datatype in zip(*all_rows[i])]
 
             logging.debug('Received data from Qlik (args): {}'.format(all_rows))
-            return_val = self.evaluate(context, header.script, ret_type, params=all_rows)
+            result = self.evaluate(context, header.script, ret_type, params=all_rows)
 
         else:
             # No parameters provided
             logging.debug('No Parameteres Provided')
-            #print(ret_type)
             result = self.evaluate(context, header.script, ret_type)
-        print(type(result))
-        print(sys.getsizeof(result))
-        #bundledRows = SSE.BundledRows()
+        bundledRows = SSE.BundledRows()
         if isinstance(result, str) or not hasattr(result, '__iter__'):
             # A single value is returned
             bundledRows.rows.add(duals=self.get_duals(result, ret_type))
         else:
-            logging.debug('Size of Result {} {}'.format(len(result), pysize.get_size(result)))
-            #if(len(result) > )
-            #result = result[:10000]
-            batches = list(qlist.divide_chunks(result, batch_size)) 
-            for i in batches:
-                #print("loop")
-                bundledRows = SSE.BundledRows()
-                for row in i:
-                    # note that each element of the result should represent a row
-                    #logging.debug(row)
-                    #logging.debug(type(row))
-                    #logging.debug(ret_type)
-        
-                    #Yield the row data as bundled rows
-                    bundledRows.rows.add(duals=self.get_duals(row, ret_type))
-                #logging.debug('Size of BundledRow {}'.format(sys.getsizeof(bundledRows)))
-                yield bundledRows
+            for row in result:
+                # note that each element of the result should represent a row
+                bundledRows.rows.add(duals=self.get_duals(row, ret_type))
+
+        yield bundledRows
+
     @staticmethod
     def get_func_type(header):
         """
@@ -188,7 +172,29 @@ class ScriptEval:
             return ReturnType.Dual
         else:
             return ReturnType.Undefined
-
+    @staticmethod
+    def remove_columns(remlist, list_of_dict):
+       
+        for x in remlist:
+            for dict in list_of_dict:
+                #logging.debug(dict['name'])
+                logging.debug("deleting {}" .format(x))
+                key  = x.strip()
+                logging.debug("deleting {}" .format(key))
+                if key in dict.keys():
+                    del dict[key]
+        return list_of_dict
+    @staticmethod
+    def remove_columns_dict(remlist, dict):
+        
+        for x in remlist:
+            #logging.debug(dict['name'])
+            logging.debug("deleting {}" .format(x))
+            key  = x.strip()
+            logging.debug("deleting {}" .format(key))
+            if key in dict.keys():
+                del dict[key]
+        return dict
     @staticmethod
     def get_duals(result, ret_type):
         if isinstance(result, str) or not hasattr(result, '__iter__'):
@@ -199,7 +205,6 @@ class ScriptEval:
         elif ret_type == ReturnType.Numeric:
             duals = [SSE.Dual(numData=col) for col in result]
         return iter(duals)
-
     @staticmethod
     def send_table_description(table, context):
         """
@@ -225,102 +230,192 @@ class ScriptEval:
         :param params: params to evaluate. Default: []
         :return: a RowData of string dual
         """
-        table = SSE.TableDescription()
-        #print('JRP: {}' .format(table))
         # Evaluate script
-        #print(script)
-        #print(params)
-        conf_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config', 'qrag.ini')
-        ##print(conf_file)
-        logging.info('Location of qrag.ini {}' .format(conf_file))
-        config.read(conf_file)
-        url = config.get('base', 'url')
-        logging.debug('Precog URL {}' .format(url))
+        logging.info("In Evaluate {} {} {}" .format(script, ret_type, params))
+
+
+        table = SSE.TableDescription()
+        logging.info("python_finance Function {} called" .format(script))
+        #If User name and Password Present Remove Username and Password and Pass only function name
+        if(script.find('(') !=-1):
+            index=script.index('(')
+            Arguments = script[index:].strip(')(').split(',') 
+            fName = script[:index]
+            provider='yahoo'
+        else:
+            raise ValueError('Incorrect Formating of Function')
         
-        if (script.find('TableInfo') !=-1):
-            result = self.getTableInfo(url)
-            table.name = 'PreCog-Catalog'
-            table.fields.add(name="Table_Id", dataType=0)
-            table.fields.add(name="Name", dataType=0)
-            table.fields.add(name="Column Desc", dataType=0)
-        elif (script.find('TableMetaData') !=-1):
-            vTable= script[:-14]
-            logging.info('TableMetadata vTable {}' .format(vTable))
-            table.name = vTable+"-Metadata"
-            result =[]
-            column_data = precog.get_column_info(vTable, url)
-            table.fields.add(name="column", dataType=0)
-            table.fields.add(name="type", dataType=0)
-            for i in column_data:
-                part = [i["column"], i["type"]]
-                #print (part)
-                result.append(part)
-            #print(result)
-        elif (script.find('getTableData') !=-1):
-            vTable = script[:-13] 
-            logging.info('getTableData vTable {}' .format(vTable))
-            table.name = script[:-13]
-            column_data = precog.get_column_info(vTable, url)
-            for i in column_data:
-                FieldName = i["column"]
-                if(i["type"]=="number"):
-                    FieldType=0
-                else:
-                    FieldType=0
-                #logging.debug("Viewing Metadata from PreCog: {}" .format(i))
-                #logging.debug('Adding Fields name :{}, dataType:{}' .format(FieldName, FieldType))
+        if (script.find('get_ticker_data') !=-1):
+            ticker = Arguments[0]
+            start_date=Arguments[1]
+            end_date=Arguments[2]
+            result = self.get_ticker_data(ticker, start_date, end_date)
+            logging.debug("result type  : {} data : {} " .format(type(result), result))
+            converted = qlist.convert_df_list(result)
+            logging.debug("converted type JRP : {} columns : {} data :{} " .format(type(converted[0]), converted[0], converted[1]))
+            table.name = Arguments[0] +'- ticker_data'
+            converted[0].insert(0, 'Ticker')
+            for i in converted[0]:
+                logging.debug('This is i {}'  .format(i))
+                #if (i!='Date'):
+                    #if (i!='Ticker'):
+                 #       FieldName = ticker+' '+i
+                    #else:
+                #        FieldName = i
+               # else:
+                FieldName= i
+                FieldType=0
                 table.fields.add(name=FieldName, dataType=FieldType)
-            result = self.getTableData(url, vTable)
+            for x in converted[1]:
+                x.insert(0, ticker.strip())
+            result = converted[1]
+            logging.debug("result type  : {} data : {} " .format(type(result), result))
+            for x in result:
+                logging.debug("x type  : {} data : {} " .format(type(x), x))
+        elif (script.find('get_tickers') !=-1):
+            tickers = Arguments[: len(Arguments) - 3]
+            Arguments = Arguments[len(Arguments) - 3:]
+            start_date=Arguments[0]
+            end_date=Arguments[1]
+            attrib = Arguments[2]
+            logging.debug("get tickers - tickers: {} Arguments {} start_date : {} end_date :{} attrib :{} " .format(tickers, Arguments, start_date, end_date, attrib))
+            result = self.get_tickers(tickers, start_date, end_date, attrib)
+            converted = qlist.convert_df_list(result)
+            table.name= ' '.join([str(elem) for elem in tickers]) + '-' + attrib + '-Data'
+            logging.debug("column  {}" .format(converted[0]))
+            x = 1
+            for i in converted[0]:
+                if(i!='Date'):
+                    FieldName = 'Stock '+str(x)+' '+attrib
+                    x += 1
+                else:
+                    FieldName= i    
+                FieldType=0
+                table.fields.add(name=FieldName, dataType=FieldType)
+            result= converted[1]
+            logging.debug("result {}" .format(result))
+        elif (script.find('get_Percent_change') !=-1):
+            tickers = Arguments[: len(Arguments) - 3]
+            Arguments = Arguments[len(Arguments) - 3:]
+            start_date=Arguments[0]
+            end_date=Arguments[1]
+            attrib = Arguments[2]
+            logging.debug("get_Percent_change - tickers: {} Arguments {} start_date : {} end_date :{} attrib :{} " .format(tickers, Arguments, start_date, end_date, attrib))
+            result = self.get_Percent_change(tickers, start_date, end_date, attrib)
+            logging.debug("result - type: {} data: {}" .format(type(result), result))
+            converted = qlist.convert_df_list(result)
+            table.name= ' '.join([str(elem) for elem in tickers]) + '-' + attrib + '- Percent Change'
+            #table.name= 'Percent Change'
+            x =1
+            logging.debug("column  {}" .format(converted[0]))
+            for i in converted[0]:
+                if(i!='Date'):
+                    FieldName = 'Stock '+str(x)+'-Percent Change'
+                    x += 1
+                else:
+                    FieldName = i
+                FieldType=0
+                table.fields.add(name=FieldName, dataType=FieldType)
+            result= converted[1]
+            logging.debug("result {}" .format(result))
+        elif (script.find('get_Mean_Daily_Return') !=-1):
+            tickers = Arguments[: len(Arguments) - 3]
+            Arguments = Arguments[len(Arguments) - 3:]
+            start_date=Arguments[0]
+            end_date=Arguments[1]
+            attrib = Arguments[2]
+            logging.debug("get_Mean_Daily_Return - tickers: {} Arguments {} start_date : {} end_date :{} attrib :{} " .format(tickers, Arguments, start_date, end_date, attrib))
+            result = self.get_Mean_Daily_Return(tickers, start_date, end_date, attrib)
+            logging.debug("result - type: {} data: {} name: {}" .format(type(result), result, result.name))
+            df_result = result.to_frame()
+            logging.debug("df_result - type: {} data: {}" .format(type(df_result), df_result))
+            temp_dict = df_result.to_dict("split")
+            data =[]
+            i =0
+            for y in temp_dict['data']:
+                y =  ['%.6f' % z for z in y]
+                y.insert(0,temp_dict['index'][i].strip())
+                data.append(y)
+                i +=1
+            table.name= ' '.join([str(elem) for elem in tickers]) + '-' + attrib + '- Mean Daily Returns'
+            columns = ['Ticker' ,'Mean_Daily_Return']
+            logging.debug("column  {}" .format(columns))
+            for i in columns:
+                FieldName = i
+                FieldType=0
+                table.fields.add(name=FieldName, dataType=FieldType)
+            logging.debug("data type: {} data: {}" .format(type(data), data))
+            result=data
+            logging.debug("result {}" .format(result))
+        elif (script.find('get_Cov_Matrix') !=-1):
+            tickers = Arguments[: len(Arguments) - 3]
+            Arguments = Arguments[len(Arguments) - 3:]
+            start_date=Arguments[0]
+            end_date=Arguments[1]
+            attrib = Arguments[2]
+            logging.debug("get_Cov_Matrix - tickers: {} Arguments {} start_date : {} end_date :{} attrib :{} " .format(tickers, Arguments, start_date, end_date, attrib))
+            result = self.get_Cov_Matrix(tickers, start_date, end_date, attrib)
+            logging.debug("result - type: {} data: {} " .format(type(result), result))
+            converted = qlist.convert_df_list_cov(result)
+            table.name= ' '.join([str(elem) for elem in tickers]) + '-' + attrib + '- Cov Matrix'
+            logging.debug("column  {}" .format(converted[0]))
+            for i in converted[0]:
+                FieldName = i
+                FieldType=0
+                table.fields.add(name=FieldName, dataType=FieldType)
+            result= converted[1]
+            logging.debug("result {}" .format(result))
+        elif (script.find('get_Simulated_Random_Portfolios') !=-1):
+            logging.debug("Inside Else Block JRP ")
+            tickers = Arguments[: len(Arguments) - 5]
+            Arguments = Arguments[len(Arguments) - 5:]
+            start_date=Arguments[0]
+            end_date=Arguments[1]
+            attrib = Arguments[2]
+            num_portfolios=Arguments[3]
+            rf=Arguments[4]
+            logging.debug("get_Simulatd_Random_Portfolios - tickers: {} Arguments {} start_date : {} end_date :{} attrib :{} num_portfolios :{} rf : {} " .format(tickers, Arguments, start_date, end_date, attrib, num_portfolios, rf))
+            mean_returns = self.get_Mean_Daily_Return(tickers, start_date, end_date, attrib)
+            logging.debug("mean_returns - type: {} data: {} " .format(type(mean_returns), mean_returns))
+            cov = self.get_Cov_Matrix(tickers, start_date, end_date, attrib)
+            logging.debug("cov - type: {} data: {} " .format(type(cov), cov))
+            result = self.get_Simulated_Random_Portfolios(num_portfolios, mean_returns, cov, rf,tickers)
+            logging.debug("result - type: {} data: {} " .format(type(result), result[1]))
+            converted = qlist.convert_df_list_sim(result[0])
+            table.name= ' '.join([str(elem) for elem in tickers]) + '-' +'- Simulated_Random_Portfolios'
+            logging.debug("column  {}" .format(converted[0]))
+            x=1
+            for i in converted[0]:
+                FieldName = i
+                FieldType=0
+                table.fields.add(name=FieldName, dataType=FieldType)
+            result= converted[1]
+            logging.debug("result {}" .format(result))
         else:
             result = []
-        #logging.debug('Result: {}'.format(result))
-        ###print(table)
-        ###print(type(table))
+
         self.send_table_description(table, context)
         return result
-   
-    
-    @staticmethod
-    def getTableInfo (url):
-       logging.info("In getTableInfo using url {}" .format(url))
-       table_list = precog.get_tables(url)
-       x = list(table_list[0].keys())
-       results =[]
-       for i in x:
-            y = precog.get_table_information(i, url)[1]
-            temp_li =[]
-            for j in y:
-                col_str = json.dumps(j)
-                temp_li.append(col_str)
-            column_str = ''.join(temp_li)
-            result= [i, table_list[0][i]['name'], column_str]
-            results.append(result)
-            ###print(result)
-       return results
+
 
     @staticmethod
-    def getTableData(url, table_name):
-       logging.info("In getTableDatausing url {} and tablename {}" .format(url, table_name))
-       result = []
-       table_id  = precog.get_table_id(table_name, url)
-       #logging.debug('Table ID {}' .format(table_id[0]))
-       token = precog.get_access_tokens(table_id[0],url)
-       ###print(token[0].values())
-       token_count = len(token[0]["accessTokens"])
-       create_token_tuple = precog.create_token(url,table_id[0])
-       ##print(create_token_tuple)
-       ##print(precog.get_count_of_all_tokens(url))
-       new_token = create_token_tuple[0]
-       new_secret = create_token_tuple[1]
-       response = create_token_tuple[2]
-       result = precog.get_result_csv(url, new_secret)
-       ##print(result[0])
-       output_str = result[1]
-       logging.debug("JRP Size of output_str {}" .format(len(output_str)))
-       parsed_csv = precog.convert_csv(output_str)
-       logging.debug("JRP Size of parsed_csv {}" .format(len(parsed_csv[0])))
-       #print(type(parsed_csv))
-       #print(parsed_csv[:10])
-       resp_clean = precog.cleanup_token(new_token, table_id[0], url)
-       logging.debug('Token Cleaned Resp: {}' .format(resp_clean))
-       return parsed_csv[0]
+    def get_tickers(tickers, start, end, attrib):
+        return python_finance.get_tickers(tickers, start, end, attrib)
+    @staticmethod
+    def get_ticker_data(tickers, start, end):
+        return python_finance.get_ticker_data(tickers, start, end)
+    @staticmethod
+    def get_Percent_change(ticker, start, end, attrib):
+        return python_finance.get_Percent_change(ticker, start, end, attrib)
+    @staticmethod
+    def get_Mean_Daily_Return(ticker, start, end, attrib):
+        return python_finance.get_Mean_Daily_Return(ticker, start, end, attrib)
+    @staticmethod
+    def get_Cov_Matrix(ticker, start, end, attrib):
+        return python_finance.get_Cov_Matrix(ticker, start, end, attrib)
+    @staticmethod
+    def calc_portfolio_perf(weights, mean_returns, cov, rf):
+        return python_finance.calc_portfolio_perf(weights, mean_returns, cov, rf)
+    @staticmethod
+    def get_Simulated_Random_Portfolios(num_portfolios, mean_returns, cov, rf,tickers):
+        return python_finance.simulate_random_portfolios(num_portfolios, mean_returns, cov, rf,tickers)

@@ -1,4 +1,5 @@
 import glom
+import numpy as np
 
 #
 def divide_chunks(l, n): 
@@ -39,4 +40,52 @@ def convert_dicts_list(input_dict):
     values = ["NA" if x == '' else x for x in values]
     temp = [str(x) for x in values]
     return columns, temp
-            
+
+def convert_df_list(input_df):
+    temp_dict = input_df.to_dict('split')
+    columns = temp_dict['columns']
+    columns.insert(0,input_df.index.name) 
+    values = []
+    #temp_dict['data']
+    i = 0
+    for x in temp_dict['data']:
+        temp =  ['%.6f' % y for y in x]
+        temp.insert(0, np.datetime_as_string(input_df.index.values[i], unit='D'))
+        i +=1
+        data = [str(y) for y in temp]
+        print('data {}', format(data))
+        values.append(data)
+    return columns, values
+
+def convert_df_list_cov(input_df):
+    temp_dict = input_df.to_dict('split')
+    columns = temp_dict['columns']
+    columns.insert(0,'Ticker') 
+    values = []
+    print('temp_dict type: {} data: {}'  .format(type(temp_dict['data']), temp_dict['data']))
+    i= 0
+    print(input_df.index.values)
+    for x in temp_dict['data']:
+        temp = ['%.6f' % y for y in x]
+        print('temp type:{} data:{}' .format(type(temp), temp))
+        temp.insert(0, input_df.index.values[i])
+        i +=1
+        data = [str(y).strip() for y in temp]
+        print('data type:{} data:{}' .format(type(data), data))
+        values.append(data)
+    return columns, values
+
+def convert_df_list_sim(input_df):
+    temp_dict = input_df.to_dict('split')
+    columns = temp_dict['columns']
+    columns.insert(0,'random_portfolio_id') 
+    values = []
+    #temp_dict['data']
+    i= 0
+    print(input_df.index.values)
+    for x in temp_dict['data']:
+        x.insert(0, input_df.index.values[i])
+        i +=1
+        temp = [str(y).strip() for y in x]
+        values.append(temp)
+    return columns, values
