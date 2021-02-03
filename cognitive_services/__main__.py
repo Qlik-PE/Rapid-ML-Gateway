@@ -11,20 +11,15 @@ import logging.config
 import inspect, time
 from websocket import create_connection
 import socket
-import re, uuid
+import re
 from concurrent import futures
 from datetime import datetime
 import requests, uuid
 import configparser
-
-
-
-# Add Generated folder to module path.
-#test
-
 import ServerSideExtension_pb2 as SSE
 import grpc
 import qlist
+import cognitive_services as cs
 from google.protobuf.json_format import MessageToDict
 from ssedata import ArgType, FunctionType, ReturnType
 # import helper .py files
@@ -91,18 +86,10 @@ class ExtensionService(SSE.ConnectorServicer):
         Rest using single variable
         """
         logging.info('Entering {} TimeStamp: {}' .format(function_name, datetime.now().strftime("%H:%M:%S.%f")))
-        url = config.get(q_function_name, 'url')
-        azure_cognitive_service_key = config.get('base', 'azure_cognitive_service_key')
-        azure_cognitive_region = config.get('base',  'azure_cognitive_region')
-        logging.debug("Rest Url is set to {}" .format(url))
+   
         bCache= config.get(q_function_name, 'cache')
         logging.debug("Caching is set to {}" .format(bCache))
-        headers = {
-         'Ocp-Apim-Subscription-Key': azure_cognitive_service_key,
-         'Ocp-Apim-Subscription-Region': azure_cognitive_region,
-         'Content-type': 'application/json',
-         'X-ClientTraceId': str(uuid.uuid4())   
-        }
+    
         if (bCache.lower() =="true"):
             logging.info("Caching ****Enabled*** for {}" .format(q_function_name))
         else:
@@ -111,48 +98,73 @@ class ExtensionService(SSE.ConnectorServicer):
             context.send_initial_metadata(md)
         response_rows = []
         request_counter = 1
-        if(q_function_name=='translate'):
-                    path = '/translate?api-version=3.0'
-                    constructed_url = url + path 
+        #if(q_function_name=='translate'):
+        endpoint = config.get(q_function_name, 'endpoint') 
+        logging.debug("endpoint is set to {}" .format(endpoint))
+        key = config.get(q_function_name, 'key')
+        logging.debug("key is set to {}" .format(key))
+        region = config.get(q_function_name,  'region')
+        logging.debug("region is set to {}" .format(region))
         
         for request_rows in request:
             logging.debug('Printing Request Rows - Request Counter {}' .format(request_counter))
             request_counter = request_counter +1
             for row in request_rows.rows:
                 param = [d.strData for d in row.duals]
-                print(param)
-                language  = '&to=' + param[1]
-                logging.debug('Showing Language to Translate to : {}'.format(language))
-                finished_url = constructed_url+language
-                logging.debug('Showing finished url to : {}'.format(finished_url))
-                body = [{'text' : param[0]}]
-                logging.debug('Showing message body: {}'.format(body))
-                print(headers)
-                request = requests.post(finished_url, headers=headers, json=body)
-                resp= request.json()
-                logging.debug('Show Payload Response as Text: {}'.format(resp))
-                print((resp))
-                
-                result =''
-                if(param[2] =='score'):
-                    result = str(resp[0]['detectedLanguage']['score'])
-                    logging.debug('Score: {}'.format(result))
-                    print(result)
-                    print(type(result))
-                    duals = iter([SSE.Dual(strData=result)])
-                if(param[2] =='text'):   
-                    result = resp[0]['translations'][0]['text']
-                    print(type(result))
+                logging.debug("The incoming parameter {}" .format(param))
+                if(q_function_name=='translate'):
+                    language  = '&to=' + param[1]
+                    logging.debug('Showing Language to Translate to : {}'.format(language))
+                    client = cs.translate(key, region, endpoint)
+                    finished_url = client[1] +language
+                    logging.debug('Showing finished url to : {}'.format(finished_url))
+                    input_text = param[0].replace('"','\\').replace(',','\\,')
+                    body = [{'text' : input_text}]
+                    logging.debug('Showing message body: {}'.format(body))
+                    request = requests.post(finished_url, headers=client[0], json=body)
+                    resp= request.json()
+                    logging.debug('Show Payload Response as Text: {}'.format(resp))
+                    result =''
+                    if(param[-1] =='score'):
+                        result = str(resp[0]['detectedLanguage']['score'])
+                        logging.debug('Score: {}'.format(result))
+                        print(result)
+                        print(type(result))
+                        #duals = iter([SSE.Dual(strData=result)])
+                    if(param[-1] =='text'):   
+                        result = resp[0]['translations'][0]['text']
+                        print(type(result))
                     logging.debug('Translation: {}'.format(result))
-                    duals = iter([SSE.Dual(strData=result)])
-                #''resp[]
-                #result = resp.text
-                #result = result.replace('"', '')
-                #result = result.strip()
-                #logging.debug('Show  Result: {}'.format(result))
-                #Create an iterable of dual with the result
-                response_rows.append(SSE.Row(duals=duals))
-                # Yield the row data as bundled rows
+                elif(q_function_name=='language_detection'):
+                    client = cs.authenticate_client(key, endpoint)
+                    result =cs.language_detection(client, param)
+                    logging.debug('language detection: {}'.format(result))
+                elif(q_function_name=='key_phrase_extraction'):
+                    client = cs.authenticate_client(key, endpoint)
+                    output =cs.key_phrase_extraction(client, param)
+                    result = output[0]
+                    logging.debug('key_phrase_extraction: {}'.format(result))
+                elif(q_function_name=='sentiment_analysis'):
+                    client = cs.authenticate_client(key, endpoint)
+                    output =cs.sentiment_analysis(client, param)
+                    print(output)
+                    print(type(output))
+                    if(param[-1] =='sentiment'):
+                        result = output.sentiment
+                    elif(param[-1] =='positive_score'):
+                        result = str(output.confidence_scores.positive)
+                    elif(param[-1] =='negative_score'):
+                        result = str(output.confidence_scores.negative)
+                    elif(param[-1] =='neutral_score'):
+                        result = str(output.confidence_scores.neutral)
+                    else:
+                        result = output.sentiment
+                    logging.debug('key_phrase_extraction: {}'.format(result))
+                else:
+                    result=""                
+                
+                duals = iter([SSE.Dual(strData=result)])
+                response_rows.append(SSE.Row(duals=duals))               
         yield SSE.BundledRows(rows=response_rows)
         logging.info('Exiting {} TimeStamp: {}' .format(function_name, datetime.now().strftime("%H:%M:%S.%f")))
 
