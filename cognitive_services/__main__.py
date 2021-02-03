@@ -112,6 +112,8 @@ class ExtensionService(SSE.ConnectorServicer):
             for row in request_rows.rows:
                 param = [d.strData for d in row.duals]
                 logging.debug("The incoming parameter {}" .format(param))
+                if (len(param[0])==0):
+                    param[0] = "NA"
                 if(q_function_name=='translate'):
                     language  = '&to=' + param[1]
                     logging.debug('Showing Language to Translate to : {}'.format(language))
