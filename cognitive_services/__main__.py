@@ -1,9 +1,14 @@
 #! /usr/bin/env python3
+import os 
+import sys
+PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(os.path.join(PARENT_DIR, 'generated'))
+sys.path.append(os.path.join(PARENT_DIR, 'helper_functions'))
 import argparse
 import json
 import logging
 import logging.config
-import os, sys, inspect, time
+import inspect, time
 from websocket import create_connection
 import socket
 import re, uuid
@@ -16,9 +21,7 @@ import configparser
 
 # Add Generated folder to module path.
 #test
-PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(os.path.join(PARENT_DIR, 'generated'))
-sys.path.append(os.path.join(PARENT_DIR, 'helper_functions'))
+
 import ServerSideExtension_pb2 as SSE
 import grpc
 import qlist
@@ -43,8 +46,10 @@ class ExtensionService(SSE.ConnectorServicer):
         self._function_definitions = funcdef_file
         #self.ScriptEval = ScriptEval()
         os.makedirs('logs', exist_ok=True)
-        log_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logger.config')
+        log_file = os.path.join(os.path.dirname(
+            os.path.dirname(os.path.abspath(__file__))), 'logger.config')
         logging.config.fileConfig(log_file)
+        logging.info(log_file)
         logging.info(self._function_definitions)
         logging.info('Logging enabled')
         function_name = "none"
@@ -380,7 +385,13 @@ class ExtensionService(SSE.ConnectorServicer):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    config.read(os.path.join(os.path.dirname(__file__), 'config', 'qrag.ini'))
+    conf_file = os.path.join(os.path.dirname(
+        os.path.abspath(__file__)), 'config', 'qrag.ini')
+
+    #config.read(os.path.join(os.path.dirname(__file__), 'config', 'qrag.ini'))
+    logging.debug(conf_file)
+    logging.info('Location of qrag.ini {}' .format(conf_file))
+    config.read(conf_file)
     port = config.get('base', 'port')
     parser.add_argument('--port', nargs='?', default=port)
     parser.add_argument('--pem_dir', nargs='?')
@@ -389,6 +400,7 @@ if __name__ == '__main__':
     # need to locate the file when script is called from outside it's location dir.
     def_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), args.definition_file)
     #print(def_file)
-    logging.info('*** Server Configurations Port: {}, Pem_Dir: {}, def_file {} TimeStamp: {} ***'.format(args.port, args.pem_dir, def_file,datetime.now().isoformat()))
     calc = ExtensionService(def_file)
+    logging.info('*** Server Configurations Port: {}, Pem_Dir: {}, def_file {} TimeStamp: {} ***'.format(args.port, args.pem_dir, def_file,datetime.now().isoformat()))
+
     calc.Serve(args.port, args.pem_dir)
