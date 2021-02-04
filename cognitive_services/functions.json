@@ -39,7 +39,8 @@
             "QRAP_Type": "rest_single",
             "ReturnType": 0,
             "Params": {
-                "str1": 0
+                "str1": 0,
+                "str2": 0
             }
         },
         {
@@ -52,6 +53,5 @@
                 "str1": 0
             }
         }
-    
     ]
 }
