@@ -419,5 +419,3 @@ class ScriptEval:
     @staticmethod
     def get_Simulated_Random_Portfolios(num_portfolios, mean_returns, cov, rf,tickers):
         return python_finance.simulate_random_portfolios(num_portfolios, mean_returns, cov, rf,tickers)
-    def linear_regression(x, y)
-        return 
