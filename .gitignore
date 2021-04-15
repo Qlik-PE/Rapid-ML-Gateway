@@ -151,4 +151,4 @@ app.py
 /debug
 logger.config
 nohup.out
-mygcp.json
+gcp-key.json
