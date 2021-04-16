@@ -1,15 +1,12 @@
 from google.cloud import bigquery
+import os
 
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="../gcp-key.json"
 # Construct a BigQuery client object.
 client = bigquery.Client()
 
 query = """
-    SELECT predicted_Target_paid_late,  CountryCode,
-	CustomerID,
-	InvoiceDate,
-	InvoiceAmount,	
-	Disputed, 	
-	PaperlessBill,
+    SELECT *,
 	Target_paid_late from ML.PREDICT(MODEL `machine-learning-qlik-sense.SAP.paid_time_auto_ml`, (SELECT
   CountryCode,
 	CustomerID,

@@ -73,10 +73,15 @@
             "Id": 4,
             "Name": "predict_payments",
             "Type": 2,
-            "QRAP_Type": "rest_single",
+            "QRAP_Type": "gcp_bq",
             "ReturnType": 0,
             "Params": {
-                "str1": 0
+                "CustomerID": 0,
+                "InvoiceDate": 0,
+                "InvoiceAmount": 0,
+                "Disputed": 0,
+                "PaperlessBill": 0,
+                ""
             }
         }
     
