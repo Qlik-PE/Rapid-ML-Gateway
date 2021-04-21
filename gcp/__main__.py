@@ -74,7 +74,7 @@ class ExtensionService(SSE.ConnectorServicer):
             1: '_rest_30',
             2: '_ws_single',
             3: '_ws_batch',
-            4: '_echo_table'
+            4: '_gcp_bq'
         }
 
     @staticmethod
@@ -341,6 +341,53 @@ class ExtensionService(SSE.ConnectorServicer):
             datetime.now().strftime("%H:%M:%S.%f")))
 
     @staticmethod
+    def _gcp_bq(request, context)
+        """
+        Google Cloud  Big Query Client Integration
+        November 2020 
+        john.park@qlik.com
+
+        """
+
+        logging.info('Entering {} TimeStamp: {}' .format(
+            function_name, datetime.now().strftime("%H:%M:%S.%f")))
+        url = config.get(q_function_name, 'url')
+        bCache = config.get(q_function_name, 'cache')
+        logging.debug("Caching is set to {}" .format(bCache))
+        if (bCache.lower() == "true"):
+            logging.info(
+                "Caching ****Enabled*** for {}" .format(q_function_name))
+        else:
+            logging.info(
+                "Caching ****Disabled**** for {}" .format(q_function_name))
+            md = (('qlik-cache', 'no-store'),)
+            context.send_initial_metadata(md)
+        # Iterate over bundled rows
+        response_rows = []
+        for request_rows in request:
+            # Iterate over rows
+            for row in request_rows.rows:
+                # Retrieve string value of parameter and append to the params variable
+                # Length of param is 1 since one column is received, the [0] collects the first value in the list
+                param = [d.strData for d in row.duals]
+                if (len(param) == 0):
+                    logging.debug('Parameters are Empty')
+                    result = 'Error'
+                #logging.info('Showing Payload: {}'.format(param))
+                # Aggregate parameters to a single string
+                # Join payload via =','.join(param)
+                else:
+              
+                # Create an iterable of dual with the result
+                    duals = iter([SSE.Dual(strData=result)])
+                    response_rows.append(SSE.Row(duals=duals))
+        # Yield the row data as bundled rows
+        yield SSE.BundledRows(rows=response_rows)
+        logging.info('Exiting gcp_bq TimeStamp: {}' .format(
+            datetime.now().strftime("%H:%M:%S.%f")))
+
+
+    @staticmethod
     def _cache(request, context):
         """
         Cache enabled. Add the datetime stamp to the end of each string value.
@@ -558,8 +605,10 @@ class ExtensionService(SSE.ConnectorServicer):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    #config.read(os.path.join(os.path.dirname(__file__), 'config', 'qrag.ini'))
-    config.read(os.path.join(os.path.dirname(__file__), 'config', 'qrag.ini'))
+    qrag_file = os.path.join(os.path.dirname(__file__), 'config', 'qrag.ini')
+    config.read(qrag_file)
+    print(qrag_file)
+    print(config.sections())
     port = config.get('base', 'port')
     parser.add_argument('--port', nargs='?', default=port)
     parser.add_argument('--pem_dir', nargs='?')
@@ -574,3 +623,4 @@ if __name__ == '__main__':
         args.port, args.pem_dir, def_file, datetime.now().isoformat()))
     calc = ExtensionService(def_file)
     calc.Serve(args.port, args.pem_dir)
+
