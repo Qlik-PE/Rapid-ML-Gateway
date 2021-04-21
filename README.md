@@ -1,4 +1,4 @@
-![QRAG Logo](./images/QRAG.png)
+![Rapid ML Gateway Logo](./images/1.png)
 
 Qlik Rapid Api Gateway(QRAG) is an open source Python implementation of Qlik SSE that simplifies bi-directional data exchange between Qlik Application and API based data sources.
 The intial use case was to allow Qlik to use AI/ML functions and interact with other executions engines. The system utilizes GRPC messaging from Qlik and currently in the inital release support REST, Websocket APIs.
