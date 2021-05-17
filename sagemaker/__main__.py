@@ -74,7 +74,8 @@ class ExtensionService(SSE.ConnectorServicer):
             1: '_rest_30',
             2: '_ws_single',
             3: '_ws_batch',
-            4: '_echo_table'
+            4: '_echo_table',
+            5: '_rest_template'
         }
 
     @staticmethod
@@ -135,6 +136,70 @@ class ExtensionService(SSE.ConnectorServicer):
                     logging.debug('Show  Result: {}'.format(result))
                 # Create an iterable of dual with the result
                     duals = iter([SSE.Dual(strData=result)])
+                    response_rows.append(SSE.Row(duals=duals))
+                # Yield the row data as bundled rows
+        yield SSE.BundledRows(rows=response_rows)
+        logging.info('Exiting {} TimeStamp: {}' .format(
+            function_name, datetime.now().strftime("%H:%M:%S.%f")))
+    @staticmethod
+    def _rest_template(request, context):
+        """
+        Rest using template
+        """
+        logging.info('Entering {} TimeStamp: {}' .format(
+            function_name, datetime.now().strftime("%H:%M:%S.%f")))
+        url = config.get(q_function_name, 'url')
+        logging.debug("Rest Url is set to {}" .format(url))
+        query_parameter = config.get(q_function_name, 'query_parameter')
+        logging.debug("Rest Url is set to {}" .format(query_parameter))
+        bCache = config.get(q_function_name, 'cache')
+        logging.debug("Caching is set to {}" .format(bCache))
+        if (bCache.lower() == "true"):
+            logging.info(
+                "Caching ****Enabled*** for {}" .format(q_function_name))
+        else:
+            logging.info(
+                "Caching ****Disabled**** for {}" .format(q_function_name))
+            md = (('qlik-cache', 'no-store'),)
+            context.send_initial_metadata(md)
+        response_rows = []
+        request_counter = 1
+        for request_rows in request:
+            logging.debug(
+                'Printing Request Rows - Request Counter {}' .format(request_counter))
+            request_counter = request_counter + 1
+            for row in request_rows.rows:
+                # Retrieve string value of parameter and append to the params variable
+                # Length of param is 1 since one column is received, the [0] collects the first value in the list
+                param = [d.strData for d in row.duals]
+                print(param)
+                print(type(param))
+                # Join with current timedate stamp
+                if (len(param) == 0):
+                    logging.info('Exiting {} TimeStamp: {} due to Data being Empty ' .format(
+                        function_name, datetime.now().strftime("%H:%M:%S.%f")))
+                else:
+                    qp0 =  param[0]
+                    qp1 =  param[1] 
+                    logging.debug('Showing Payload: {}'.format(qp0))
+                    logging.debug('Showing Payload: {}'.format(qp1))
+                    logging.debug('Showing Payload: {}'.format(query_parameter))
+                    parameterized_url = url + qp0 +'?'+ query_parameter + '=' + qp1 +'&'
+                    logging.debug('Showing Payload: {}'.format(parameterized_url))
+                    resp = requests.get(parameterized_url)
+                    logging.debug('Type: {}' .format(type(resp)))
+                    logging.debug(
+                        'Show Payload Response as Text: {}'.format(resp.json()))
+                    result = resp.json()
+                    result = result.get('ratings')
+                    #result = result.strip()
+                    logging.debug('Show  Result: {}'.format(result))
+                # Create an iterable of dual with the result
+                    for i in result:
+                        retData = str(i)
+                        print(retData)
+                        print(type(retData))
+                    duals = iter([SSE.Dual(strData=retData)])
                     response_rows.append(SSE.Row(duals=duals))
                 # Yield the row data as bundled rows
         yield SSE.BundledRows(rows=response_rows)
