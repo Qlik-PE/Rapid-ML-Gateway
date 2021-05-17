@@ -1,19 +1,26 @@
-![QRAG Logo](./images/QRAG.png)
+![Rapid ML Gateway Logo](./images/1.png)
 
-Qlik Rapid Api Gateway(QRAG) is an open source Python implementation of Qlik SSE that simplifies bi-directional data exchange between Qlik Application and API based data sources.
+#Rapid Machine Learning Gateway - Simple way to BI tools to tap your ML Endpoints
+
+Rapid ML Gateway(RML) is an open source Python implementation of Qlik<sup>TM</sup> Server Side Extension that simplifies bi-directional data exchange between Qlik Application and Popular ML endpoint data.
+_The Origins of this project started as Qlik RA_
+
 The intial use case was to allow Qlik to use AI/ML functions and interact with other executions engines. The system utilizes GRPC messaging from Qlik and currently in the inital release support REST, Websocket APIs.
 
 Integration Use Cases are Following
 
-- Integration with Open API Calls
+- Integration with Open API Calls - Bi Directional Data Flow
 - Interacting with Qlik Data on Third Party APIs
 - Training ML Models with Qlik Data
 - Scoring Qlik Data against ML Models
 - Integration to AWS Sagemaker
 - Integration to R
 - Integration to Python
+- Integration to Databricks 
+- Integration with GCP AutomML
+- Integration with Azure Cognitive Services
 
-The system is built around quickly **using qrag.ini and functions.json** to send request and **add results back into QIX engine**. It's goal is to help Qlik users integrate into API/Microservices Architecture.
+The system is built around quickly **using qrag.ini and functions.json** to send request and **add results back into QIX engine**. The goal of Rapid ML Gateway is to  It's goal is to help Qlik users integrate into API/Microservices Architecture.
 
 **Note: QRAG is in the ALPHA TESTING PHASE.** Core functionality is complete, please let Qlik Partner Engineering Team know if you run into any data, compatibility or install issues! Thank you for [reporting any BUGS in the issue tracking system here](https://github.com/Qlik-PE/Qlik-Rapid-API-Gateway/issues), and We welcome your feedback and questions on usage/features.
 
