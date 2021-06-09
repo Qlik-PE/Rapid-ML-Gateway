@@ -2,8 +2,17 @@
 
 # Rapid Machine Learning Gateway - Simple way to BI tools to tap your ML Endpoints
 
+## As of May 2021 It was decided that this project will become a OSS Project for the larger community.
+Following Decisions were made 
+- It was renamed Rapid ML Gateway from Qlik Rapid API Gateway
+- Please note Qlik has no affiliation with this project other than initial code was written by John Park who is currently employed as Principal Solution Architect at Qlik Partner Engineering.
+- For Qlik Customers please note that there is no official support for this project from Qlik Support.
+- If you are thinking about using this code base to connect to your ML Engine please contact Qlik Partner Engineering via your Account Rep.
+- Contributions such as Issues, Pull Request and additional codes are welcomed.
+- Please note  this is not an Qlik Product.
+
 Rapid ML Gateway(RML) is an open source Python implementation of Qlik<sup>TM</sup> Server Side Extension that simplifies bi-directional data exchange between Qlik Application and Popular ML endpoint data.
-_The Origins of this project started as Qlik RA_
+_The Origins of this project started as Qlik Rapid API Gateway_
 
 The intial use case was to allow Qlik to use AI/ML functions and interact with other executions engines. The system utilizes GRPC messaging from Qlik and currently in the inital release support REST, Websocket APIs.
 
@@ -16,13 +25,13 @@ Integration Use Cases are Following
 - Integration to AWS Sagemaker
 - Integration to R
 - Integration to Python
-- Integration to Databricks 
+- Integration to Databricks
 - Integration with GCP AutomML
 - Integration with Azure Cognitive Services
 
 The system is built around quickly **using qrag.ini and functions.json** to send request and **add results back into QIX engine**. The goal of Rapid ML Gateway is to  It's goal is to help Qlik users integrate into API/Microservices Architecture.
 
-**Note: QRAG is in the ALPHA TESTING PHASE.** Core functionality is complete, please let Qlik Partner Engineering Team know if you run into any data, compatibility or install issues! Thank you for [reporting any BUGS in the issue tracking system here](https://github.com/Qlik-PE/Qlik-Rapid-API-Gateway/issues), and We welcome your feedback and questions on usage/features.
+**Note: RML is in the Beta TESTING PHASE.** Core functionality is complete, please let This g Team know if you run into any data, compatibility or install issues! Thank you for [reporting any BUGS in the issue tracking system here](https://github.com/Qlik-PE/Qlik-Rapid-API-Gateway/issues), and We welcome your feedback and questions on usage/features.
 
 **Things that may happen if there is Qlik developer/Customer demand.**
 
@@ -146,10 +155,5 @@ At Qlik Partner Engineering we believe in transparency and open governance model
 
 Please email people on this list if there are questions and concerns about this project.
 
-These are the stake holders responsible for this Projects.
-
 - Main Author: [John Park](john.park@qlik.com) Qlik, Principal Solution Architect
-- Contributor: [Dave Freriks](dave.freriks@qlik.com) Qlik, Evangelist
-- Contributor: [Dalton Ruer](dalton.ruer@qlik.com) Qlik, Solution Architect
-- Project Sponsor: [Hugo Sheng](hugo.sheng@qlik.com) Qlik, Sr. Director Partner Engineering
-- Project Executive: [Itamar Ankorion](itamar.ankorion@qlik.com) Qlik, SVP Qlik Technoloy Partners and Alliances
+
