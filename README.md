@@ -1,6 +1,6 @@
 ![Rapid ML Gateway Logo](./images/1.png)
 
-#Rapid Machine Learning Gateway - Simple way to BI tools to tap your ML Endpoints
+# Rapid Machine Learning Gateway - Simple way to BI tools to tap your ML Endpoints
 
 Rapid ML Gateway(RML) is an open source Python implementation of Qlik<sup>TM</sup> Server Side Extension that simplifies bi-directional data exchange between Qlik Application and Popular ML endpoint data.
 _The Origins of this project started as Qlik RA_
