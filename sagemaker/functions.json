@@ -238,7 +238,19 @@
             "Params": {
                 "str1": 0
             }
+        },
+        {
+            "Id": 15,
+            "Name": "movie_rating",
+            "Type": 2,
+            "QRAP_Type": "rest_template",
+            "ReturnType": 0,
+            "Params": {
+                "user_id": 0,
+                "items": 0
+            }
         }
+    
     
     ]
 }
