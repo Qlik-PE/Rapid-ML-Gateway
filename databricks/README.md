@@ -3,7 +3,7 @@
 # Integrating Qlik with Databricks
 
 
-## Qlik Sagemaker Business Flow
+## Qlik Databricks Business Flow
 
 
 ## Architectural Diagram
@@ -15,7 +15,7 @@ Databricks Setup
 
 AWS Component Setup
 
-QRAG/API Server Setup
+RML /API Server Setup
 
 **Qlik Server Setup**
 
