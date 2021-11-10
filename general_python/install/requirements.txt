@@ -15,7 +15,7 @@ gevent==20.6.2
 glom==20.8.0
 google-api-core==1.22.1
 google-api-python-client==1.10.1
-google-auth==1.20.1d
+google-auth==1.20.1
 google-auth-httplib2==0.0.4
 googleapis-common-protos==1.52.0
 greenlet==0.4.16
