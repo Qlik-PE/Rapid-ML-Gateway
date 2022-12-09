@@ -1,7 +1,7 @@
 attrs==21.4.0
 boltons==21.0.0
 cachetools==4.2.4
-certifi==2022.5.18.1
+certifi==2022.12.7
 chardet==3.0.4
 charset-normalizer==2.0.12
 configparser==5.2.0
